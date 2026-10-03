@@ -10,8 +10,6 @@ import (
 	"github.com/publicdomainrelay/kcp-libs/abc/runner"
 )
 
-const DefaultEngineTimeout = 24 * time.Hour
-
 type EngineOptions struct {
 	DenoBin string
 
@@ -46,9 +44,6 @@ func NewEngine(opts EngineOptions) (*Engine, error) {
 	}
 	if opts.ServerFile == "" {
 		opts.ServerFile = "main.ts"
-	}
-	if opts.Timeout == 0 {
-		opts.Timeout = DefaultEngineTimeout
 	}
 	serverDir, err := filepath.Abs(opts.ServerDir)
 	if err != nil {

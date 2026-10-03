@@ -438,7 +438,7 @@ func TestNewPodRequiresARunsDirectory(t *testing.T) {
 	}
 }
 
-func TestPodReportsFailureWhenTheDoneMarkerIsMissing(t *testing.T) {
+func TestPodTrustsAResultOverAMissingDoneMarker(t *testing.T) {
 	dir := t.TempDir()
 	runsDir := filepath.Join(dir, "runs")
 	gone := exec.Command("true")
@@ -466,11 +466,25 @@ func TestPodReportsFailureWhenTheDoneMarkerIsMissing(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if status.State != runner.StateFailed {
-		t.Fatalf("a run with no done marker is not a success: %+v", status)
+	if status.State != runner.StateSucceeded {
+		t.Fatalf("a run that wrote its result finished its work, whatever became of the marker: %+v", status)
 	}
 	if status.Outputs["answer"] != "42" {
 		t.Fatalf("the outputs it did write must survive: %v", status.Outputs)
+	}
+	if err := os.Remove(filepath.Join(runDir, "result.json")); err != nil {
+		t.Fatal(err)
+	}
+	orphan, err := NewPod(PodOptions{DenoBin: "true", RunsDir: runsDir})
+	if err != nil {
+		t.Fatal(err)
+	}
+	status, err = orphan.Observe(context.Background(), id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if status.State != runner.StateFailed {
+		t.Fatalf("with no result and no marker there is nothing to call a success: %+v", status)
 	}
 }
 
@@ -489,11 +503,11 @@ func TestPodForgetsAFinishedRunAndStillAnswers(t *testing.T) {
 		t.Fatalf("status = %+v", status)
 	}
 	deadline := time.Now().Add(5 * time.Second)
-	for time.Now().Before(deadline) && pod.Running() != 0 {
+	for time.Now().Before(deadline) && pod.sup.held() != 0 {
 		time.Sleep(5 * time.Millisecond)
 	}
-	if pod.Running() != 0 {
-		t.Fatalf("the supervisor still holds %d finished runs", pod.Running())
+	if pod.sup.held() != 0 {
+		t.Fatalf("the supervisor still holds %d finished runs", pod.sup.held())
 	}
 	status, err := pod.Observe(context.Background(), id)
 	if err != nil {

@@ -120,15 +120,14 @@ func (p *Pod) Probe(ctx context.Context, runID string, command []string, timeout
 	return p.sup.probe(ctx, runID, command, timeout, true)
 }
 
-func (p *Pod) Running() int {
-	return p.sup.held()
-}
-
 func (p *Pod) result(run *process) (runner.PodStatus, error) {
 	exit, err := p.exitCode(run)
 	if err != nil {
-		found, _ := p.readOutputs(run)
-		return runner.PodStatus{State: runner.StateFailed, Outputs: found, Message: err.Error()}, nil
+		found, oerr := p.readOutputs(run)
+		if oerr == nil && len(found) > 0 {
+			return runner.PodStatus{State: runner.StateSucceeded, Outputs: found}, nil
+		}
+		return runner.PodStatus{State: runner.StateFailed, Message: err.Error()}, nil
 	}
 	status := runner.PodStatus{ExitCode: exit}
 	if run.waitErr != nil {

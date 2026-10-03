@@ -75,7 +75,7 @@ package imports anything project-local, or if an `abc` package imports past
 | impl | `impl/kcpstore` | client-go REST store: generic typed resources, status patches, finalizers, token minting, cluster paths. `PatchStatus` stamps the resource version the caller put on the `Ref`; a `Ref` straight off the queue carries none, because the informer cache drops it, so a reconciler that wants a conflict rather than a blind overwrite has to read the object and pass what it read - which is what every example here does |
 | impl | `impl/exportwatch` | APIExportEndpointSlice discovery and the await loop for virtual workspace URLs |
 | impl | `impl/informerwatch` | shared dynamic informers over `/clusters/*`, indexers, event handlers |
-| impl | `impl/execrunner` | `os/exec` pod and engine runners: run directories, process groups, recovery, probes |
+| impl | `impl/execrunner` | `os/exec` pod and engine runners: run directories, process groups, recovery, probes. A run whose exit marker is gone but whose `result.json` is not is a success, because the result is what the workload produced; a run with neither is a failure. The pod timeout defaults to five minutes and the engine's is off unless set, which is the consumer's own split: a hung engine is the liveness probe's business, and the deadline it is measured against lives on the CRD |
 | impl | `impl/memoryrunner` | in-memory runners for tests |
 | impl | `impl/openbaoclient` | a typed adapter over the official `github.com/openbao/openbao/api/v2` client |
 | impl | `impl/pkiprovisioner` | one intermediate CA per namespace, root in the root namespace, cached |
@@ -164,7 +164,6 @@ them are tested:
 | `reconcile.Result.AddFor` | asks for a child to be created or stopped |
 | `reconcile.Result.Deletes`, `ReleasesFinalizer` | the accessors that replaced the boolean fields they used to read |
 | `kcpstore.Resource.AddFinalizer` | the add half of the finalizer patch `RemoveFinalizer` takes back off |
-| `execrunner.Pod.Running` | how many runs the supervisor still holds |
 | `abc/cache.PhaseOf` | reads a phase off a cached object |
 | `common/ttl.Deadline`, `Effective` | an active deadline, and a run's retention |
 | `abc/joballoc.MergeNames` | merges `status.runs` |
