@@ -34,25 +34,25 @@ type Options struct {
 	ParentKind string
 }
 
-type Admission struct {
+type Admitter struct {
 	opts Options
 }
 
-func New(opts Options) *Admission {
+func New(opts Options) *Admitter {
 	if opts.Leases == nil {
 		opts.Leases = queue.NewLeases(opts.LeaseTTL)
 	}
 	if opts.Now == nil {
 		opts.Now = time.Now
 	}
-	return &Admission{opts: opts}
+	return &Admitter{opts: opts}
 }
 
-func (a *Admission) Leases() *queue.Leases {
+func (a *Admitter) Leases() *queue.Leases {
 	return a.opts.Leases
 }
 
-func (a *Admission) Admit(ctx context.Context, run queue.Run) (queue.Admission, error) {
+func (a *Admitter) Admit(ctx context.Context, run queue.Run) (queue.Admission, error) {
 	parent, ok, err := a.opts.Source.Parent(ctx, run)
 	if err != nil {
 		return queue.Admission{}, err
@@ -84,7 +84,7 @@ func (a *Admission) Admit(ctx context.Context, run queue.Run) (queue.Admission, 
 	return admission, nil
 }
 
-func (a *Admission) Wake(ctx context.Context, parent ref.Ref) error {
+func (a *Admitter) Wake(ctx context.Context, parent ref.Ref) error {
 	if a.opts.Wake == nil {
 		return nil
 	}

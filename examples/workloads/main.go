@@ -101,7 +101,7 @@ func Run(ctx context.Context, out io.Writer) error {
 	liveness := probe.NewTracker()
 	failures := 0
 	for i := range 3 {
-		if liveness.Failed("greeter", id, false, probe.DefaultFailureThreshold) {
+		if liveness.Record("greeter", id, false, probe.DefaultFailureThreshold) {
 			failures = i + 1
 			break
 		}

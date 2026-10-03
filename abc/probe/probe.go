@@ -20,7 +20,7 @@ func NewTracker() *Tracker {
 	return &Tracker{counters: map[string]Counter{}}
 }
 
-func (t *Tracker) Failed(key, runID string, passed bool, threshold int32) bool {
+func (t *Tracker) Record(key, runID string, passed bool, threshold int32) bool {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 	counter, seen := t.counters[key]

@@ -46,7 +46,7 @@ func run(name, phase string, seconds int) queue.Run {
 	}
 }
 
-func newTestAdmission(source *fakeSource) (*Admission, *[]ref.Ref) {
+func newTestAdmission(source *fakeSource) (*Admitter, *[]ref.Ref) {
 	woken := &[]ref.Ref{}
 	return New(Options{
 		Source:     source,
