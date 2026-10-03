@@ -149,6 +149,7 @@ func TestPodProbeRunsInTheRunDirectory(t *testing.T) {
 	if passed, err := pod.Probe(context.Background(), id, nil, time.Second); err != nil || !passed {
 		t.Fatalf("an empty probe passes = (%v, %v)", passed, err)
 	}
+	observeUntilDone(t, pod, id)
 }
 
 func TestPodWritesTheConfigFilesDenoReads(t *testing.T) {
@@ -171,6 +172,7 @@ func TestPodWritesTheConfigFilesDenoReads(t *testing.T) {
 	if err != nil || !passed {
 		t.Fatalf("deno auto-discovers a config only under its own names, probe = (%v, %v)", passed, err)
 	}
+	observeUntilDone(t, pod, id)
 }
 
 func TestPodRunnerTimeoutFailsTheRun(t *testing.T) {
@@ -379,6 +381,7 @@ func TestRunIdentifiersDoNotRepeatWithinASecond(t *testing.T) {
 		t.Fatal(err)
 	}
 	seen := map[string]bool{}
+	ids := make([]string, 0, 5)
 	for range 5 {
 		id, err := pod.Start(context.Background(), runner.PodRequest{Name: "pds", Script: "x"})
 		if err != nil {
@@ -388,5 +391,9 @@ func TestRunIdentifiersDoNotRepeatWithinASecond(t *testing.T) {
 			t.Fatalf("%s was handed out twice, and a second run would overwrite the first", id)
 		}
 		seen[id] = true
+		ids = append(ids, id)
+	}
+	for _, id := range ids {
+		observeUntilDone(t, pod, id)
 	}
 }
