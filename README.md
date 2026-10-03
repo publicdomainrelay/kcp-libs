@@ -7,9 +7,9 @@ The org-root ABC layering pattern, translated to idiomatic Go: one module, one
 package per concept-layer, and a dependency arrow that only points one way.
 No comments in the Go code -- the only `//` lines are the `//go:embed`
 directives the assets need; a package's path and names carry the meaning. The
-two TypeScript files under `impl/assets` are carried verbatim from the consumer,
-comments included, so the copy stays byte-identical to the one it is pinned
-against.
+two TypeScript files under `impl/assets` were carried verbatim from the
+consumer, comments included, and are now the only copy: the consumer materialises
+them from here.
 
 ```
 common/    leaf: types, constants, pure helpers            external deps only

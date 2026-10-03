@@ -10,46 +10,6 @@ import (
 	"time"
 )
 
-func TestTheShimAndProbeAreTheOnesTheConsumerShips(t *testing.T) {
-	dir := consumerKcpdns(t)
-	if dir == "" {
-		return
-	}
-	for name, embedded := range map[string]string{ShimName: Shim, ProbeName: Probe} {
-		body, err := os.ReadFile(filepath.Join(dir, name))
-		if err != nil {
-			t.Fatal(err)
-		}
-		if string(body) != embedded {
-			t.Fatalf("%s has drifted from the copy the consumer ships, so one of the two is now wrong", name)
-		}
-	}
-}
-
-func consumerKcpdns(t *testing.T) string {
-	t.Helper()
-	root, err := filepath.Abs(".")
-	if err != nil {
-		t.Fatal(err)
-	}
-	for {
-		candidate := filepath.Join(root, "deno-kcp", "internal", "provider", "kcpdns")
-		if info, err := os.Stat(candidate); err == nil && info.IsDir() {
-			return candidate
-		}
-		parent := filepath.Dir(root)
-		if parent == root {
-			break
-		}
-		root = parent
-	}
-	if os.Getenv("KCP_LIBS_REQUIRE_CONSUMER") == "1" {
-		t.Fatal("the consumer's kcpdns directory was not found; this test reads it as the source of truth, so set KCP_LIBS_REQUIRE_CONSUMER only where the checkout is present")
-	}
-	t.Skip("the consumer checkout is not next to this module, so there is nothing to compare against")
-	return ""
-}
-
 func TestDNSSetWritesTheShimAndTheProbe(t *testing.T) {
 	dir := t.TempDir()
 	paths, err := DNSSet(dir).Materialise()
