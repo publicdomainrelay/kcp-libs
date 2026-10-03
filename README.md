@@ -134,7 +134,7 @@ Where the code in `../deno-kcp` moves.
 | `internal/{denorun,denojob,denopod,policyengine,policyworkflowpod,policyworkflowrun,trigger}/*.go` | stay in the consumer, re-expressed as `abc/reconcile.Reconciler` deciders. The seam carries what they need: `denorun`'s cleared `runID` is `Result.ClearFields`, written as a null by `reconcile.Patch`, and `denojob`'s `CreateRuns`/`StopRuns` are `Operation`s with a `Target` |
 | `internal/provider/watch.go`'s two APIExports | `informerwatch.Source` per export, since a resource may only be listed against the export that serves it |
 | `internal/provider/kcpdns/embed.go` | `impl/assets` |
-| `api/v1alpha1/types_shared.go` | `common/denospec`, `common/denocomputer`. The CRD types themselves stay in the consumer, since a CRD's Go type belongs with its scheme; both this module's copies are pinned to the consumer's declarations by contract tests that read them, `denospec` by JSON tag and `denocomputer` by constant, so the conversion is a straight one and a rename on either side fails the other |
+| `api/v1alpha1/types_shared.go` | `common/denospec`, `common/denocomputer`. The CRD types themselves stay in the consumer, since a CRD's Go type belongs with its scheme; both this module's copies are pinned to the consumer's declarations by contract tests that read them -- `denospec` by field type, JSON tag and `omitempty` in declaration order, `denocomputer` by constant -- so the conversion is a straight one and a rename, a retype or a dropped pointer fails on the other side |
 
 The driver dispatches by kind and nothing more: one handler is given a key and
 decides what to do with it. It does not route between kinds for you, and it

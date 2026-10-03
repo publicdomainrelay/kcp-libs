@@ -13,15 +13,21 @@ import (
 var (
 	structOpen = regexp.MustCompile(`^type (\w+) struct \{`)
 
-	jsonTag = regexp.MustCompile(`json:"([^",]+)`)
+	field = regexp.MustCompile("^(\\w+)\\s+([^\\s`]+)\\s+`json:\"([^\"]+)\"`")
 )
+
+type shape struct {
+	typ string
+
+	tag string
+}
 
 func TestTheShapesAreTheOnesTheConsumerDeclares(t *testing.T) {
 	dir := consumerAPIDir(t)
 	if dir == "" {
 		return
 	}
-	declared := consumerStructTags(t, dir)
+	declared := consumerShapes(t, dir)
 	for _, pair := range []struct {
 		shape any
 		name  string
@@ -36,33 +42,40 @@ func TestTheShapesAreTheOnesTheConsumerDeclares(t *testing.T) {
 		if !ok {
 			t.Fatalf("the consumer declares no %s, so the shape here is invented", pair.name)
 		}
-		got := ownTags(pair.shape)
+		got := ownShapes(pair.shape)
 		if !slices.Equal(got, want) {
-			t.Fatalf("%s carries %v, the consumer declares %v, so a patch built from one would not decode as the other", pair.name, got, want)
+			t.Fatalf("%s carries %v, the consumer declares %v, so a value written from one would not decode as the other", pair.name, got, want)
 		}
 	}
 }
 
-func ownTags(shape any) []string {
-	out := []string{}
-	kind := reflect.TypeOf(shape)
+func ownShapes(value any) []shape {
+	out := []shape{}
+	kind := reflect.TypeOf(value)
 	for i := 0; i < kind.NumField(); i++ {
 		tag, ok := kind.Field(i).Tag.Lookup("json")
 		if !ok {
 			continue
 		}
-		out = append(out, strings.Split(tag, ",")[0])
+		out = append(out, shape{typ: normalize(kind.Field(i).Type.String()), tag: tag})
 	}
 	return out
 }
 
-func consumerStructTags(t *testing.T, dir string) map[string][]string {
+func normalize(typ string) string {
+	typ = strings.ReplaceAll(typ, "denospec.", "")
+	typ = strings.ReplaceAll(typ, "DenoPermission", "Permission")
+	typ = strings.ReplaceAll(typ, "DenoPermissions", "Permissions")
+	return typ
+}
+
+func consumerShapes(t *testing.T, dir string) map[string][]shape {
 	t.Helper()
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		t.Fatal(err)
 	}
-	out := map[string][]string{}
+	out := map[string][]shape{}
 	for _, entry := range entries {
 		if !strings.HasSuffix(entry.Name(), ".go") || strings.HasSuffix(entry.Name(), "_test.go") {
 			continue
@@ -76,7 +89,7 @@ func consumerStructTags(t *testing.T, dir string) map[string][]string {
 			line = strings.TrimSpace(line)
 			if match := structOpen.FindStringSubmatch(line); match != nil {
 				current = match[1]
-				out[current] = []string{}
+				out[current] = []shape{}
 				continue
 			}
 			if current == "" {
@@ -89,8 +102,8 @@ func consumerStructTags(t *testing.T, dir string) map[string][]string {
 			if strings.HasPrefix(line, "//") {
 				continue
 			}
-			if match := jsonTag.FindStringSubmatch(line); match != nil {
-				out[current] = append(out[current], match[1])
+			if match := field.FindStringSubmatch(line); match != nil {
+				out[current] = append(out[current], shape{typ: normalize(match[2]), tag: match[3]})
 			}
 		}
 	}
