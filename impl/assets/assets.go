@@ -31,7 +31,11 @@ func (s *Set) Materialise() (map[string]string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if !s.written {
-		s.err = s.write()
+		if err := s.write(); err != nil {
+			s.err = err
+			return s.published(), err
+		}
+		s.err = nil
 		s.written = true
 	}
 	return s.published(), s.err
@@ -40,9 +44,14 @@ func (s *Set) Materialise() (map[string]string, error) {
 func (s *Set) Rewrite() (map[string]string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.err = s.write()
+	if err := s.write(); err != nil {
+		s.err = err
+		s.written = false
+		return s.published(), err
+	}
+	s.err = nil
 	s.written = true
-	return s.published(), s.err
+	return s.published(), nil
 }
 
 func (s *Set) published() map[string]string {

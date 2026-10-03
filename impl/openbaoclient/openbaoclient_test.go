@@ -3,11 +3,13 @@ package openbaoclient
 import (
 	"context"
 	"encoding/json"
+	"encoding/pem"
 	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync/atomic"
 	"testing"
 
 	openbao "github.com/openbao/openbao/api/v2"
@@ -242,5 +244,83 @@ func TestHealthAcceptsTheStandbyStatuses(t *testing.T) {
 	}
 	if !health.Initialized || health.Sealed || health.Version != "2.0.0" {
 		t.Fatalf("health = %+v", health)
+	}
+}
+
+func TestTheEnvironmentCannotWeakenTheTLSConfiguration(t *testing.T) {
+	t.Setenv("VAULT_SKIP_VERIFY", "1")
+	var hits atomic.Int32
+	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		hits.Add(1)
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"initialized":true,"sealed":false,"version":"2.0.0"}`))
+	}))
+	t.Cleanup(server.Close)
+	trusted := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: server.Certificate().Raw})
+
+	good, err := New(Options{Address: server.URL, Token: "t", CACert: trusted})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := good.Health(context.Background()); err != nil {
+		t.Fatalf("the CA the caller supplied must be trusted: %v", err)
+	}
+
+	bad, err := New(Options{Address: server.URL, Token: "t", CACert: []byte(testCertificate(t))})
+	if err != nil {
+		t.Fatal(err)
+	}
+	before := hits.Load()
+	if _, err := bad.Health(context.Background()); err == nil {
+		t.Fatal("a CA that is not the server's must be rejected, whatever the environment says")
+	}
+	if hits.Load() != before {
+		t.Fatal("the client reached the server despite an untrusted CA")
+	}
+}
+
+func TestAgentAddressEnvironmentIsIgnored(t *testing.T) {
+	t.Setenv("BAO_AGENT_ADDR", "https://127.0.0.1:1")
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"initialized":true,"sealed":false,"version":"2.0.0"}`))
+	}))
+	t.Cleanup(server.Close)
+	client, err := New(Options{Address: server.URL, Token: "t"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := client.Health(context.Background()); err != nil {
+		t.Fatalf("the address the caller supplied must be the one used: %v", err)
+	}
+}
+
+func TestCASerialWithoutACAReportsBothSentinels(t *testing.T) {
+	client, _ := newServer(t, func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(404)
+	})
+	_, err := client.CASerial(context.Background(), "root", "pki")
+	if !errors.Is(err, pki.ErrNoAuthority) {
+		t.Fatalf("err = %v, want pki.ErrNoAuthority", err)
+	}
+	if !errors.Is(err, ErrNotFound) {
+		t.Fatalf("err = %v, want ErrNotFound as well", err)
+	}
+}
+
+func TestEnsureMountTreatsANullMountListAsNoMounts(t *testing.T) {
+	client, seen := newServer(t, func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/v1/sys/mounts" {
+			_, _ = w.Write([]byte("null"))
+			return
+		}
+		w.WriteHeader(204)
+	})
+	if err := client.EnsureMount(context.Background(), "alice.default", "pki", "pki"); err != nil {
+		t.Fatal(err)
+	}
+	last := (*seen)[len(*seen)-1]
+	if last.Path != "/v1/sys/mounts/pki" || !strings.Contains(last.Body, `"type":"pki"`) {
+		t.Fatalf("request = %+v", last)
 	}
 }

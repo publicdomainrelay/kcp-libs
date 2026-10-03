@@ -43,7 +43,7 @@ type Options struct {
 type Provisioner struct {
 	opts Options
 
-	rootMu sync.Mutex
+	mu sync.Mutex
 
 	root *pki.RootCA
 
@@ -84,8 +84,8 @@ func New(opts Options) (*Provisioner, error) {
 }
 
 func (p *Provisioner) EnsureRoot(ctx context.Context) (pki.RootCA, error) {
-	p.rootMu.Lock()
-	defer p.rootMu.Unlock()
+	p.mu.Lock()
+	defer p.mu.Unlock()
 	return p.ensureRootLocked(ctx)
 }
 
@@ -127,6 +127,8 @@ func (p *Provisioner) EnsureAuthority(ctx context.Context, path string) (pki.Aut
 	if path == "" {
 		return pki.Authority{}, errors.New("pkiprovisioner: a namespace path is required")
 	}
+	p.mu.Lock()
+	defer p.mu.Unlock()
 	if cached, ok := p.namespaces.Get(path, p.opts.Now()); ok {
 		return cached, nil
 	}
@@ -229,6 +231,8 @@ func (p *Provisioner) Delete(ctx context.Context, path string) error {
 	if path == "" {
 		return errors.New("pkiprovisioner: a namespace path is required")
 	}
+	p.mu.Lock()
+	defer p.mu.Unlock()
 	p.namespaces.Delete(path)
 	if err := p.opts.Client.DeleteNamespace(ctx, path); err != nil {
 		return fmt.Errorf("pkiprovisioner: deleting the namespace %q: %w", path, err)
@@ -237,8 +241,8 @@ func (p *Provisioner) Delete(ctx context.Context, path string) error {
 }
 
 func (p *Provisioner) CachedRootPEM() []byte {
-	p.rootMu.Lock()
-	defer p.rootMu.Unlock()
+	p.mu.Lock()
+	defer p.mu.Unlock()
 	if p.root == nil {
 		return nil
 	}

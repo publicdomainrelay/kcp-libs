@@ -76,11 +76,13 @@ type supervisor struct {
 
 	runs map[string]*process
 
+	envs map[string]map[string]string
+
 	seq atomic.Int64
 }
 
 func newSupervisor(prefix, runsDir, doneFile string) *supervisor {
-	return &supervisor{prefix: prefix, runsDir: runsDir, doneFile: doneFile, runs: map[string]*process{}}
+	return &supervisor{prefix: prefix, runsDir: runsDir, doneFile: doneFile, runs: map[string]*process{}, envs: map[string]map[string]string{}}
 }
 
 func (s *supervisor) nextID() string {
@@ -150,6 +152,7 @@ func (s *supervisor) start(entry processSpec) (string, error) {
 	}
 	s.mu.Lock()
 	s.runs[id] = run
+	s.envs[id] = run.env
 	s.mu.Unlock()
 
 	go func() {
@@ -159,7 +162,9 @@ func (s *supervisor) start(entry processSpec) (string, error) {
 		}
 		writeDone(run, s.doneFile)
 		close(run.done)
-		s.forget(id)
+		if s.doneFile != "" {
+			s.forget(id)
+		}
 	}()
 	return id, nil
 }
@@ -238,10 +243,12 @@ func (s *supervisor) recover(id string) (*process, error) {
 }
 
 func (s *supervisor) envOf(id string) map[string]string {
-	if run, ok := s.lookup(id); ok {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if run, ok := s.runs[id]; ok {
 		return run.env
 	}
-	return nil
+	return s.envs[id]
 }
 
 func (s *supervisor) resolve(id string) (*process, error) {
@@ -281,7 +288,7 @@ func (s *supervisor) stop(id string) error {
 	if s.finished(run) {
 		return nil
 	}
-	if run.cmd == nil && !ownedByUs(run.pid, run.ticks) {
+	if run.cmd == nil && run.ticks != 0 && !ownedByUs(run.pid, run.ticks) {
 		return nil
 	}
 	run.stopped.Store(true)

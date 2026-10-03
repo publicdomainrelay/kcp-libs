@@ -87,3 +87,29 @@ func TestMaterialiseWithoutADirectory(t *testing.T) {
 		t.Fatalf("err = %v", err)
 	}
 }
+
+func TestAFailedMaterialiseIsRetried(t *testing.T) {
+	parent := t.TempDir()
+	dir := filepath.Join(parent, ".kcpdns")
+	if err := os.WriteFile(dir, []byte("in the way"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	set := &Set{Dir: dir, Files: map[string][]byte{"shim.ts": []byte("export {}")}}
+	if _, err := set.Materialise(); err == nil {
+		t.Fatal("a write that cannot create its directory must fail")
+	}
+	if err := os.Remove(dir); err != nil {
+		t.Fatal(err)
+	}
+	paths, err := set.Materialise()
+	if err != nil {
+		t.Fatalf("a retry after the obstacle is gone must succeed: %v", err)
+	}
+	body, err := os.ReadFile(paths["shim.ts"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(body) != "export {}" {
+		t.Fatalf("shim = %q", body)
+	}
+}

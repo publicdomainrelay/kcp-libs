@@ -91,7 +91,7 @@ func (e *Engine) Observe(_ context.Context, runID string) (runner.EngineStatus, 
 		if run.waitErr != nil {
 			message = run.waitErr.Error()
 		}
-		if run.stopped.Load() {
+		if message == "" && run.stopped.Load() {
 			message = "the policy engine process was stopped"
 		}
 		return runner.EngineStatus{State: runner.StateFailed, Message: message}, nil

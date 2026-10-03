@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"testing"
 	"time"
 
@@ -700,5 +701,109 @@ func TestRunIdentifiersDoNotRepeatWithinASecond(t *testing.T) {
 	}
 	for _, id := range ids {
 		observeUntilDone(t, pod, id)
+	}
+}
+
+func TestARecoveredRunWithUnknownTicksIsStopped(t *testing.T) {
+	dir := t.TempDir()
+	runsDir := filepath.Join(dir, "runs")
+	child := exec.Command("sleep", "30")
+	child.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	if err := child.Start(); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = syscall.Kill(-child.Process.Pid, syscall.SIGKILL) })
+
+	id := "pod-unknown-ticks"
+	runDir := filepath.Join(runsDir, id)
+	if err := os.MkdirAll(runDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	state := fmt.Sprintf(`{"pid":%d,"started":%q}`, child.Process.Pid, time.Now().UTC().Format(time.RFC3339Nano))
+	if err := os.WriteFile(filepath.Join(runDir, "state.json"), []byte(state), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	pod, err := NewPod(PodOptions{DenoBin: "true", RunsDir: runsDir})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := pod.Stop(context.Background(), id); err != nil {
+		t.Fatal(err)
+	}
+	done := make(chan error, 1)
+	go func() { done <- child.Wait() }()
+	select {
+	case <-done:
+	case <-time.After(5 * time.Second):
+		t.Fatal("a recovered run whose ticks are unknown must still be stopped")
+	}
+}
+
+func TestPodProbeAfterExitKeepsTheRunEnvironment(t *testing.T) {
+	dir := t.TempDir()
+	out := filepath.Join(dir, "probe-env.txt")
+	stub := writeStub(t, dir, `exit 0`)
+	pod, err := NewPod(PodOptions{DenoBin: stub, RunsDir: filepath.Join(dir, "runs")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	id, err := pod.Start(context.Background(), runner.PodRequest{
+		Name:   "pds",
+		Script: "x",
+		Env:    map[string]string{"KCP_DNS_TABLE": "team-a.svc", "PROBE_OUT": out},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if status := observeUntilDone(t, pod, id); status.State != runner.StateSucceeded {
+		t.Fatalf("status = %+v", status)
+	}
+	deadline := time.Now().Add(5 * time.Second)
+	for time.Now().Before(deadline) && pod.sup.held() != 0 {
+		time.Sleep(5 * time.Millisecond)
+	}
+	probe := []string{"/bin/sh", "-c", `printf '%s' "$KCP_DNS_TABLE" > "$PROBE_OUT"`}
+	passed, err := pod.Probe(context.Background(), id, probe, time.Second)
+	if err != nil || !passed {
+		t.Fatalf("probe = (%v, %v)", passed, err)
+	}
+	body, err := os.ReadFile(out)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(body) != "team-a.svc" {
+		t.Fatalf("the probe's environment lost the run's variables: %q", body)
+	}
+}
+
+func TestEngineReportsTheWaitErrorWhenStopped(t *testing.T) {
+	dir := t.TempDir()
+	stub := writeStub(t, dir, `sleep 30`)
+	engine, err := NewEngine(EngineOptions{
+		DenoBin:    stub,
+		ServerDir:  dir,
+		ServerFile: filepath.Join(dir, "server.ts"),
+		RunsDir:    filepath.Join(dir, "runs"),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	id, err := engine.Start(context.Background(), runner.EngineRequest{Name: "gha-lite", Port: 8787})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := engine.Stop(context.Background(), id); err != nil {
+		t.Fatal(err)
+	}
+	status, err := engine.Observe(context.Background(), id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if status.State != runner.StateFailed {
+		t.Fatalf("status = %+v", status)
+	}
+	if status.Message == "" || status.Message == "the policy engine process was stopped" {
+		t.Fatalf("message = %q, want the wait error", status.Message)
 	}
 }

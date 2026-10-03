@@ -2,6 +2,7 @@ package openbaoclient
 
 import (
 	"context"
+	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
@@ -25,6 +26,8 @@ var (
 
 	ErrNoCA = errors.New("openbao: the supplied CA carries no CERTIFICATE PEM block")
 )
+
+const emptyMountData = "data from server response is empty"
 
 type ResponseError struct {
 	Method string
@@ -71,20 +74,38 @@ func New(opts Options) (*Client, error) {
 	if opts.Address == "" {
 		return nil, errors.New("openbao: an address is required")
 	}
-	if len(opts.CACert) > 0 {
-		if !x509.NewCertPool().AppendCertsFromPEM(opts.CACert) {
-			return nil, ErrNoCA
-		}
-	}
 	config := openbao.DefaultConfig()
 	config.Address = opts.Address
+	config.AgentAddress = ""
+	config.SRVLookup = false
+	config.Limiter = nil
+	config.MaxRetries = 0
+	config.Timeout = 30 * time.Second
 	if opts.Timeout > 0 {
 		config.Timeout = opts.Timeout
 	}
+	transport, ok := config.HttpClient.Transport.(*http.Transport)
+	if !ok {
+		return nil, errors.New("openbao: the client carries no HTTP transport")
+	}
+	tlsConfig := transport.TLSClientConfig
+	if tlsConfig == nil {
+		tlsConfig = &tls.Config{}
+		transport.TLSClientConfig = tlsConfig
+	}
+	tlsConfig.InsecureSkipVerify = false
+	tlsConfig.ServerName = ""
+	tlsConfig.GetClientCertificate = nil
+	tlsConfig.RootCAs = nil
+	if tlsConfig.MinVersion < tls.VersionTLS12 {
+		tlsConfig.MinVersion = tls.VersionTLS12
+	}
 	if len(opts.CACert) > 0 {
-		if err := config.ConfigureTLS(&openbao.TLSConfig{CACertBytes: opts.CACert}); err != nil {
-			return nil, fmt.Errorf("openbao: %w", err)
+		pool := x509.NewCertPool()
+		if !pool.AppendCertsFromPEM(opts.CACert) {
+			return nil, ErrNoCA
 		}
+		tlsConfig.RootCAs = pool
 	}
 	client, err := openbao.NewClient(config)
 	if err != nil {
@@ -151,7 +172,10 @@ func (c *Client) DeleteNamespace(ctx context.Context, path string) error {
 func (c *Client) EnsureMount(ctx context.Context, namespace, path, kind string) error {
 	mounts, err := c.scoped(namespace).Sys().ListMountsWithContext(ctx)
 	if err != nil {
-		return translate(err, http.MethodGet, "sys/mounts")
+		if err.Error() != emptyMountData {
+			return translate(err, http.MethodGet, "sys/mounts")
+		}
+		mounts = map[string]*openbao.MountOutput{}
 	}
 	key := strings.Trim(path, "/") + "/"
 	if info, ok := mounts[key]; ok {
@@ -186,10 +210,13 @@ func (c *Client) GenerateRoot(ctx context.Context, namespace, mount, commonName,
 func (c *Client) CASerial(ctx context.Context, namespace, mount string) (string, error) {
 	data, err := c.read(ctx, namespace, strings.Trim(mount, "/")+"/cert/ca")
 	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return "", fmt.Errorf("%w: %w: no CA at %s", pki.ErrNoAuthority, ErrNotFound, mount)
+		}
 		return "", err
 	}
 	if data == nil {
-		return "", fmt.Errorf("%w: no CA at %s", pki.ErrNoAuthority, mount)
+		return "", fmt.Errorf("%w: %w: no CA at %s", pki.ErrNoAuthority, ErrNotFound, mount)
 	}
 	return serialOfPEM(stringField(data, "certificate")), nil
 }
