@@ -293,6 +293,22 @@ func TestPathCacheResolvesOnce(t *testing.T) {
 	}
 }
 
+func TestPathCacheCachesAMiss(t *testing.T) {
+	store, seen := newServer(t, nil, func(w http.ResponseWriter, _ *http.Request, _ int) {
+		writeJSON(w, 404, map[string]any{"kind": "Status", "code": 404})
+	})
+	cache := NewPathCache(store)
+	if path := cache.Lookup(context.Background(), "2j35"); path != "" {
+		t.Fatalf("path = %q, want empty", path)
+	}
+	if path := cache.Lookup(context.Background(), "2j35"); path != "" {
+		t.Fatalf("cached path = %q, want empty", path)
+	}
+	if len(*seen) != 1 {
+		t.Fatalf("requests = %d, want the failed resolution cached rather than retried", len(*seen))
+	}
+}
+
 func TestNewRequiresAHost(t *testing.T) {
 	if _, err := New(Options{}); err == nil {
 		t.Fatal("a host is required")

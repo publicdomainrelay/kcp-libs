@@ -31,9 +31,6 @@ func (c *PathCache) Lookup(ctx context.Context, logicalCluster string) string {
 			path = resolved
 		}
 	}
-	if path == "" {
-		return ""
-	}
 	c.mu.Lock()
 	c.byID[logicalCluster] = path
 	c.mu.Unlock()
