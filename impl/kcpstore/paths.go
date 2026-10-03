@@ -22,11 +22,16 @@ func transient(err error) bool {
 	if errors.As(err, &netErr) {
 		return true
 	}
-	return apierrors.IsInternalError(err) ||
-		apierrors.IsServiceUnavailable(err) ||
-		apierrors.IsServerTimeout(err) ||
-		apierrors.IsTimeout(err) ||
-		apierrors.IsTooManyRequests(err)
+	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+		return true
+	}
+	var statusErr *apierrors.StatusError
+	if errors.As(err, &statusErr) {
+		if code := statusErr.ErrStatus.Code; code >= 500 {
+			return true
+		}
+	}
+	return apierrors.IsTimeout(err) || apierrors.IsTooManyRequests(err)
 }
 
 type PathCache struct {

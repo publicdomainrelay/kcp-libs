@@ -331,6 +331,39 @@ func TestPathCacheRetriesATransientFailure(t *testing.T) {
 	}
 }
 
+func TestPathCacheRetriesEveryServerFailureAndACancelledCall(t *testing.T) {
+	store, seen := newServer(t, nil, func(w http.ResponseWriter, _ *http.Request, index int) {
+		if index < 2 {
+			code := []int{502, 429}[index]
+			writeJSON(w, code, map[string]any{"kind": "Status", "code": code})
+			return
+		}
+		writeJSON(w, 200, map[string]any{
+			"metadata": map[string]any{"annotations": map[string]string{"kcp.io/path": "root:alice"}},
+		})
+	})
+	cache := NewPathCache(store)
+	cancelled, cancel := context.WithCancel(context.Background())
+	cancel()
+	if path := cache.Lookup(cancelled, "2j35"); path != "" {
+		t.Fatalf("path = %q, want empty for a cancelled call", path)
+	}
+	if len(*seen) != 0 {
+		t.Fatalf("requests = %d, want a cancelled call to reach no server", len(*seen))
+	}
+	for _, want := range []string{"", "", "root:alice"} {
+		if path := cache.Lookup(context.Background(), "2j35"); path != want {
+			t.Fatalf("path = %q, want %q: a gateway error and a rate limit are outages, not answers", path, want)
+		}
+	}
+	if path := cache.Lookup(context.Background(), "2j35"); path != "root:alice" {
+		t.Fatalf("cached path = %q, want the resolved path", path)
+	}
+	if len(*seen) != 3 {
+		t.Fatalf("requests = %d, want each outage retried and the answer then cached", len(*seen))
+	}
+}
+
 func TestPathCacheCachesAWorkspaceWithNoPath(t *testing.T) {
 	store, seen := newServer(t, nil, func(w http.ResponseWriter, _ *http.Request, _ int) {
 		writeJSON(w, 200, map[string]any{"metadata": map[string]any{"annotations": map[string]any{}}})
