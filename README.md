@@ -70,6 +70,7 @@ package imports anything project-local, or if an `abc` package imports past
 | factory | `dns` | the FQDN table, a pod's own name, and one token per workspace |
 | fakekcp | `fakekcp` | a fake kcp API server: list, watch, patch, tokens, endpoint slices |
 | examples | `examples/*` | one runnable program per use case, each asserted by its own test |
+| tests | `internal/livekcp` | starts a real kcp and kine, applies a schema and an export, binds a consumer workspace |
 
 ## The two pieces worth reading first
 
@@ -112,13 +113,46 @@ Where the code in `../deno-kcp` moves.
 | `internal/provider/kcpdns/embed.go` | `impl/assets` |
 | `api/v1alpha1/types_shared.go` | `common/denospec`, `common/deno` |
 
+## Two test tiers
+
+**Offline** — `go test ./...`, no cluster, no binaries. `fakekcp` serves the
+REST protocol the library speaks, so real client-go informers run against it.
+Fast, deterministic, and what the six examples and their assertions use.
+
+**Live** — `make test-live`, which needs `kcp`, `kine` and `kubectl` on PATH
+(override with `KCP_BIN`, `KINE_BIN`, `KUBECTL`). `internal/livekcp` starts a
+real kcp and kine in a temp directory, applies an `APIResourceSchema` and an
+`APIExport`, creates a consumer workspace with an `APIBinding`, and waits for
+it to bind. Two tests then drive the library against it:
+
+- `impl/kcpstore` — create, get, list, a status merge patch, a finalizer JSON
+  patch, the cluster path annotation, delete, and a 404, all through the typed
+  resource against real kcp.
+- `factory/controller` — `exportwatch` discovers the real virtual workspace
+  URL from the export's endpoint slice, wildcard informers watch it, the
+  workqueue delivers keys, and a decider drives two probes to `Succeeded`.
+  About 12 seconds.
+
+The live tier is opt-in because it costs a kcp startup per package and is
+slower than everything else combined. With `KCP_LIBS_REQUIRE_LIVE=1` the live
+tests fail instead of skipping when the binaries are absent, which is what CI
+should set.
+
+The fake is a model of kcp, not kcp. It cannot catch what the live tier
+catches: a write against a stale `resourceVersion` (kcp answers 409, the fake
+accepts it), authorization, or whether the endpoint slice is really published
+when the first `APIBinding` appears. Treat offline as the fast regression net
+and live as the authority.
+
 ## Commands
 
 ```bash
 make check                    # gofmt, go vet, go mod tidy -diff, go test
-make test
+make test                     # the offline tier
 make race
-go run ./examples/controller  # and the other five
+make test-live                # the live tier: a real kcp and kine
+make examples                 # run all six examples
+go run ./examples/controller  # or just one
 ```
 
 ## License

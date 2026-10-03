@@ -161,10 +161,18 @@ func (r *Resource[T]) Create(ctx context.Context, logicalCluster string, obj *T)
 	if err != nil {
 		return fmt.Errorf("kcpstore: encode %s: %w", r.gvr.Resource, err)
 	}
-	if err := c.Post().Namespace(namespaceOf(raw)).Resource(r.gvr.Resource).Body(raw).Do(ctx).Error(); err != nil {
-		return fmt.Errorf("kcpstore: create %s %s in %s: %w", r.gvr.Resource, nameOf(raw), logicalCluster, err)
+	response, err := c.Post().Namespace(namespaceOf(raw)).Resource(r.gvr.Resource).Body(raw).Do(ctx).Raw()
+	if err != nil {
+		return fmt.Errorf("kcpstore: create %s %s in %s: %w%s", r.gvr.Resource, nameOf(raw), logicalCluster, err, detail(response))
 	}
 	return nil
+}
+
+func detail(response []byte) string {
+	if len(response) == 0 {
+		return ""
+	}
+	return ": " + strings.TrimSpace(string(response))
 }
 
 func (r *Resource[T]) Delete(ctx context.Context, target ref.Ref) error {
@@ -185,9 +193,10 @@ func (r *Resource[T]) PatchStatus(ctx context.Context, target ref.Ref, patch []b
 	if err != nil {
 		return err
 	}
-	if err := c.Patch(mergePatch).SubResource("status").Namespace(target.Namespace).Resource(r.gvr.Resource).
-		Name(target.Name).Body(patch).Do(ctx).Error(); err != nil {
-		return fmt.Errorf("kcpstore: write %s status for %s in %s: %w", r.gvr.Resource, target.Name, target.LogicalCluster, err)
+	response, err := c.Patch(mergePatch).SubResource("status").Namespace(target.Namespace).Resource(r.gvr.Resource).
+		Name(target.Name).Body(patch).Do(ctx).Raw()
+	if err != nil {
+		return fmt.Errorf("kcpstore: write %s status for %s in %s: %w%s", r.gvr.Resource, target.Name, target.LogicalCluster, err, detail(response))
 	}
 	return nil
 }
@@ -197,9 +206,10 @@ func (r *Resource[T]) Patch(ctx context.Context, target ref.Ref, patch []byte) e
 	if err != nil {
 		return err
 	}
-	if err := c.Patch(jsonPatch).Namespace(target.Namespace).Resource(r.gvr.Resource).
-		Name(target.Name).Body(patch).Do(ctx).Error(); err != nil {
-		return fmt.Errorf("kcpstore: patch %s %s in %s: %w", r.gvr.Resource, target.Name, target.LogicalCluster, err)
+	response, err := c.Patch(jsonPatch).Namespace(target.Namespace).Resource(r.gvr.Resource).
+		Name(target.Name).Body(patch).Do(ctx).Raw()
+	if err != nil {
+		return fmt.Errorf("kcpstore: patch %s %s in %s: %w%s", r.gvr.Resource, target.Name, target.LogicalCluster, err, detail(response))
 	}
 	return nil
 }

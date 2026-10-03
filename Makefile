@@ -1,6 +1,6 @@
 GO ?= go
 
-.PHONY: check test tidy fmt vet build race examples
+.PHONY: check test test-live tidy fmt vet build race examples
 
 check: fmt vet tidy test
 
@@ -9,6 +9,9 @@ test:
 
 race:
 	$(GO) test -race ./...
+
+test-live:
+	KCP_LIBS_REQUIRE_LIVE=1 $(GO) test -timeout 20m -count=1 -v -run 'TestLive' ./impl/kcpstore/ ./factory/controller/
 
 examples:
 	$(GO) run ./examples/controller

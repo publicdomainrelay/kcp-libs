@@ -41,6 +41,12 @@ kcp binary anywhere.
 `fakekcp` is for examples and tests only. `internal/boundaries` fails the build
 if production code imports it.
 
+It is a model of kcp, not kcp. The same libraries also run against the real
+thing: `make test-live` starts a real kcp and kine, applies an
+`APIResourceSchema` and an `APIExport`, binds a consumer workspace, and drives
+`kcpstore` and `factory/controller` through it. Read the fake for how the
+protocol fits together and the live tier for what kcp actually does with it.
+
 ## When you would reach for each package
 
 | Package | Reach for it when | Shown in |

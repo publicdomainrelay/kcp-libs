@@ -39,14 +39,16 @@ func packages(t *testing.T) []listEntry {
 	return entries
 }
 
-func TestFakeClusterIsNotImportedByProductionCode(t *testing.T) {
+func TestTestSupportIsNotImportedByProductionCode(t *testing.T) {
 	for _, entry := range packages(t) {
-		if strings.HasPrefix(entry.ImportPath, module+"examples/") || strings.HasPrefix(entry.ImportPath, module+"fakekcp") {
+		if strings.HasPrefix(entry.ImportPath, module+"examples/") ||
+			strings.HasPrefix(entry.ImportPath, module+"fakekcp") ||
+			strings.HasPrefix(entry.ImportPath, module+"internal/") {
 			continue
 		}
 		for _, imported := range entry.Imports {
-			if strings.HasPrefix(imported, module+"fakekcp") {
-				t.Fatalf("%s imports %s; the fake cluster is for examples and tests only", entry.ImportPath, imported)
+			if strings.HasPrefix(imported, module+"fakekcp") || strings.HasPrefix(imported, module+"internal/") {
+				t.Fatalf("%s imports %s; test support belongs in tests", entry.ImportPath, imported)
 			}
 		}
 	}
@@ -87,7 +89,7 @@ func layerOf(path string) string {
 		segment = rest[:i]
 	}
 	switch segment {
-	case "common", "abc", "impl", "factory", "fakekcp", "examples", "cmd":
+	case "common", "abc", "impl", "factory", "fakekcp", "examples", "cmd", "internal":
 		return segment
 	}
 	return ""
@@ -109,6 +111,8 @@ func rank(layer string) int {
 		return 4
 	case "cmd":
 		return 4
+	case "internal":
+		return 5
 	}
 	return -1
 }
