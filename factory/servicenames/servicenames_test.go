@@ -98,6 +98,26 @@ func TestEnvCarriesTheSelfNameBeforeThePodIsObserved(t *testing.T) {
 	}
 }
 
+func TestEnvCarriesTheShimSoAWorkloadPreloadsIt(t *testing.T) {
+	resolver := New(Options{
+		Source: SourceFunc(func() []*unstructured.Unstructured { return nil }),
+		Domain: "kcp.local",
+		Shim:   "/runs/.kcpdns/shim.ts",
+	})
+	target := ref.New("root:alice", "default", "pds")
+	env := resolver.Env(context.Background(), target, `["--port","8080"]`, "", nil)
+	if env[ShimKey] != "/runs/.kcpdns/shim.ts" {
+		t.Fatalf("%s = %q, a workload that does not preload the shim resolves no cluster name", ShimKey, env[ShimKey])
+	}
+	without := New(Options{
+		Source: SourceFunc(func() []*unstructured.Unstructured { return nil }),
+		Domain: "kcp.local",
+	}).Env(context.Background(), target, `["--port","8080"]`, "", nil)
+	if _, present := without[ShimKey]; present {
+		t.Fatal("no shim configured means no shim in the environment")
+	}
+}
+
 type fakeMinter struct {
 	clusters []string
 }

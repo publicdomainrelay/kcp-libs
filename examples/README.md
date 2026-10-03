@@ -96,7 +96,7 @@ fails the test tier if anything outside `examples/` and tests reaches into
 | `abc/runner` | you are starting processes and probing them | `workloads` |
 | `impl/execrunner` | the real one: `os/exec`, run directories, process groups | `workloads` `execrunner.NewPod` |
 | `impl/memoryrunner` | the same interface with no processes, for unit tests | `workloads` `memoryrunner.NewPod` |
-| `impl/assets` | a shim or a probe has to exist on disk before a run starts | `workloads` `assets.Set` |
+| `impl/assets` | a shim or a probe has to exist on disk before a run starts | `dns` `assets.DNSSet`, `workloads` `assets.Set` |
 | `common/denospec` | permissions become `deno run` arguments | `workloads` `denospec.Args` |
 | `abc/probe` | a liveness probe counts failures before a restart | `workloads` `probe.NewTracker` |
 | `common/ttl` | retention after a run finishes, or an active deadline | `workloads` `ttl.Expired` |

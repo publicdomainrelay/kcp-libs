@@ -26,6 +26,8 @@ const (
 	DomainKey = "KCP_SERVICE_DOMAIN"
 
 	NamespaceKey = "KCP_NAMESPACE"
+
+	ShimKey = "KCP_SHIM"
 )
 
 type Source interface {
@@ -60,6 +62,8 @@ type Options struct {
 	TokenTTL time.Duration
 
 	ServiceAccountNamespace string
+
+	Shim string
 }
 
 type Resolver struct {
@@ -137,6 +141,9 @@ func (d *Resolver) Env(ctx context.Context, target ref.Ref, selfArgs, selfEnv st
 	env := map[string]string{
 		DomainKey:    d.opts.Domain,
 		NamespaceKey: target.Namespace,
+	}
+	if d.opts.Shim != "" {
+		env[ShimKey] = d.opts.Shim
 	}
 	table, workspaces := d.Table(ctx)
 	if self := AdvertisedAddress(selfArgs, selfEnv); self != "" {
