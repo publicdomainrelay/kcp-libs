@@ -28,7 +28,26 @@ func envSeen(t *testing.T, out string) map[string]string {
 	return seen
 }
 
-const envStub = `printf 'DENO_DIR=%s\nDENO_CERT=%s\n' "$DENO_DIR" "$DENO_CERT" > "$PROBE_OUT"`
+const envStub = `printf 'DENO_DIR=%s\nDENO_CERT=%s\nKCP_NAMESPACE=%s\n' "$DENO_DIR" "$DENO_CERT" "$KCP_NAMESPACE" > "$PROBE_OUT.tmp" && mv "$PROBE_OUT.tmp" "$PROBE_OUT"`
+
+func TestPodLeavesTheCallersNamespaceAlone(t *testing.T) {
+	dir := t.TempDir()
+	out := filepath.Join(dir, "env.txt")
+	stub := writeStub(t, dir, envStub)
+	pod, err := NewPod(PodOptions{DenoBin: stub, RunsDir: filepath.Join(dir, "runs"), ExtraEnv: []string{"PROBE_OUT=" + out}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	request := runner.PodRequest{Name: "pds", Script: "x", Env: map[string]string{"KCP_NAMESPACE": "team-a"}}
+	id, err := pod.Start(context.Background(), request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	observeUntilDone(t, pod, id)
+	if seen := envSeen(t, out); seen["KCP_NAMESPACE"] != "team-a" {
+		t.Fatalf("KCP_NAMESPACE = %q, the runner has no namespace of its own and must not replace the one the caller set", seen["KCP_NAMESPACE"])
+	}
+}
 
 func TestPodKeepsACallerSuppliedDenoDir(t *testing.T) {
 	dir := t.TempDir()

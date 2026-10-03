@@ -194,12 +194,6 @@ func (p *Pod) env(req runner.PodRequest) []string {
 	if req.Workspace != "" {
 		env = append(env, "KCP_WORKSPACE="+req.Workspace)
 	}
-	if req.Name != "" {
-		env = append(env, "KCP_NAME="+req.Name)
-	}
-	if req.Namespace != "" {
-		env = append(env, "KCP_NAMESPACE="+req.Namespace)
-	}
 	return env
 }
 

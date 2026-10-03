@@ -38,10 +38,6 @@ type Reactor interface {
 	Updated(kind string, old, obj *unstructured.Unstructured, enqueue Enqueue)
 }
 
-type Lookup interface {
-	Names(kind, index, value string) []string
-}
-
 type Options struct {
 	Config *rest.Config
 

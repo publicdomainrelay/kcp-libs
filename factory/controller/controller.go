@@ -61,8 +61,6 @@ type Controller struct {
 
 	errors atomic.Uint64
 
-	started atomic.Bool
-
 	lastEventNanos atomic.Int64
 
 	reconcileSeconds prometheus.Summary
@@ -137,14 +135,6 @@ func DefaultWorkers() int {
 	return max(min(runtime.GOMAXPROCS(0), 16), 1)
 }
 
-func (c *Controller) Set() *cache.Set {
-	return c.set
-}
-
-func (c *Controller) Lookup() informerwatch.Lookup {
-	return c.set
-}
-
 func (c *Controller) Enqueue(kind string, r ref.Ref) {
 	c.queue.Add(reconcile.Key{Kind: kind, Ref: ref.New(r.LogicalCluster, r.Namespace, r.Name)})
 }
@@ -165,13 +155,7 @@ func (c *Controller) Errors() uint64 {
 	return c.errors.Load()
 }
 
-func (c *Controller) Running() bool {
-	return c.started.Load()
-}
-
 func (c *Controller) Run(ctx context.Context) error {
-	c.started.Store(true)
-	defer c.started.Store(false)
 
 	runCtx, cancel := context.WithCancel(ctx)
 	defer cancel()

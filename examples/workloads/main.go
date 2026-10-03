@@ -58,7 +58,6 @@ func Run(ctx context.Context, out io.Writer) error {
 
 	id, err := pod.Start(ctx, runner.PodRequest{
 		Name:           "greeter",
-		Namespace:      "default",
 		LogicalCluster: "root:alice",
 		Script:         greetingScript,
 		PermissionArgs: args,

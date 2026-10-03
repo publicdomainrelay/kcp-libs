@@ -20,8 +20,6 @@ type PodRequest struct {
 
 	LogicalCluster string
 
-	Namespace string
-
 	DenoJSON string
 
 	DenoLock string
@@ -63,8 +61,6 @@ type EngineRequest struct {
 	Name string
 
 	LogicalCluster string
-
-	Namespace string
 
 	Port int
 
