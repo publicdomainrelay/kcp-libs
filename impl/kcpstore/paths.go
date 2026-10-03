@@ -3,35 +3,28 @@ package kcpstore
 import (
 	"context"
 	"errors"
-	"net"
 	"sync"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 )
 
-// transient is the difference between an answer and an outage. A namespace
-// whose path cannot be read because the store said no -- there is no such
-// object, the object carries no path, the caller is not allowed -- is an answer
-// worth keeping. A store that was unwell at that moment is not, or one blip
-// would freeze a workspace's name for the life of the process.
-func transient(err error) bool {
-	if err == nil {
-		return false
-	}
-	var netErr net.Error
-	if errors.As(err, &netErr) {
+// definitive is the store answering, as opposed to the store failing. Only an
+// answer belongs in the cache: there is no such workspace, it carries no path,
+// the caller may not read it. Everything else -- a gateway that was down, a
+// body that did not parse, a call someone cancelled -- is asked again, because
+// one bad response must not freeze a workspace's name for the life of the
+// process. The list is an allowlist rather than a list of failures to retry, so
+// an error nobody thought of is retried rather than cached.
+func definitive(err error) bool {
+	switch {
+	case err == nil:
+		return true
+	case errors.Is(err, ErrNoPath):
+		return true
+	case IsNotFound(err), apierrors.IsForbidden(err), apierrors.IsUnauthorized(err):
 		return true
 	}
-	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
-		return true
-	}
-	var statusErr *apierrors.StatusError
-	if errors.As(err, &statusErr) {
-		if code := statusErr.ErrStatus.Code; code >= 500 {
-			return true
-		}
-	}
-	return apierrors.IsTimeout(err) || apierrors.IsTooManyRequests(err)
+	return false
 }
 
 type PathCache struct {
@@ -57,7 +50,7 @@ func (c *PathCache) Lookup(ctx context.Context, logicalCluster string) string {
 	path := ""
 	if c.store != nil {
 		resolved, err := c.store.ClusterPath(ctx, logicalCluster)
-		if transient(err) {
+		if !definitive(err) {
 			return ""
 		}
 		path = resolved

@@ -364,6 +364,46 @@ func TestPathCacheRetriesEveryServerFailureAndACancelledCall(t *testing.T) {
 	}
 }
 
+func TestPathCacheRetriesABodyThatDoesNotParseAndCachesARefusal(t *testing.T) {
+	store, seen := newServer(t, nil, func(w http.ResponseWriter, _ *http.Request, index int) {
+		switch index {
+		case 0:
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"metadata":{"annotations":`))
+		default:
+			writeJSON(w, 200, map[string]any{
+				"metadata": map[string]any{"annotations": map[string]string{"kcp.io/path": "root:alice"}},
+			})
+		}
+	})
+	cache := NewPathCache(store)
+	if path := cache.Lookup(context.Background(), "2j35"); path != "" {
+		t.Fatalf("path = %q, want empty for a body that did not parse", path)
+	}
+	if path := cache.Lookup(context.Background(), "2j35"); path != "root:alice" {
+		t.Fatalf("path = %q, want the malformed response re-asked rather than cached", path)
+	}
+	if path := cache.Lookup(context.Background(), "2j35"); path != "root:alice" {
+		t.Fatalf("cached path = %q, want the resolved path", path)
+	}
+	if len(*seen) != 2 {
+		t.Fatalf("requests = %d, want the parse failure retried and the answer cached", len(*seen))
+	}
+
+	refused, refusedSeen := newServer(t, nil, func(w http.ResponseWriter, _ *http.Request, _ int) {
+		writeJSON(w, 403, map[string]any{"kind": "Status", "code": 403})
+	})
+	refusedCache := NewPathCache(refused)
+	for i := 0; i < 2; i++ {
+		if path := refusedCache.Lookup(context.Background(), "2j35"); path != "" {
+			t.Fatalf("path = %q, want empty for a workspace the caller may not read", path)
+		}
+	}
+	if len(*refusedSeen) != 1 {
+		t.Fatalf("requests = %d, want a refusal cached: the answer will not change by asking again", len(*refusedSeen))
+	}
+}
+
 func TestPathCacheCachesAWorkspaceWithNoPath(t *testing.T) {
 	store, seen := newServer(t, nil, func(w http.ResponseWriter, _ *http.Request, _ int) {
 		writeJSON(w, 200, map[string]any{"metadata": map[string]any{"annotations": map[string]any{}}})

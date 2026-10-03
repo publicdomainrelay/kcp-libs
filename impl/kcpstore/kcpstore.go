@@ -33,6 +33,8 @@ func IsNotFound(err error) bool {
 	return apierrors.IsNotFound(err)
 }
 
+var ErrNoPath = errors.New("kcpstore: the logical cluster carries no kcp.io/path annotation")
+
 type Options struct {
 	Host string
 
@@ -347,7 +349,7 @@ func (s *Store) ClusterPath(ctx context.Context, logicalCluster string) (string,
 	}
 	path := obj.Metadata.Annotations[kcp.PathAnnotation]
 	if path == "" {
-		return "", fmt.Errorf("kcpstore: logical cluster %s carries no kcp.io/path annotation", logicalCluster)
+		return "", fmt.Errorf("%w: %s", ErrNoPath, logicalCluster)
 	}
 	return path, nil
 }
