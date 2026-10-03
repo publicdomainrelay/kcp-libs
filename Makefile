@@ -6,13 +6,13 @@ check: fmt vet tidy test
 
 test:
 	@if [ -d ../deno-kcp/api/v1alpha1 ]; then \
-		KCP_LIBS_REQUIRE_CONSUMER=1 $(GO) test ./...; \
+		KCP_LIBS_REQUIRE_CONSUMER=1 $(GO) test -count=1 ./...; \
 	else \
-		$(GO) test ./...; \
+		$(GO) test -count=1 ./...; \
 	fi
 
 race:
-	$(GO) test -race ./...
+	$(GO) test -race -count=1 ./...
 
 test-live:
 	@bash scripts/live.sh '$(GO) test -p 1 -timeout 20m -count=1 -v -run TestLive ./impl/kcpstore/ ./factory/controller/ ./internal/livekcp/'

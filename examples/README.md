@@ -28,7 +28,7 @@ prove the driver keeps them apart.
 
 The three that need a cluster share one permissive object, a `Widget`:
 `livekcp.Object[Spec, Status]` is the envelope, so an example writes only the
-fields its story needs. The other three need no cluster and never touch it.
+fields its story needs.
 
 The other three need no cluster: `workloads` runs real processes, and `pki` and
 `policy` talk to a fake vault and a fake policy engine -- separate products

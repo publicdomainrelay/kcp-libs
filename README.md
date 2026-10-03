@@ -81,7 +81,7 @@ package imports anything project-local, or if an `abc` package imports past
 | impl | `impl/pkiprovisioner` | one intermediate CA per namespace, root in the root namespace, cached |
 | impl | `impl/policyclient` | the gha-lite policy engine HTTP client, including verdict extraction |
 | impl | `impl/metrics` | a thin wrapper over `prometheus/client_golang`. A counter or a gauge registered twice with the same help is shared; a gauge *function* is bound to one source, so a second registration for the same name panics rather than export the first one's number: `Counter`/`Gauge`/`Summary` registered on a private registry, with a renderer for tests and examples. `queue_depth` counts keys ready to run, not keys waiting on a backoff, because the workqueue does not expose its delaying queue |
-| impl | `impl/assets` | writes a caller's asset set (a shim, a probe) into a directory, once, and `Rewrite` writes it again when the caller wants a replaced file picked up on the next start, which is what the consumer's own materialise does. The exec runner writes its own run directory and does not use this. `DNSSet` is the one set carried here: the preload shim and readiness probe a workload resolves cluster names with, embedded and written under `.kcpdns`. The keys they read are the ones `factory/servicenames` injects, plus `KCP_SERVER`, which the exec runner sets from the server it was given; `common/denospec.ProbeCommand` is what preloads the shim. The two halves of the DNS contract ship together |
+| impl | `impl/assets` | writes a caller's asset set (a shim, a probe) into a directory, once, and `Rewrite` writes it again when the caller wants a replaced file picked up on the next start, which is what the consumer's own materialise does. The exec runner writes its own run directory and does not use this. `DNSSet` is the one set carried here: the preload shim and readiness probe a workload resolves cluster names with, embedded and written under `.kcpdns`. Three of the keys they read are the ones `factory/servicenames` injects; the fourth, `KCP_SERVER`, is set by the exec runner from the server it was given, and `common/denospec.ProbeCommand` is what preloads the shim for the readiness probe while the same shim reaches a workload through `KCP_SHIM`. The two halves of the DNS contract ship together |
 | factory | `factory/controller` | informers + workqueue + worker pool + requeue policy + metrics; one `Source` per APIExport, since a resource may only be listed against the export that serves it |
 | factory | `factory/admission` | per-parent admission: leases, planning, and the wake of queued runs |
 | factory | `factory/servicenames` | the FQDN-to-address table, a workload's own name, and one token per workspace. Not a DNS server: it builds the table a resolver shim is handed, and points the workload at that shim with `KCP_SHIM` when `Options.Shim` is set, which is what makes the workload preload it |
@@ -247,12 +247,21 @@ failure rather than a skip.
 ```bash
 make check                    # gofmt -l, go vet, go mod tidy -diff, go test; read-only
 make format                   # rewrite what gofmt would change
-make test                     # the unit tier
+make test                     # the unit tier, uncached: see below
 make race
 make test-live                # the live tier: a real kcp
 make examples                 # run all six examples
 go run ./examples/controller  # or just one
 ```
+
+`make test` and `make race` pass `-count=1`, which is not a speed choice. Four
+tests read something outside their own build graph -- `internal/boundaries`
+shells out to `go list ./...`, `impl/assets` reads the sibling TypeScript,
+`common/denospec` and `common/denocomputer` read the consumer's source -- so Go's
+test cache cannot see when the thing they check changes, and would report a
+cached pass over a live violation. Uncached, every one of them re-reads its
+source of truth. A `go test ./...` you type yourself is still cached; use the
+make targets when the answer matters.
 
 ## License
 
