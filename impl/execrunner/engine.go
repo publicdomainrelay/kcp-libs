@@ -68,12 +68,20 @@ func (e *Engine) Start(_ context.Context, req runner.EngineRequest) (string, err
 	args := []string{"run", "--allow-all", "--unstable-worker-options", e.opts.ServerFile, "api", "--bind", bind}
 	env := env(req.Env, e.opts.ExtraEnv)
 	return e.sup.start(processSpec{
-		binary: e.opts.DenoBin,
-		args:   args,
-		dir:    e.opts.ServerDir,
-		env:    env,
-		envMap: req.Env,
+		binary:    e.opts.DenoBin,
+		args:      args,
+		dir:       e.opts.ServerDir,
+		env:       env,
+		envMap:    req.Env,
+		envForDir: e.dirEnv,
 	})
+}
+
+func (e *Engine) dirEnv(dir string, caller []string) []string {
+	if containsKey(caller, "DENO_DIR") {
+		return nil
+	}
+	return []string{"DENO_DIR=" + filepath.Join(dir, ".deno")}
 }
 
 func (e *Engine) Observe(_ context.Context, runID string) (runner.EngineStatus, error) {

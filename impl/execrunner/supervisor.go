@@ -62,7 +62,7 @@ type processSpec struct {
 
 	envMap map[string]string
 
-	envForDir func(dir string) []string
+	envForDir func(dir string, caller []string) []string
 
 	resultFile string
 }
@@ -119,7 +119,7 @@ func (s *supervisor) start(entry processSpec) (string, error) {
 
 	env := append([]string{}, entry.env...)
 	if entry.envForDir != nil {
-		env = append(env, entry.envForDir(dir)...)
+		env = append(env, entry.envForDir(dir, entry.env)...)
 	}
 
 	cmd := exec.Command(entry.binary, entry.args...)

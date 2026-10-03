@@ -7,8 +7,6 @@ import (
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 )
 
-const DefaultTTL = expiringmap.DefaultTTL
-
 type Allocation struct {
 	Name string
 
@@ -21,10 +19,6 @@ type Allocator struct {
 
 func New(ttl time.Duration) *Allocator {
 	return &Allocator{byJob: expiringmap.NewMap[ref.Ref, []Allocation](ttl)}
-}
-
-func (a *Allocator) TTL() time.Duration {
-	return a.byJob.TTL
 }
 
 func (a *Allocator) Allocate(r ref.Ref, names []string, now time.Time) {

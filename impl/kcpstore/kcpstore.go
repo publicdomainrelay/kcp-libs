@@ -128,10 +128,6 @@ func Of[T any](s *Store, gvr schema.GroupVersionResource) *Resource[T] {
 	return &Resource[T]{store: s, gvr: gvr}
 }
 
-func (r *Resource[T]) GVR() schema.GroupVersionResource {
-	return r.gvr
-}
-
 func (r *Resource[T]) client(logicalCluster string) (rest.Interface, error) {
 	return r.store.ClientFor(logicalCluster, r.gvr.GroupVersion())
 }

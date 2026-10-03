@@ -7,8 +7,6 @@ import (
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 )
 
-const DefaultTTL = expiringmap.DefaultTTL
-
 type Record struct {
 	Ref ref.Ref
 

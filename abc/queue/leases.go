@@ -19,10 +19,6 @@ func NewLeases(ttl time.Duration) *Leases {
 	return &Leases{entries: expiringmap.NewMap[ref.Ref, Lease](ttl)}
 }
 
-func (l *Leases) TTL() time.Duration {
-	return l.entries.TTL
-}
-
 func (l *Leases) Grant(run, parent ref.Ref, now time.Time) {
 	l.entries.Set(run, Lease{Parent: parent}, now)
 }

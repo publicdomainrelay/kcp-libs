@@ -6,11 +6,199 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/publicdomainrelay/kcp-libs/abc/runner"
 )
+
+func envSeen(t *testing.T, out string) map[string]string {
+	t.Helper()
+	body, err := os.ReadFile(out)
+	if err != nil {
+		t.Fatal(err)
+	}
+	seen := map[string]string{}
+	for _, line := range strings.Split(strings.TrimSpace(string(body)), "\n") {
+		if key, value, ok := strings.Cut(line, "="); ok {
+			seen[key] = value
+		}
+	}
+	return seen
+}
+
+const envStub = `printf 'DENO_DIR=%s\nDENO_CERT=%s\n' "$DENO_DIR" "$DENO_CERT" > "$PROBE_OUT"`
+
+func TestPodKeepsACallerSuppliedDenoDir(t *testing.T) {
+	dir := t.TempDir()
+	out := filepath.Join(dir, "env.txt")
+	stub := writeStub(t, dir, envStub)
+	pod, err := NewPod(PodOptions{
+		DenoBin:  stub,
+		RunsDir:  filepath.Join(dir, "runs"),
+		ExtraEnv: []string{"DENO_DIR=/sdks/deno", "PROBE_OUT=" + out},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	id, err := pod.Start(context.Background(), runner.PodRequest{Name: "pds", Script: "x"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	observeUntilDone(t, pod, id)
+	if seen := envSeen(t, out); seen["DENO_DIR"] != "/sdks/deno" {
+		t.Fatalf("DENO_DIR = %q, the runner overwrote a caller supplied module cache", seen["DENO_DIR"])
+	}
+}
+
+func TestPodDefaultsDenoDirToTheRunDirectory(t *testing.T) {
+	dir := t.TempDir()
+	out := filepath.Join(dir, "env.txt")
+	runsDir := filepath.Join(dir, "runs")
+	stub := writeStub(t, dir, envStub)
+	pod, err := NewPod(PodOptions{DenoBin: stub, RunsDir: runsDir, ExtraEnv: []string{"PROBE_OUT=" + out}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	id, err := pod.Start(context.Background(), runner.PodRequest{Name: "pds", Script: "x"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	observeUntilDone(t, pod, id)
+	if seen := envSeen(t, out); seen["DENO_DIR"] != filepath.Join(runsDir, id, ".deno") {
+		t.Fatalf("DENO_DIR = %q, want the run's own module cache", seen["DENO_DIR"])
+	}
+}
+
+func TestPodNamespaceDirIsTheModuleCache(t *testing.T) {
+	dir := t.TempDir()
+	out := filepath.Join(dir, "env.txt")
+	stub := writeStub(t, dir, envStub)
+	pod, err := NewPod(PodOptions{
+		DenoBin:      stub,
+		RunsDir:      filepath.Join(dir, "runs"),
+		NamespaceDir: "/shared/deno",
+		ExtraEnv:     []string{"PROBE_OUT=" + out},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	id, err := pod.Start(context.Background(), runner.PodRequest{Name: "pds", Script: "x"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	observeUntilDone(t, pod, id)
+	if seen := envSeen(t, out); seen["DENO_DIR"] != "/shared/deno" {
+		t.Fatalf("DENO_DIR = %q, want the namespace directory the caller configured", seen["DENO_DIR"])
+	}
+}
+
+func TestPodKeepsACallerSuppliedDenoCERT(t *testing.T) {
+	dir := t.TempDir()
+	out := filepath.Join(dir, "env.txt")
+	runsDir := filepath.Join(dir, "runs")
+	stub := writeStub(t, dir, envStub)
+	pod, err := NewPod(PodOptions{
+		DenoBin:  stub,
+		RunsDir:  runsDir,
+		CAData:   []byte("a root"),
+		ExtraEnv: []string{"DENO_CERT=/certs/ca.pem", "PROBE_OUT=" + out},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	id, err := pod.Start(context.Background(), runner.PodRequest{Name: "pds", Script: "x"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	observeUntilDone(t, pod, id)
+	if seen := envSeen(t, out); seen["DENO_CERT"] != "/certs/ca.pem" {
+		t.Fatalf("DENO_CERT = %q, the runner overwrote a caller supplied trust bundle", seen["DENO_CERT"])
+	}
+}
+
+func TestPodPointsDenoCERTAtItsOwnRunDirectory(t *testing.T) {
+	dir := t.TempDir()
+	out := filepath.Join(dir, "env.txt")
+	runsDir := filepath.Join(dir, "runs")
+	stub := writeStub(t, dir, envStub)
+	pod, err := NewPod(PodOptions{DenoBin: stub, RunsDir: runsDir, CAData: []byte("a root"), ExtraEnv: []string{"PROBE_OUT=" + out}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	id, err := pod.Start(context.Background(), runner.PodRequest{Name: "pds", Script: "x"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	observeUntilDone(t, pod, id)
+	if seen := envSeen(t, out); seen["DENO_CERT"] != filepath.Join(runsDir, id, "ca.pem") {
+		t.Fatalf("DENO_CERT = %q, want the bundle written beside the run", seen["DENO_CERT"])
+	}
+}
+
+func TestEngineDefaultsDenoDirToItsRunDirectory(t *testing.T) {
+	dir := t.TempDir()
+	out := filepath.Join(dir, "env.txt")
+	runsDir := filepath.Join(dir, "runs")
+	stub := writeStub(t, dir, envStub)
+	engine, err := NewEngine(EngineOptions{
+		DenoBin:    stub,
+		ServerDir:  dir,
+		ServerFile: filepath.Join(dir, "server.ts"),
+		RunsDir:    runsDir,
+		ExtraEnv:   []string{"PROBE_OUT=" + out},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	id, err := engine.Start(context.Background(), runner.EngineRequest{Name: "gha-lite", Port: 8787})
+	if err != nil {
+		t.Fatal(err)
+	}
+	deadline := time.Now().Add(10 * time.Second)
+	for time.Now().Before(deadline) {
+		if _, err := os.Stat(out); err == nil {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	if seen := envSeen(t, out); seen["DENO_DIR"] != filepath.Join(runsDir, id, ".deno") {
+		t.Fatalf("DENO_DIR = %q, want the run's own module cache", seen["DENO_DIR"])
+	}
+	_ = engine.Stop(context.Background(), id)
+}
+
+func TestEngineKeepsACallerSuppliedDenoDir(t *testing.T) {
+	dir := t.TempDir()
+	out := filepath.Join(dir, "env.txt")
+	stub := writeStub(t, dir, envStub)
+	engine, err := NewEngine(EngineOptions{
+		DenoBin:    stub,
+		ServerDir:  dir,
+		ServerFile: filepath.Join(dir, "server.ts"),
+		RunsDir:    filepath.Join(dir, "runs"),
+		ExtraEnv:   []string{"DENO_DIR=/sdks/deno", "PROBE_OUT=" + out},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	id, err := engine.Start(context.Background(), runner.EngineRequest{Name: "gha-lite", Port: 8787})
+	if err != nil {
+		t.Fatal(err)
+	}
+	deadline := time.Now().Add(10 * time.Second)
+	for time.Now().Before(deadline) {
+		if _, err := os.Stat(out); err == nil {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	if seen := envSeen(t, out); seen["DENO_DIR"] != "/sdks/deno" {
+		t.Fatalf("DENO_DIR = %q, the runner overwrote a caller supplied module cache", seen["DENO_DIR"])
+	}
+	_ = engine.Stop(context.Background(), id)
+}
 
 func writeStub(t *testing.T, dir, body string) string {
 	t.Helper()

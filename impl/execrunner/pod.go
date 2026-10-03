@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/publicdomainrelay/kcp-libs/abc/runner"
@@ -202,15 +203,27 @@ func (p *Pod) env(req runner.PodRequest) []string {
 	return env
 }
 
-func (p *Pod) dirEnv(dir string) []string {
+func (p *Pod) dirEnv(dir string, caller []string) []string {
 	var env []string
-	if p.opts.NamespaceDir != "" {
-		env = append(env, "DENO_DIR="+p.opts.NamespaceDir)
-	} else {
-		env = append(env, "DENO_DIR="+filepath.Join(dir, ".deno"))
+	if !containsKey(caller, "DENO_DIR") {
+		moduleDir := p.opts.NamespaceDir
+		if moduleDir == "" {
+			moduleDir = filepath.Join(dir, ".deno")
+		}
+		env = append(env, "DENO_DIR="+moduleDir)
 	}
-	if len(p.trustBundle()) > 0 {
-		env = append(env, "DENO_CERT="+"ca.pem")
+	if len(p.trustBundle()) > 0 && !containsKey(caller, "DENO_CERT") {
+		env = append(env, "DENO_CERT="+filepath.Join(dir, "ca.pem"))
 	}
 	return env
+}
+
+func containsKey(env []string, key string) bool {
+	prefix := key + "="
+	for _, entry := range env {
+		if strings.HasPrefix(entry, prefix) {
+			return true
+		}
+	}
+	return false
 }

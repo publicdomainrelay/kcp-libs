@@ -53,10 +53,6 @@ func Seed[T any](ctx context.Context, cluster string, resource store.Resource[T]
 	return resource.Create(ctx, cluster, obj)
 }
 
-func Poll(ctx context.Context, timeout time.Duration, condition func() bool) error {
-	return waitFor(ctx, timeout, condition, "the condition to hold")
-}
-
 func WaitFor[T any](ctx context.Context, cluster string, resource store.Reader[T], namespace, name string, reached func(T) bool) (*T, error) {
 	deadline := time.Now().Add(2 * time.Minute)
 	for time.Now().Before(deadline) {
