@@ -164,6 +164,18 @@ func (r *Resource[T]) List(ctx context.Context, logicalCluster string) ([]T, err
 	return decodeList[T](raw)
 }
 
+func (r *Resource[T]) ListIn(ctx context.Context, logicalCluster, namespace string) ([]T, error) {
+	c, err := r.client(logicalCluster)
+	if err != nil {
+		return nil, err
+	}
+	raw, err := c.Get().Namespace(namespace).Resource(r.gvr.Resource).Do(ctx).Raw()
+	if err != nil {
+		return nil, fmt.Errorf("kcpstore: list %s in %s/%s: %w", r.gvr.Resource, logicalCluster, namespace, err)
+	}
+	return decodeList[T](raw)
+}
+
 func (r *Resource[T]) Create(ctx context.Context, logicalCluster string, obj *T) error {
 	c, err := r.client(logicalCluster)
 	if err != nil {

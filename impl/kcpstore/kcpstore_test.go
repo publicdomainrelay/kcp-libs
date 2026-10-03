@@ -125,6 +125,24 @@ func TestListDecodesItems(t *testing.T) {
 	}
 }
 
+func TestListInDecodesItemsInOneNamespace(t *testing.T) {
+	store, _ := newServer(t, []request{
+		{Method: "GET", Path: "/clusters/root:alice/apis/deno.computer/v1alpha1/namespaces/default/denoruns"},
+	}, func(w http.ResponseWriter, _ *http.Request, _ int) {
+		writeJSON(w, 200, map[string]any{"items": []any{
+			map[string]any{"metadata": map[string]any{"name": "a", "namespace": "default"}},
+		}})
+	})
+	resource := Of[runObject](store, denoRuns)
+	items, err := resource.ListIn(context.Background(), "root:alice", "default")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(items) != 1 || items[0].Metadata.Name != "a" {
+		t.Fatalf("items = %+v", items)
+	}
+}
+
 func TestCreatePostsTheObjectToItsNamespace(t *testing.T) {
 	store, _ := newServer(t, []request{
 		{Method: "POST", Path: "/clusters/root:alice/apis/deno.computer/v1alpha1/namespaces/default/denoruns"},
