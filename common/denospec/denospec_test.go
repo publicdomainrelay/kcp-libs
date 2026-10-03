@@ -47,6 +47,75 @@ func TestArgsCapabilities(t *testing.T) {
 	}
 }
 
+func TestArgsModelsEveryFlagForm(t *testing.T) {
+	args, err := Args(&Permissions{
+		Read:     &Permission{Allow: true},
+		Write:    &Permission{AllowList: []string{"./", "./tmp"}},
+		Net:      &Permission{AllowList: []string{"example.com:443"}, DenyList: []string{"evil.com"}},
+		Env:      &Permission{Allow: true, DenyList: []string{"AWS_SECRET_ACCESS_KEY"}},
+		Run:      &Permission{AllowList: []string{"curl", "whoami"}},
+		FFI:      &Permission{Deny: true},
+		Sys:      &Permission{AllowList: []string{"systemMemoryInfo", "osRelease"}},
+		Import:   &Permission{DenyList: []string{"esm.sh"}},
+		NoPrompt: true,
+		HRTime:   true,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []string{
+		"--allow-hrtime",
+		"--allow-read",
+		"--allow-write=./,./tmp",
+		"--allow-net=example.com:443",
+		"--deny-net=evil.com",
+		"--allow-env",
+		"--deny-env=AWS_SECRET_ACCESS_KEY",
+		"--allow-run=curl,whoami",
+		"--deny-ffi",
+		"--allow-sys=systemMemoryInfo,osRelease",
+		"--deny-import=esm.sh",
+		"--no-prompt",
+	}
+	if !reflect.DeepEqual(args, want) {
+		t.Fatalf("args =\n%v\nwant\n%v", args, want)
+	}
+}
+
+func TestArgsDenyWithoutAListIsBare(t *testing.T) {
+	args, err := Args(&Permissions{Read: &Permission{Deny: true}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(args, []string{"--deny-read"}) {
+		t.Fatalf("args = %v, want [--deny-read]", args)
+	}
+}
+
+func TestArgsIgnoreEnvAndAllowScripts(t *testing.T) {
+	args, err := Args(&Permissions{
+		IgnoreEnv:    &Permission{AllowList: []string{"PORT", "HOME"}},
+		AllowScripts: []string{"esbuild"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []string{"--ignore-env=PORT,HOME", "--allow-scripts=esbuild"}
+	if !reflect.DeepEqual(args, want) {
+		t.Fatalf("args = %v, want %v", args, want)
+	}
+}
+
+func TestArgsNilIsNoFlags(t *testing.T) {
+	args, err := Args(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(args) != 0 {
+		t.Fatalf("args = %v, want none", args)
+	}
+}
+
 func TestValidateRejectsCommasAndEmptyValues(t *testing.T) {
 	if err := Validate(&Permissions{Net: &Permission{AllowList: []string{"a,b"}}}); err == nil {
 		t.Fatal("a comma in a value must be refused")

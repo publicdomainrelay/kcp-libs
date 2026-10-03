@@ -366,3 +366,85 @@ func TestEnsureMountTreatsANullMountListAsNoMounts(t *testing.T) {
 		t.Fatalf("request = %+v", last)
 	}
 }
+
+func TestEnsureNamespaceCreatesOnlyWhenAbsentAndCarriesTheToken(t *testing.T) {
+	exists := false
+	client, seen := newServer(t, func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.Method == http.MethodGet && exists:
+			envelope(w, map[string]any{"path": "alice.default/"})
+		case r.Method == http.MethodGet:
+			w.WriteHeader(404)
+			_, _ = w.Write([]byte(`{"errors":["namespace not found"]}`))
+		default:
+			exists = true
+			envelope(w, map[string]any{"path": "alice.default/"})
+		}
+	})
+	if err := client.EnsureNamespace(context.Background(), "alice.default"); err != nil {
+		t.Fatal(err)
+	}
+	if err := client.EnsureNamespace(context.Background(), "alice.default"); err != nil {
+		t.Fatal(err)
+	}
+	creates := 0
+	for _, rec := range *seen {
+		if rec.Method == http.MethodGet {
+			continue
+		}
+		creates++
+		if rec.Method != http.MethodPut || rec.Path != "/v1/sys/namespaces/alice.default" {
+			t.Fatalf("create = %s %s, want PUT /v1/sys/namespaces/alice.default", rec.Method, rec.Path)
+		}
+		if rec.Token != "vault-token" {
+			t.Fatalf("create token = %q, want the client's token on the create", rec.Token)
+		}
+	}
+	if creates != 1 {
+		t.Fatalf("creates = %d, want exactly one: the second pass reads it present", creates)
+	}
+}
+
+func TestTheRootNamespaceCarriesNoHeader(t *testing.T) {
+	client, seen := newServer(t, func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/v1/sys/mounts" {
+			envelope(w, map[string]any{})
+			return
+		}
+		w.WriteHeader(204)
+	})
+	if err := client.EnsureMount(context.Background(), "", "pki", "pki"); err != nil {
+		t.Fatal(err)
+	}
+	if (*seen)[0].Namespace != "" {
+		t.Fatalf("namespace header = %q, want it absent for the root", (*seen)[0].Namespace)
+	}
+}
+
+func TestIssueSendsIPsInTheirOwnField(t *testing.T) {
+	client, seen := newServer(t, func(w http.ResponseWriter, _ *http.Request) {
+		envelope(w, map[string]any{"certificate": "LEAF", "serial_number": "01"})
+	})
+	cert, err := client.Issue(context.Background(), "alice.default", "pki", "denopod", pki.CertRequest{
+		CommonName: "pds.default.alice.svc.kcp.local",
+		AltNames:   []string{"pds.default.alice.svc.kcp.local"},
+		IPSANs:     []string{"127.0.0.1", "::1"},
+		TTL:        "720h",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cert.Certificate != "LEAF" || cert.Serial != "01" {
+		t.Fatalf("issue answered %+v", cert)
+	}
+	var body map[string]any
+	if err := json.Unmarshal([]byte((*seen)[0].Body), &body); err != nil {
+		t.Fatal(err)
+	}
+	if body["ip_sans"] != "127.0.0.1,::1" {
+		t.Fatalf("ip_sans = %v, want the loopback pair in its own field", body["ip_sans"])
+	}
+	if alt, _ := body["alt_names"].(string); strings.Contains(alt, "127.0.0.1") {
+		t.Fatalf("alt_names = %v carries an address, which OpenBao reads as a DNS name and refuses", body["alt_names"])
+	}
+}
