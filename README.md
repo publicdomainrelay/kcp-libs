@@ -62,7 +62,7 @@ package imports anything project-local, or if an `abc` package imports past
 | impl | `impl/informerwatch` | shared dynamic informers over `/clusters/*`, indexers, event handlers |
 | impl | `impl/execrunner` | `os/exec` pod and engine runners: run directories, process groups, recovery, probes |
 | impl | `impl/memoryrunner` | in-memory runners for tests |
-| impl | `impl/openbaoclient` | the OpenBao HTTP API client |
+| impl | `impl/openbaoclient` | a typed adapter over the official `github.com/openbao/openbao/api/v2` client |
 | impl | `impl/pkiprovisioner` | one intermediate CA per namespace, root in the root namespace, cached |
 | impl | `impl/policyclient` | the gha-lite policy engine HTTP client, including verdict extraction |
 | impl | `impl/metrics` | dependency-free Prometheus text registry |

@@ -1,11 +1,8 @@
 package openbaoclient
 
 import (
-	"bytes"
 	"context"
-	"crypto/tls"
 	"crypto/x509"
-	"encoding/json"
 	"encoding/pem"
 	"errors"
 	"fmt"
@@ -14,12 +11,10 @@ import (
 	"strings"
 	"time"
 
+	openbao "github.com/openbao/openbao/api/v2"
+
 	"github.com/publicdomainrelay/kcp-libs/abc/pki"
 )
-
-const namespaceHeader = "X-Vault-Namespace"
-
-const tokenHeader = "X-Vault-Token"
 
 var (
 	ErrNotFound = errors.New("openbao: not configured (HTTP 404)")
@@ -67,11 +62,7 @@ type Options struct {
 }
 
 type Client struct {
-	address string
-
-	token string
-
-	http *http.Client
+	client *openbao.Client
 }
 
 var _ pki.Client = (*Client)(nil)
@@ -80,40 +71,46 @@ func New(opts Options) (*Client, error) {
 	if opts.Address == "" {
 		return nil, errors.New("openbao: an address is required")
 	}
-	timeout := opts.Timeout
-	if timeout <= 0 {
-		timeout = 30 * time.Second
-	}
-	transport := &http.Transport{}
 	if len(opts.CACert) > 0 {
 		pool := x509.NewCertPool()
 		if !pool.AppendCertsFromPEM(opts.CACert) {
 			return nil, ErrNoCA
 		}
-		transport.TLSClientConfig = &tls.Config{RootCAs: pool, MinVersion: tls.VersionTLS12}
 	}
-	return &Client{
-		address: strings.TrimRight(opts.Address, "/"),
-		token:   opts.Token,
-		http:    &http.Client{Transport: transport, Timeout: timeout},
-	}, nil
+	config := openbao.DefaultConfig()
+	config.Address = opts.Address
+	if opts.Timeout > 0 {
+		config.Timeout = opts.Timeout
+	}
+	if len(opts.CACert) > 0 {
+		if err := config.ConfigureTLS(&openbao.TLSConfig{CACertBytes: opts.CACert}); err != nil {
+			return nil, fmt.Errorf("openbao: %w", err)
+		}
+	}
+	client, err := openbao.NewClient(config)
+	if err != nil {
+		return nil, fmt.Errorf("openbao: %w", err)
+	}
+	client.SetToken(opts.Token)
+	client.ClearNamespace()
+	return &Client{client: client}, nil
+}
+
+func (c *Client) scoped(namespace string) *openbao.Client {
+	return c.client.WithNamespace(namespace)
 }
 
 func (c *Client) Health(ctx context.Context) (pki.Health, error) {
-	status, body, err := c.request(ctx, http.MethodGet, "", "sys/health", nil)
+	health, err := c.client.Sys().HealthWithContext(ctx)
 	if err != nil {
-		return pki.Health{}, err
+		return pki.Health{}, translate(err, http.MethodGet, "sys/health")
 	}
-	switch status {
-	case http.StatusOK, http.StatusTooManyRequests, 472, 473, http.StatusNotImplemented, http.StatusServiceUnavailable:
-	default:
-		return pki.Health{}, &ResponseError{Method: http.MethodGet, Path: "sys/health", Status: status, Body: strings.TrimSpace(string(body))}
-	}
-	var health pki.Health
-	if err := json.Unmarshal(body, &health); err != nil {
-		return pki.Health{}, fmt.Errorf("openbao: sys/health answered with a body that is not JSON: %w", err)
-	}
-	return health, nil
+	return pki.Health{
+		Initialized: health.Initialized,
+		Sealed:      health.Sealed,
+		Standby:     health.Standby,
+		Version:     health.Version,
+	}, nil
 }
 
 func (c *Client) EnsureNamespace(ctx context.Context, path string) error {
@@ -127,12 +124,15 @@ func (c *Client) EnsureNamespace(ctx context.Context, path string) error {
 	if exists {
 		return nil
 	}
-	return c.write(ctx, http.MethodPost, "", "sys/namespaces/"+path, map[string]any{})
+	return c.write(ctx, "", "sys/namespaces/"+path, map[string]any{})
 }
 
 func (c *Client) NamespaceExists(ctx context.Context, path string) (bool, error) {
-	_, _, err := c.do(ctx, http.MethodGet, "", "sys/namespaces/"+path, nil)
+	response, err := c.raw(ctx, "", http.MethodGet, "sys/namespaces/"+path)
 	if err == nil {
+		if response != nil {
+			_ = response.Body.Close()
+		}
 		return true, nil
 	}
 	if errors.Is(err, ErrNotFound) {
@@ -142,33 +142,17 @@ func (c *Client) NamespaceExists(ctx context.Context, path string) (bool, error)
 }
 
 func (c *Client) DeleteNamespace(ctx context.Context, path string) error {
-	err := c.write(ctx, http.MethodDelete, "", "sys/namespaces/"+path, nil)
+	err := c.delete(ctx, "", "sys/namespaces/"+path)
 	if errors.Is(err, ErrNotFound) {
 		return nil
 	}
 	return err
 }
 
-type mountInfo struct {
-	Type string `json:"type"`
-}
-
-func (c *Client) mounts(ctx context.Context, namespace string) (map[string]mountInfo, error) {
-	raw, err := c.data(ctx, http.MethodGet, namespace, "sys/mounts", nil)
-	if err != nil {
-		return nil, err
-	}
-	var out map[string]mountInfo
-	if err := json.Unmarshal(raw, &out); err != nil {
-		return nil, fmt.Errorf("openbao: sys/mounts answered with a body that is not JSON: %w", err)
-	}
-	return out, nil
-}
-
 func (c *Client) EnsureMount(ctx context.Context, namespace, path, kind string) error {
-	mounts, err := c.mounts(ctx, namespace)
+	mounts, err := c.scoped(namespace).Sys().ListMountsWithContext(ctx)
 	if err != nil {
-		return err
+		return translate(err, http.MethodGet, "sys/mounts")
 	}
 	key := strings.Trim(path, "/") + "/"
 	if info, ok := mounts[key]; ok {
@@ -178,7 +162,10 @@ func (c *Client) EnsureMount(ctx context.Context, namespace, path, kind string) 
 		}
 		return nil
 	}
-	return c.write(ctx, http.MethodPost, namespace, "sys/mounts/"+strings.Trim(path, "/"), map[string]any{"type": kind})
+	if err := c.scoped(namespace).Sys().MountWithContext(ctx, strings.Trim(path, "/"), &openbao.MountInput{Type: kind}); err != nil {
+		return translate(err, http.MethodPost, "sys/mounts/"+strings.Trim(path, "/"))
+	}
+	return nil
 }
 
 func (c *Client) GenerateRoot(ctx context.Context, namespace, mount, commonName, ttl string) (pki.RootCA, error) {
@@ -186,14 +173,11 @@ func (c *Client) GenerateRoot(ctx context.Context, namespace, mount, commonName,
 	if ttl != "" {
 		body["ttl"] = ttl
 	}
-	raw, err := c.data(ctx, http.MethodPost, namespace, strings.Trim(mount, "/")+"/root/generate/internal", body)
+	data, err := c.data(ctx, namespace, strings.Trim(mount, "/")+"/root/generate/internal", body)
 	if err != nil {
 		return pki.RootCA{}, err
 	}
-	var out pki.RootCA
-	if err := json.Unmarshal(raw, &out); err != nil {
-		return pki.RootCA{}, fmt.Errorf("openbao: generating a root CA answered with a body that is not JSON: %w", err)
-	}
+	out := pki.RootCA{Certificate: stringField(data, "certificate"), Serial: stringField(data, "serial_number")}
 	if out.Serial == "" {
 		out.Serial = serialOfPEM(out.Certificate)
 	}
@@ -201,17 +185,167 @@ func (c *Client) GenerateRoot(ctx context.Context, namespace, mount, commonName,
 }
 
 func (c *Client) CASerial(ctx context.Context, namespace, mount string) (string, error) {
-	raw, err := c.data(ctx, http.MethodGet, namespace, strings.Trim(mount, "/")+"/cert/ca", nil)
+	data, err := c.read(ctx, namespace, strings.Trim(mount, "/")+"/cert/ca")
 	if err != nil {
 		return "", err
 	}
-	var out struct {
-		Certificate string `json:"certificate"`
+	if data == nil {
+		return "", fmt.Errorf("%w: no CA at %s", ErrNotFound, mount)
 	}
-	if err := json.Unmarshal(raw, &out); err != nil {
-		return "", fmt.Errorf("openbao: reading the CA certificate answered with a body that is not JSON: %w", err)
+	return serialOfPEM(stringField(data, "certificate")), nil
+}
+
+func (c *Client) CAChain(ctx context.Context, namespace, mount string) (string, error) {
+	response, err := c.raw(ctx, namespace, http.MethodGet, strings.Trim(mount, "/")+"/ca_chain")
+	if err != nil {
+		return "", err
 	}
-	return serialOfPEM(out.Certificate), nil
+	defer response.Body.Close()
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		return "", fmt.Errorf("%w: read the chain for %s: %v", ErrTransport, mount, err)
+	}
+	return strings.TrimSpace(string(body)), nil
+}
+
+func (c *Client) GenerateIntermediate(ctx context.Context, namespace, mount, commonName string) (pki.IntermediateCSR, error) {
+	data, err := c.data(ctx, namespace, strings.Trim(mount, "/")+"/intermediate/generate/internal", map[string]any{
+		"common_name": commonName,
+		"key_type":    "ec",
+		"key_bits":    256,
+	})
+	if err != nil {
+		return pki.IntermediateCSR{}, err
+	}
+	return pki.IntermediateCSR{CSR: stringField(data, "csr"), PrivateKey: stringField(data, "private_key")}, nil
+}
+
+func (c *Client) SignIntermediate(ctx context.Context, rootNamespace, mount, csr, commonName, ttl string) (string, error) {
+	body := map[string]any{"csr": csr, "common_name": commonName}
+	if ttl != "" {
+		body["ttl"] = ttl
+	}
+	data, err := c.data(ctx, rootNamespace, strings.Trim(mount, "/")+"/root/sign-intermediate", body)
+	if err != nil {
+		return "", err
+	}
+	chain := stringField(data, "certificate")
+	for _, entry := range stringList(data, "ca_chain") {
+		chain += "\n" + entry
+	}
+	return chain, nil
+}
+
+func (c *Client) SetSignedIntermediate(ctx context.Context, namespace, mount, chain string) error {
+	return c.write(ctx, namespace, strings.Trim(mount, "/")+"/intermediate/set-signed", map[string]any{
+		"certificate": chain,
+	})
+}
+
+func (c *Client) WriteRole(ctx context.Context, namespace, mount, name string, role pki.Role) error {
+	body := map[string]any{
+		"allowed_domains":    role.AllowedDomains,
+		"allow_subdomains":   role.AllowSubdomains,
+		"allow_bare_domains": role.AllowBareDomains,
+		"enforce_hostnames":  role.EnforceHostnames,
+		"allow_ip_sans":      true,
+	}
+	if role.KeyType != "" {
+		body["key_type"] = role.KeyType
+	}
+	if role.KeyBits > 0 {
+		body["key_bits"] = role.KeyBits
+	}
+	if role.MaxTTL != "" {
+		body["max_ttl"] = role.MaxTTL
+	}
+	return c.write(ctx, namespace, strings.Trim(mount, "/")+"/roles/"+strings.Trim(name, "/"), body)
+}
+
+func (c *Client) Issue(ctx context.Context, namespace, mount, role string, req pki.CertRequest) (pki.Cert, error) {
+	body := map[string]any{"common_name": req.CommonName}
+	if len(req.AltNames) > 0 {
+		body["alt_names"] = strings.Join(req.AltNames, ",")
+	}
+	if len(req.IPSANs) > 0 {
+		body["ip_sans"] = strings.Join(req.IPSANs, ",")
+	}
+	if req.TTL != "" {
+		body["ttl"] = req.TTL
+	}
+	data, err := c.data(ctx, namespace, strings.Trim(mount, "/")+"/issue/"+strings.Trim(role, "/"), body)
+	if err != nil {
+		return pki.Cert{}, err
+	}
+	return pki.Cert{
+		Certificate: stringField(data, "certificate"),
+		PrivateKey:  stringField(data, "private_key"),
+		IssuingCA:   stringField(data, "issuing_ca"),
+		CAChain:     stringList(data, "ca_chain"),
+		Serial:      stringField(data, "serial_number"),
+	}, nil
+}
+
+func (c *Client) write(ctx context.Context, namespace, path string, body map[string]any) error {
+	_, err := c.data(ctx, namespace, path, body)
+	return err
+}
+
+func (c *Client) delete(ctx context.Context, namespace, path string) error {
+	if _, err := c.scoped(namespace).Logical().DeleteWithContext(ctx, path); err != nil {
+		return translate(err, http.MethodDelete, path)
+	}
+	return nil
+}
+
+func (c *Client) read(ctx context.Context, namespace, path string) (map[string]any, error) {
+	secret, err := c.scoped(namespace).Logical().ReadWithContext(ctx, path)
+	if err != nil {
+		return nil, translate(err, http.MethodGet, path)
+	}
+	if secret == nil {
+		return nil, nil
+	}
+	return secret.Data, nil
+}
+
+func (c *Client) data(ctx context.Context, namespace, path string, body map[string]any) (map[string]any, error) {
+	secret, err := c.scoped(namespace).Logical().WriteWithContext(ctx, path, body)
+	if err != nil {
+		return nil, translate(err, http.MethodPost, path)
+	}
+	if secret == nil {
+		return nil, nil
+	}
+	return secret.Data, nil
+}
+
+func (c *Client) raw(ctx context.Context, namespace, method, path string) (*openbao.Response, error) {
+	client := c.scoped(namespace)
+	response, err := client.RawRequestWithContext(ctx, client.NewRequest(method, "/v1/"+strings.TrimPrefix(path, "/")))
+	if err != nil {
+		return nil, translate(err, method, path)
+	}
+	return response, nil
+}
+
+func translate(err error, method, path string) error {
+	if err == nil {
+		return nil
+	}
+	var responseError *openbao.ResponseError
+	if errors.As(err, &responseError) {
+		return &ResponseError{
+			Method: method,
+			Path:   path,
+			Status: responseError.StatusCode,
+			Body:   strings.Join(responseError.Errors, "; "),
+		}
+	}
+	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+		return err
+	}
+	return fmt.Errorf("%w: %s /v1/%s: %v", ErrTransport, method, path, err)
 }
 
 func serialOfPEM(body string) string {
@@ -234,178 +368,21 @@ func serialOfPEM(body string) string {
 	return strings.Join(pairs, ":")
 }
 
-func (c *Client) CAChain(ctx context.Context, namespace, mount string) (string, error) {
-	status, body, err := c.do(ctx, http.MethodGet, namespace, strings.Trim(mount, "/")+"/ca_chain", nil)
-	if err != nil {
-		return "", err
-	}
-	if status < 200 || status > 299 {
-		return "", &ResponseError{Method: http.MethodGet, Path: mount + "/ca_chain", Status: status, Body: strings.TrimSpace(string(body))}
-	}
-	return strings.TrimSpace(string(body)), nil
+func stringField(data map[string]any, key string) string {
+	value, _ := data[key].(string)
+	return value
 }
 
-func (c *Client) GenerateIntermediate(ctx context.Context, namespace, mount, commonName string) (pki.IntermediateCSR, error) {
-	raw, err := c.data(ctx, http.MethodPost, namespace, strings.Trim(mount, "/")+"/intermediate/generate/internal", map[string]any{
-		"common_name": commonName,
-		"key_type":    "ec",
-		"key_bits":    256,
-	})
-	if err != nil {
-		return pki.IntermediateCSR{}, err
+func stringList(data map[string]any, key string) []string {
+	raw, ok := data[key].([]any)
+	if !ok {
+		return nil
 	}
-	var out pki.IntermediateCSR
-	if err := json.Unmarshal(raw, &out); err != nil {
-		return pki.IntermediateCSR{}, fmt.Errorf("openbao: generating an intermediate answered with a body that is not JSON: %w", err)
-	}
-	return out, nil
-}
-
-func (c *Client) SignIntermediate(ctx context.Context, rootNamespace, mount, csr, commonName, ttl string) (string, error) {
-	body := map[string]any{"csr": csr, "common_name": commonName}
-	if ttl != "" {
-		body["ttl"] = ttl
-	}
-	raw, err := c.data(ctx, http.MethodPost, rootNamespace, strings.Trim(mount, "/")+"/root/sign-intermediate", body)
-	if err != nil {
-		return "", err
-	}
-	var out struct {
-		Certificate string   `json:"certificate"`
-		CAChain     []string `json:"ca_chain"`
-	}
-	if err := json.Unmarshal(raw, &out); err != nil {
-		return "", fmt.Errorf("openbao: signing an intermediate answered with a body that is not JSON: %w", err)
-	}
-	chain := out.Certificate
-	for _, entry := range out.CAChain {
-		chain += "\n" + entry
-	}
-	return chain, nil
-}
-
-func (c *Client) SetSignedIntermediate(ctx context.Context, namespace, mount, chain string) error {
-	return c.write(ctx, http.MethodPost, namespace, strings.Trim(mount, "/")+"/intermediate/set-signed", map[string]any{
-		"certificate": chain,
-	})
-}
-
-func (c *Client) WriteRole(ctx context.Context, namespace, mount, name string, role pki.Role) error {
-	body := map[string]any{
-		"allowed_domains":    role.AllowedDomains,
-		"allow_subdomains":   role.AllowSubdomains,
-		"allow_bare_domains": role.AllowBareDomains,
-		"enforce_hostnames":  role.EnforceHostnames,
-		"allow_ip_sans":      true,
-	}
-	if role.KeyType != "" {
-		body["key_type"] = role.KeyType
-	}
-	if role.KeyBits > 0 {
-		body["key_bits"] = role.KeyBits
-	}
-	if role.MaxTTL != "" {
-		body["max_ttl"] = role.MaxTTL
-	}
-	return c.write(ctx, http.MethodPost, namespace, strings.Trim(mount, "/")+"/roles/"+strings.Trim(name, "/"), body)
-}
-
-func (c *Client) Issue(ctx context.Context, namespace, mount, role string, req pki.CertRequest) (pki.Cert, error) {
-	body := map[string]any{"common_name": req.CommonName}
-	if len(req.AltNames) > 0 {
-		body["alt_names"] = strings.Join(req.AltNames, ",")
-	}
-	if len(req.IPSANs) > 0 {
-		body["ip_sans"] = strings.Join(req.IPSANs, ",")
-	}
-	if req.TTL != "" {
-		body["ttl"] = req.TTL
-	}
-	raw, err := c.data(ctx, http.MethodPost, namespace, strings.Trim(mount, "/")+"/issue/"+strings.Trim(role, "/"), body)
-	if err != nil {
-		return pki.Cert{}, err
-	}
-	var out pki.Cert
-	if err := json.Unmarshal(raw, &out); err != nil {
-		return pki.Cert{}, fmt.Errorf("openbao: issuing a certificate answered with a body that is not JSON: %w", err)
-	}
-	return out, nil
-}
-
-func (c *Client) data(ctx context.Context, method, namespace, path string, in any) (json.RawMessage, error) {
-	status, body, err := c.do(ctx, method, namespace, path, in)
-	if err != nil {
-		return nil, err
-	}
-	if status < 200 || status > 299 {
-		return nil, &ResponseError{Method: method, Path: path, Status: status, Body: strings.TrimSpace(string(body))}
-	}
-	var envelope struct {
-		Data json.RawMessage `json:"data"`
-	}
-	if err := json.Unmarshal(body, &envelope); err != nil {
-		return nil, fmt.Errorf("openbao: %s /v1/%s answered with a body that is not JSON: %w", method, path, err)
-	}
-	return envelope.Data, nil
-}
-
-func (c *Client) do(ctx context.Context, method, namespace, path string, in any) (int, []byte, error) {
-	status, body, err := c.request(ctx, method, namespace, path, in)
-	if err != nil {
-		return 0, nil, err
-	}
-	if status < 200 || status > 299 {
-		return status, body, responseError(method, path, status, body)
-	}
-	return status, body, nil
-}
-
-func (c *Client) write(ctx context.Context, method, namespace, path string, in any) error {
-	_, _, err := c.do(ctx, method, namespace, path, in)
-	return err
-}
-
-func responseError(method, path string, status int, body []byte) error {
-	message := strings.TrimSpace(string(body))
-	var envelope struct {
-		Errors []string `json:"errors"`
-	}
-	if err := json.Unmarshal(body, &envelope); err == nil && len(envelope.Errors) > 0 {
-		message = strings.Join(envelope.Errors, "; ")
-	}
-	return &ResponseError{Method: method, Path: path, Status: status, Body: message}
-}
-
-func (c *Client) request(ctx context.Context, method, namespace, path string, in any) (int, []byte, error) {
-	var body io.Reader
-	if in != nil {
-		encoded, err := json.Marshal(in)
-		if err != nil {
-			return 0, nil, fmt.Errorf("%w: encode %s /v1/%s: %v", ErrTransport, method, path, err)
+	out := make([]string, 0, len(raw))
+	for _, entry := range raw {
+		if value, ok := entry.(string); ok {
+			out = append(out, value)
 		}
-		body = bytes.NewReader(encoded)
 	}
-	req, err := http.NewRequestWithContext(ctx, method, c.address+"/v1/"+strings.TrimPrefix(path, "/"), body)
-	if err != nil {
-		return 0, nil, fmt.Errorf("%w: build %s /v1/%s: %v", ErrTransport, method, path, err)
-	}
-	if c.token != "" {
-		req.Header.Set(tokenHeader, c.token)
-	}
-	if namespace != "" {
-		req.Header.Set(namespaceHeader, strings.Trim(namespace, "/"))
-	}
-	if in != nil {
-		req.Header.Set("Content-Type", "application/json")
-	}
-	resp, err := c.http.Do(req)
-	if err != nil {
-		return 0, nil, fmt.Errorf("%w: %s /v1/%s: %v", ErrTransport, method, path, err)
-	}
-	defer resp.Body.Close()
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return 0, nil, fmt.Errorf("%w: read %s /v1/%s: %v", ErrTransport, method, path, err)
-	}
-	return resp.StatusCode, data, nil
+	return out
 }

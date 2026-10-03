@@ -10,6 +10,8 @@ import (
 	"strings"
 	"testing"
 
+	openbao "github.com/openbao/openbao/api/v2"
+
 	"github.com/publicdomainrelay/kcp-libs/abc/pki"
 )
 
@@ -33,8 +35,8 @@ func newServer(t *testing.T, respond func(w http.ResponseWriter, r *http.Request
 		*seen = append(*seen, request{
 			Method:    r.Method,
 			Path:      r.URL.Path,
-			Namespace: r.Header.Get(namespaceHeader),
-			Token:     r.Header.Get(tokenHeader),
+			Namespace: r.Header.Get(openbao.NamespaceHeaderName),
+			Token:     r.Header.Get("X-Vault-Token"),
 			Body:      string(body),
 		})
 		respond(w, r)

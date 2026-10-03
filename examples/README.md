@@ -22,8 +22,10 @@ same every time; point `KCP_LIBS_KUBECONFIG` at an existing cluster to do the
 same by hand.
 
 The other three need no cluster: `workloads` runs real processes, and `pki` and
-`policy` talk to a fake vault and a fake policy engine, because those are
-separate products and there is nothing to install for them here.
+`policy` talk to a fake vault and a fake policy engine -- separate products
+with nothing to install here. Both clients are real: `openbaoclient` wraps the
+official `github.com/openbao/openbao/api/v2`, and the fake vault answers the
+same wire protocol that client speaks.
 
 `go test ./examples/...` runs all six and asserts the lines they print. The
 three that need kcp skip unless one is running or `KCP_LIBS_REQUIRE_LIVE=1` is
@@ -80,7 +82,7 @@ fails the build if anything outside `examples/` and tests reaches into
 | `common/ttl` | retention after a run finishes, or an active deadline | `workloads` `ttl.Expired` |
 | `abc/joballoc` | the names a job created are not yet visible through the API | `workloads` `joballoc.New` |
 | `abc/pki` | you are issuing certificates and want the port, not OpenBao | `pki` |
-| `impl/openbaoclient` | the OpenBao HTTP API, including namespace headers | `pki` `openbaoclient.New` |
+| `impl/openbaoclient` | the OpenBao HTTP API, typed, over the official `api/v2` client | `pki` `openbaoclient.New` |
 | `impl/pkiprovisioner` | one intermediate per namespace, root in the root namespace | `pki` `EnsureAuthority` |
 | `abc/policy` | you submit a workflow and poll for its verdict | `policy` |
 | `impl/policyclient` | the gha-lite engine's HTTP API, verdict unwrapping included | `policy` `policyclient.New` |
