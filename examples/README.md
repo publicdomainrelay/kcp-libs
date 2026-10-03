@@ -1,9 +1,9 @@
 # Examples
 
 Six runnable programs. Each one is a whole story about one part of the library:
-a CRD is created on a real API server, a controller or a loop acts on it, and
-the result is printed. Read them in this order and you have seen everything the
-module does.
+with a real kcp running, a CRD is created, a controller or a loop acts on it,
+and the result is printed. Read them in this order and you have seen everything
+the module does.
 
 ```bash
 go run ./examples/controller    # the reconcile loop, over a real informer
@@ -12,8 +12,21 @@ go run ./examples/workloads     # processes: argv, outputs, probes, ttl
 go run ./examples/pki           # one certificate authority per namespace
 go run ./examples/policy        # submitting a workflow and reading the verdict
 go run ./examples/dns           # cluster-local names and per-workspace tokens
-go test ./examples/...          # every one of the above, asserted
 ```
+
+`controller`, `admission` and `dns` need `kcp`, `kine` and `kubectl` on PATH
+(`KCP_BIN`, `KINE_BIN`, `KUBECTL` override). Each starts a real kcp on kine in
+a temp directory and drives it -- about thirteen seconds apiece. Point
+`KCP_LIBS_KUBECONFIG` at an existing cluster's admin kubeconfig to reuse one
+instead of starting another.
+
+The other three need no cluster: `workloads` runs real processes, and `pki` and
+`policy` talk to a fake vault and a fake policy engine, because those are
+separate products and there is nothing to install for them here.
+
+`go test ./examples/...` runs all six and asserts the lines they print. The
+three that need kcp skip unless one is running or `KCP_LIBS_REQUIRE_LIVE=1` is
+set.
 
 ## The shape every example has
 
@@ -26,26 +39,21 @@ func main() { Run(context.Background(), os.Stdout) }
 `main_test.go` asserts the exact lines it prints. Output is the observable
 behaviour, so a broken library breaks a line of prose.
 
-## The fake API server
+## The cluster
 
-There is no cluster to install. `fakekcp` serves the slice of the kcp REST
-protocol the library actually speaks: list and watch across `/clusters/*`,
-get, create, delete, a merge patch on the status subresource, a JSON patch on
-finalizers, `TokenRequest` for service accounts, the `kcp.io/path` annotation,
-and `APIExportEndpointSlice` discovery for the virtual workspace URL.
+`internal/livekcp` starts kcp on kine in a temp directory, applies an
+`APIResourceSchema` and an `APIExport` for one example kind (`Widget`, in
+`example.computer/v1alpha1`, with permissive `spec` and `status`), creates a
+provider workspace and two consumer workspaces bound to that export, and waits
+for the bindings. Everything the examples create is a `Widget` there.
 
-That is enough for client-go's real informers to run against it, which is why
-`examples/controller` demonstrates a working watch-driven controller with no
-kcp binary anywhere.
+That is why `examples/controller` shows a real watch-driven controller: the
+virtual workspace URL comes from the export's endpoint slice, the wildcard
+informers watch it, and the status patches land on a real API server.
 
-`fakekcp` is for examples and tests only. `internal/boundaries` fails the build
-if production code imports it.
-
-It is a model of kcp, not kcp. The same libraries also run against the real
-thing: `make test-live` starts a real kcp and kine, applies an
-`APIResourceSchema` and an `APIExport`, binds a consumer workspace, and drives
-`kcpstore` and `factory/controller` through it. Read the fake for how the
-protocol fits together and the live tier for what kcp actually does with it.
+The harness is not importable from the library layers: `internal/boundaries`
+fails the build if anything outside `examples/` and tests reaches into
+`internal/`.
 
 ## When you would reach for each package
 
@@ -85,7 +93,7 @@ protocol fits together and the live tier for what kcp actually does with it.
 | `common/logging` | a JSON slog logger, or one that throws output away | `controller` `logging.New` |
 | `common/env` | a flag's environment fallback | `controller` `env.OrDuration` |
 | `abc/store` | the interfaces `impl/kcpstore` implements, and `Same` | `controller` |
-| `fakekcp` | you want a controller under test without a cluster | every example |
+| `internal/livekcp` | you want the examples and live tests to have a real kcp | every example that needs a cluster |
 
 ## What each example is about
 
@@ -96,11 +104,12 @@ between the list path (two widgets seeded before the controller starts) and the
 watch path (a third created after), and reads the informer cache by index to
 count the widgets in a group.
 
-**`admission`** — the queue. A `Batch` allows two `Item`s at once and five are
-created, so three wait. It prints the `AtCapacity` message one of them carries,
-proves the peak never exceeded two, shows the lease the admission takes so two
-passes cannot both see a free slot, and shows the guard that refuses a start
-when the object a pass is holding predates that pass's own write.
+**`admission`** — the queue. A batch widget allows two items at once and five
+are created, so three wait. It prints the `AtCapacity` message one of them
+carries, proves the peak never exceeded two, shows the lease the admission
+takes so two passes cannot both see a free slot, and shows the guard that
+refuses a start when the object a pass is holding predates that pass's own
+write.
 
 **`workloads`** — processes. Permissions become argv, a stand-in runtime is
 materialised, the process runs, its `result.json` becomes outputs, a probe
@@ -119,7 +128,9 @@ terminal state, and the verdict comes back flattened into outputs. A failed
 workflow reports why, and an unreachable engine leaves the task running rather
 than failing it.
 
-**`dns`** — names. Pods in two workspaces advertise addresses in their own
-spec, and the example builds the FQDN table from them, injects a pod's own name
-before it can be observed, mints one token per workspace, and shows that
-`0.0.0.0` advertises as loopback.
+**`dns`** — names. Workloads in two workspaces advertise addresses in their own
+spec, and the example builds the FQDN table from them, injects a workload's own
+name before it can be observed, and mints one token per workspace through a
+real `TokenRequest`. The FQDNs carry the workspace *path*, read from the
+cluster's own `kcp.io/path` annotation, so they read `pds.default.consumer`
+rather than an opaque workspace id.

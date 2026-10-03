@@ -42,12 +42,11 @@ func packages(t *testing.T) []listEntry {
 func TestTestSupportIsNotImportedByProductionCode(t *testing.T) {
 	for _, entry := range packages(t) {
 		if strings.HasPrefix(entry.ImportPath, module+"examples/") ||
-			strings.HasPrefix(entry.ImportPath, module+"fakekcp") ||
 			strings.HasPrefix(entry.ImportPath, module+"internal/") {
 			continue
 		}
 		for _, imported := range entry.Imports {
-			if strings.HasPrefix(imported, module+"fakekcp") || strings.HasPrefix(imported, module+"internal/") {
+			if strings.HasPrefix(imported, module+"internal/") {
 				t.Fatalf("%s imports %s; test support belongs in tests", entry.ImportPath, imported)
 			}
 		}
@@ -71,6 +70,9 @@ func TestLayerDependenciesFlowOneWay(t *testing.T) {
 			if importedLayer == "" {
 				t.Fatalf("%s imports %s, which is not in a recognised layer", entry.ImportPath, imported)
 			}
+			if layer == "internal" || importedLayer == "internal" {
+				continue
+			}
 			if rank(importedLayer) >= rank(layer) {
 				t.Fatalf("%s (%s) imports %s (%s); dependencies must flow common <- abc <- impl <- factory <- examples",
 					entry.ImportPath, layer, imported, importedLayer)
@@ -89,7 +91,7 @@ func layerOf(path string) string {
 		segment = rest[:i]
 	}
 	switch segment {
-	case "common", "abc", "impl", "factory", "fakekcp", "examples", "cmd", "internal":
+	case "common", "abc", "impl", "factory", "examples", "cmd", "internal":
 		return segment
 	}
 	return ""
@@ -103,8 +105,6 @@ func rank(layer string) int {
 		return 1
 	case "impl":
 		return 2
-	case "fakekcp":
-		return 1
 	case "factory":
 		return 3
 	case "examples":

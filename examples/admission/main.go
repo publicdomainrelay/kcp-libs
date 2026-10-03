@@ -8,44 +8,33 @@ import (
 	"time"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/rest"
 
 	"github.com/publicdomainrelay/kcp-libs/abc/queue"
 	"github.com/publicdomainrelay/kcp-libs/abc/runref"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 	"github.com/publicdomainrelay/kcp-libs/common/statuspatch"
 	"github.com/publicdomainrelay/kcp-libs/factory/admission"
-	"github.com/publicdomainrelay/kcp-libs/fakekcp"
 	"github.com/publicdomainrelay/kcp-libs/impl/kcpstore"
+	"github.com/publicdomainrelay/kcp-libs/internal/livekcp"
 )
 
 const (
-	apiVersion = "example.computer/v1alpha1"
-
-	batchKind = "Batch"
-
-	itemKind = "Item"
-
-	batchResourceName = "batches"
-
-	itemResourceName = "items"
-
-	workspaceID = "2j35eh7jjhsc8ny9"
+	namespace = "default"
 
 	batchName = "nightly"
 
 	itemCount = 5
 
+	maxConcurrent = 2
+
 	parentLabel = "example.computer/batch"
+
+	roleLabel = "example.computer/role"
 )
 
-var (
-	batchesResource = schema.GroupVersionResource{Group: "example.computer", Version: "v1alpha1", Resource: batchResourceName}
+var widgets = schema.GroupVersionResource{Group: livekcp.Group, Version: livekcp.Version, Resource: livekcp.Resource}
 
-	itemsResource = schema.GroupVersionResource{Group: "example.computer", Version: "v1alpha1", Resource: itemResourceName}
-)
-
-type objectMeta struct {
+type metadata struct {
 	Name string `json:"name"`
 
 	Namespace string `json:"namespace"`
@@ -54,32 +43,30 @@ type objectMeta struct {
 
 	ResourceVersion string `json:"resourceVersion"`
 
-	Labels map[string]string `json:"labels"`
+	Labels map[string]string `json:"labels,omitempty"`
 
-	CreationTimestamp string `json:"creationTimestamp"`
+	CreationTimestamp string `json:"creationTimestamp,omitempty"`
 }
 
-type batch struct {
-	Metadata objectMeta `json:"metadata"`
+type widget struct {
+	APIVersion string `json:"apiVersion,omitempty"`
+
+	Kind string `json:"kind,omitempty"`
+
+	Metadata metadata `json:"metadata"`
 
 	Spec struct {
-		ConcurrencyPolicy string `json:"concurrencyPolicy"`
+		ConcurrencyPolicy string `json:"concurrencyPolicy,omitempty"`
 
-		MaxConcurrent *int32 `json:"maxConcurrent"`
-	} `json:"spec"`
-}
+		MaxConcurrent *int32 `json:"maxConcurrent,omitempty"`
 
-type item struct {
-	Metadata objectMeta `json:"metadata"`
-
-	Spec struct {
-		Steps int32 `json:"steps"`
+		Steps int32 `json:"steps,omitempty"`
 	} `json:"spec"`
 
 	Status struct {
-		Phase string `json:"phase"`
+		Phase string `json:"phase,omitempty"`
 
-		Steps int32 `json:"steps"`
+		Steps int32 `json:"steps,omitempty"`
 	} `json:"status"`
 }
 
@@ -88,9 +75,7 @@ func terminal(phase string) bool {
 }
 
 type source struct {
-	items *kcpstore.Resource[item]
-
-	batches *kcpstore.Resource[batch]
+	items *kcpstore.Resource[widget]
 }
 
 func (s source) Parent(ctx context.Context, run queue.Run) (ref.Ref, bool, error) {
@@ -127,7 +112,7 @@ func (s source) Runs(ctx context.Context, parent ref.Ref) ([]queue.Run, error) {
 }
 
 func (s source) Capacity(ctx context.Context, parent ref.Ref) (queue.Capacity, *queue.Blocker, error) {
-	obj, err := s.batches.Get(ctx, parent)
+	obj, err := s.items.Get(ctx, parent)
 	if err != nil {
 		if kcpstore.IsNotFound(err) {
 			return queue.Capacity{}, &queue.Blocker{Reason: "BatchMissing", Message: "the parent batch does not exist"}, nil
@@ -144,9 +129,11 @@ type counters struct {
 
 	woken int
 
-	atCapacity int
+	capacityWaits int
 
 	peakRunning int
+
+	waitMessage string
 }
 
 func (c *counters) wake(string, ref.Ref) {
@@ -154,47 +141,41 @@ func (c *counters) wake(string, ref.Ref) {
 }
 
 func Run(ctx context.Context, out io.Writer) error {
-	cluster, err := fakekcp.New()
+	cluster, err := livekcp.Start(ctx)
 	if err != nil {
 		return err
 	}
-	defer cluster.Close()
-	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
-	defer cancel()
+	defer cluster.Stop()
 
-	store, err := kcpstore.New(kcpstore.Options{Host: cluster.URL(), RestConfig: &rest.Config{Host: cluster.URL()}})
+	store, err := kcpstore.New(kcpstore.Options{Host: cluster.Server, RestConfig: cluster.Config})
 	if err != nil {
 		return err
 	}
-	items := kcpstore.Of[item](store, itemsResource)
-	batches := kcpstore.Of[batch](store, batchesResource)
+	resource := kcpstore.Of[widget](store, widgets)
 
-	batchBody := fakekcp.Object(apiVersion, batchKind, "default", batchName)
-	fakekcp.WithSpec(batchBody, map[string]any{"concurrencyPolicy": "Forbid", "maxConcurrent": 2})
-	cluster.Create(workspaceID, "default", batchResourceName, batchBody)
-
-	base := time.Now().Add(-time.Hour)
+	if err := seedBatch(ctx, resource, cluster.Consumer); err != nil {
+		return err
+	}
 	for i := range itemCount {
-		body := fakekcp.Object(apiVersion, itemKind, "default", fmt.Sprintf("item-%d", i))
-		fakekcp.WithLabel(body, parentLabel, batchName)
-		fakekcp.WithSpec(body, map[string]any{"steps": 1})
-		fakekcp.WithCreated(body, base.Add(time.Duration(i)*time.Second))
-		cluster.Create(workspaceID, "default", itemResourceName, body)
+		if err := seedItem(ctx, resource, cluster.Consumer, fmt.Sprintf("item-%d", i)); err != nil {
+			return err
+		}
 	}
 
 	tally := &counters{}
 	admits := admission.New(admission.Options{
-		Source:     source{items: items, batches: batches},
+		Source:     source{items: resource},
 		RunKind:    "item",
 		ParentKind: "batch",
 		Terminal:   terminal,
 		Wake:       tally.wake,
 	})
 	started := runref.New(time.Minute)
-	parent := ref.New(workspaceID, "default", batchName)
+	parent := ref.New(cluster.Consumer, namespace, batchName)
+	deadline := time.Now().Add(2 * time.Minute)
 
-	for pass := range 500 {
-		all, err := items.List(ctx, workspaceID)
+	for pass := 0; time.Now().Before(deadline); pass++ {
+		all, err := resource.List(ctx, cluster.Consumer)
 		if err != nil {
 			return err
 		}
@@ -202,10 +183,10 @@ func Run(ctx context.Context, out io.Writer) error {
 		pending := 0
 		for i := range all {
 			obj := &all[i]
-			if terminal(obj.Status.Phase) {
+			if obj.Metadata.Labels[roleLabel] != "item" || terminal(obj.Status.Phase) {
 				continue
 			}
-			target := ref.New(workspaceID, obj.Metadata.Namespace, obj.Metadata.Name)
+			target := ref.New(cluster.Consumer, obj.Metadata.Namespace, obj.Metadata.Name)
 			created, _ := time.Parse(time.RFC3339Nano, obj.Metadata.CreationTimestamp)
 			decision, err := admits.Admit(ctx, queue.Run{Ref: target, Phase: obj.Status.Phase, Created: created})
 			if err != nil {
@@ -214,12 +195,12 @@ func Run(ctx context.Context, out io.Writer) error {
 			if obj.Status.Phase == "Running" {
 				running++
 				if obj.Status.Steps < obj.Spec.Steps {
-					if err := writeStatus(ctx, items, target, obj.Metadata.ResourceVersion, "Running", obj.Status.Steps+1); err != nil {
+					if err := writeStatus(ctx, resource, target, obj.Metadata.ResourceVersion, "Running", obj.Status.Steps+1); err != nil {
 						return err
 					}
 					continue
 				}
-				if err := writeStatus(ctx, items, target, obj.Metadata.ResourceVersion, "Succeeded", obj.Status.Steps); err != nil {
+				if err := writeStatus(ctx, resource, target, obj.Metadata.ResourceVersion, "Succeeded", obj.Status.Steps); err != nil {
 					return err
 				}
 				if err := admits.Wake(ctx, parent); err != nil {
@@ -229,13 +210,13 @@ func Run(ctx context.Context, out io.Writer) error {
 			}
 			pending++
 			if decision.Gated && !decision.Allowed {
-				tally.atCapacity++
-				if pass == 0 && obj.Metadata.Name == "item-2" {
-					fmt.Fprintf(out, "%s waits: %s\n", obj.Metadata.Name, decision.Message)
+				tally.capacityWaits++
+				if tally.waitMessage == "" {
+					tally.waitMessage = fmt.Sprintf("%s waits: %s", obj.Metadata.Name, decision.Message)
 				}
 				continue
 			}
-			if err := writeStatus(ctx, items, target, obj.Metadata.ResourceVersion, "Running", 0); err != nil {
+			if err := writeStatus(ctx, resource, target, obj.Metadata.ResourceVersion, "Running", 0); err != nil {
 				return err
 			}
 			started.Record(target, "workload-"+obj.Metadata.Name, obj.Metadata.UID, time.Now())
@@ -251,32 +232,58 @@ func Run(ctx context.Context, out io.Writer) error {
 		if pending == 0 && running == 0 {
 			break
 		}
-		time.Sleep(time.Millisecond)
+		time.Sleep(5 * time.Millisecond)
 	}
 
-	final, err := items.List(ctx, workspaceID)
+	final, err := resource.List(ctx, cluster.Consumer)
 	if err != nil {
 		return err
 	}
 	succeeded := 0
 	for i := range final {
-		if final[i].Status.Phase == "Succeeded" {
+		if final[i].Metadata.Labels[roleLabel] == "item" && final[i].Status.Phase == "Succeeded" {
 			succeeded++
 		}
 	}
+	fmt.Fprintln(out, tally.waitMessage)
 	fmt.Fprintf(out, "started %d of %d items, peak running %d\n", tally.starts, itemCount, tally.peakRunning)
-	fmt.Fprintf(out, "waited at capacity on %d passes, woke %d queued runs\n", tally.atCapacity, tally.woken)
+	fmt.Fprintf(out, "waited at capacity on %d passes, woke %d queued runs\n", tally.capacityWaits, tally.woken)
 	fmt.Fprintf(out, "the duplicate-start guard refused %d stale starts, leases held %d, succeeded %d\n",
 		tally.guardRefusals, admits.Leases().Len(), succeeded)
 	return nil
 }
 
-func writeStatus(ctx context.Context, resource *kcpstore.Resource[item], target ref.Ref, version, phase string, steps int32) error {
+func seedBatch(ctx context.Context, resource *kcpstore.Resource[widget], cluster string) error {
+	_ = resource.Delete(ctx, ref.New(cluster, namespace, batchName))
+	obj := &widget{APIVersion: livekcp.APIVersion, Kind: livekcp.Kind}
+	obj.Metadata.Name = batchName
+	obj.Metadata.Namespace = namespace
+	obj.Metadata.Labels = map[string]string{roleLabel: "batch"}
+	obj.Spec.ConcurrencyPolicy = "Forbid"
+	obj.Spec.MaxConcurrent = ptr(int32(maxConcurrent))
+	return resource.Create(ctx, cluster, obj)
+}
+
+func seedItem(ctx context.Context, resource *kcpstore.Resource[widget], cluster, name string) error {
+	_ = resource.Delete(ctx, ref.New(cluster, namespace, name))
+	obj := &widget{APIVersion: livekcp.APIVersion, Kind: livekcp.Kind}
+	obj.Metadata.Name = name
+	obj.Metadata.Namespace = namespace
+	obj.Metadata.Labels = map[string]string{parentLabel: batchName, roleLabel: "item"}
+	obj.Spec.Steps = 1
+	return resource.Create(ctx, cluster, obj)
+}
+
+func writeStatus(ctx context.Context, resource *kcpstore.Resource[widget], target ref.Ref, version, phase string, steps int32) error {
 	patch, err := statuspatch.Merge(map[string]any{"phase": phase, "steps": steps})
 	if err != nil {
 		return err
 	}
 	return resource.PatchStatus(ctx, target.WithResourceVersion(version), patch)
+}
+
+func ptr[T any](value T) *T {
+	return &value
 }
 
 func main() {

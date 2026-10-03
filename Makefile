@@ -14,6 +14,7 @@ test-live:
 	KCP_LIBS_REQUIRE_LIVE=1 $(GO) test -timeout 20m -count=1 -v -run 'TestLive' ./impl/kcpstore/ ./factory/controller/
 
 examples:
+	@echo "controller, admission and dns need kcp, kine and kubectl on PATH"
 	$(GO) run ./examples/controller
 	$(GO) run ./examples/admission
 	$(GO) run ./examples/workloads

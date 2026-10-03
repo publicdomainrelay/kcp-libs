@@ -5,16 +5,23 @@ import (
 	"context"
 	"strings"
 	"testing"
+	"time"
+
+	"github.com/publicdomainrelay/kcp-libs/internal/livekcp"
 )
 
 func TestRunKeepsTheCapAndDrainsTheQueue(t *testing.T) {
+	livekcp.Require(t)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
+
 	var out bytes.Buffer
-	if err := Run(context.Background(), &out); err != nil {
+	if err := Run(ctx, &out); err != nil {
 		t.Fatalf("Run: %v\n%s", err, out.String())
 	}
 	printed := out.String()
 	for _, want := range []string{
-		`item-2 waits: waiting for a free slot (concurrencyPolicy=Forbid, maxConcurrent=1)`,
+		"waits: waiting for a free slot (concurrencyPolicy=Forbid, maxConcurrent=1)",
 		"started 5 of 5 items, peak running 2",
 		"the duplicate-start guard refused 5 stale starts, leases held 0, succeeded 5",
 	} {

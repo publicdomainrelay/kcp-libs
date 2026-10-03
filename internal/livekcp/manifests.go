@@ -21,14 +21,14 @@ spec:
 const SchemaYAML = `apiVersion: apis.kcp.io/v1alpha1
 kind: APIResourceSchema
 metadata:
-  name: v1alpha1-1.probes.example.computer
+  name: v1alpha1-1.widgets.example.computer
 spec:
   group: example.computer
   names:
-    kind: Probe
-    listKind: ProbeList
-    plural: probes
-    singular: probe
+    kind: Widget
+    listKind: WidgetList
+    plural: widgets
+    singular: widget
   scope: Namespaced
   versions:
     - name: v1alpha1
@@ -47,28 +47,10 @@ spec:
             type: object
           spec:
             type: object
-            properties:
-              steps:
-                type: integer
-                format: int32
+            x-kubernetes-preserve-unknown-fields: true
           status:
             type: object
-            properties:
-              phase:
-                type: string
-                enum:
-                  - Pending
-                  - Running
-                  - Succeeded
-                  - Failed
-              observed:
-                type: integer
-                format: int32
-              conditions:
-                type: array
-                items:
-                  type: object
-                  x-kubernetes-preserve-unknown-fields: true
+            x-kubernetes-preserve-unknown-fields: true
 `
 
 const ExportYAML = `apiVersion: apis.kcp.io/v1alpha2
@@ -79,7 +61,7 @@ spec:
   resources:
     - group: ` + Group + `
       name: ` + Resource + `
-      schema: v1alpha1-1.probes.example.computer
+      schema: v1alpha1-1.widgets.example.computer
       storage:
         crd: {}
 `

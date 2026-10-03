@@ -28,19 +28,27 @@ func init() {
 const (
 	EnvRequire = "KCP_LIBS_REQUIRE_LIVE"
 
+	EnvKubeconfig = "KCP_LIBS_KUBECONFIG"
+
+	EnvServer = "KCP_LIBS_SERVER"
+
 	ProviderWorkspace = "provider"
 
 	ConsumerWorkspace = "consumer"
 
-	Export = "probes"
+	SecondWorkspace = "consumer-two"
+
+	Export = "widgets"
 
 	Group = "example.computer"
 
 	Version = "v1alpha1"
 
-	Resource = "probes"
+	Resource = "widgets"
 
-	Kind = "Probe"
+	Kind = "Widget"
+
+	APIVersion = Group + "/" + Version
 )
 
 func Resolve(name string) string {
@@ -99,16 +107,27 @@ type Cluster struct {
 
 	Consumer string
 
+	ConsumerTwo string
+
 	processes []*exec.Cmd
 
 	logs []string
+
+	borrowed bool
 }
 
-func (c *Cluster) Cluster() ref.Ref {
-	return ref.Ref{LogicalCluster: c.Consumer}
+func (c *Cluster) StoreOptions() (string, *rest.Config) {
+	return c.Server, c.Config
+}
+
+func (c *Cluster) Workspaces() []string {
+	return []string{c.Provider, c.Consumer, c.ConsumerTwo}
 }
 
 func (c *Cluster) Stop() {
+	if c.borrowed {
+		return
+	}
 	for _, process := range c.processes {
 		if process.Process != nil {
 			_ = process.Process.Kill()
@@ -150,6 +169,9 @@ func Start(ctx context.Context) (*Cluster, error) {
 }
 
 func start(ctx context.Context) (*Cluster, error) {
+	if kubeconfig := os.Getenv(EnvKubeconfig); kubeconfig != "" {
+		return borrow(ctx, kubeconfig)
+	}
 	root, err := os.MkdirTemp("", "kcp-libs-live-")
 	if err != nil {
 		return nil, err
@@ -163,11 +185,12 @@ func start(ctx context.Context) (*Cluster, error) {
 		return nil, err
 	}
 	cluster := &Cluster{
-		Root:       root,
-		Kubeconfig: filepath.Join(root, "admin.kubeconfig"),
-		Server:     fmt.Sprintf("https://127.0.0.1:%d", kcpPort),
-		Provider:   kcp.RootWorkspace + ":" + ProviderWorkspace,
-		Consumer:   kcp.RootWorkspace + ":" + ConsumerWorkspace,
+		Root:        root,
+		Kubeconfig:  filepath.Join(root, "admin.kubeconfig"),
+		Server:      fmt.Sprintf("https://127.0.0.1:%d", kcpPort),
+		Provider:    kcp.RootWorkspace + ":" + ProviderWorkspace,
+		Consumer:    kcp.RootWorkspace + ":" + ConsumerWorkspace,
+		ConsumerTwo: kcp.RootWorkspace + ":" + SecondWorkspace,
 	}
 	ok := false
 	defer func() {
@@ -214,6 +237,9 @@ func start(ctx context.Context) (*Cluster, error) {
 	}
 	cluster.Config = config
 
+	if err := cluster.awaitAdmin(ctx); err != nil {
+		return nil, fmt.Errorf("%w\n%s", err, cluster.Logs())
+	}
 	if err := cluster.provision(ctx); err != nil {
 		return nil, fmt.Errorf("%w\n%s", err, cluster.Logs())
 	}
@@ -221,8 +247,43 @@ func start(ctx context.Context) (*Cluster, error) {
 	return cluster, nil
 }
 
+func (c *Cluster) awaitAdmin(ctx context.Context) error {
+	return waitFor(ctx, 120*time.Second, func() bool {
+		_, err := c.Get(ctx, kcp.RootWorkspace, "workspaces")
+		return err == nil
+	}, "the admin API to accept requests")
+}
+
+func borrow(ctx context.Context, kubeconfig string) (*Cluster, error) {
+	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
+	if err != nil {
+		return nil, err
+	}
+	server := os.Getenv(EnvServer)
+	if server == "" {
+		server = ref.BaseHost(config.Host)
+	}
+	cluster := &Cluster{
+		Root:        filepath.Dir(kubeconfig),
+		Kubeconfig:  kubeconfig,
+		Server:      server,
+		Config:      config,
+		Provider:    kcp.RootWorkspace + ":" + ProviderWorkspace,
+		Consumer:    kcp.RootWorkspace + ":" + ConsumerWorkspace,
+		ConsumerTwo: kcp.RootWorkspace + ":" + SecondWorkspace,
+		borrowed:    true,
+	}
+	if err := cluster.awaitAdmin(ctx); err != nil {
+		return nil, err
+	}
+	if err := cluster.provision(ctx); err != nil {
+		return nil, err
+	}
+	return cluster, nil
+}
+
 func (c *Cluster) provision(ctx context.Context) error {
-	for _, workspace := range []string{ProviderWorkspace, ConsumerWorkspace} {
+	for _, workspace := range []string{ProviderWorkspace, ConsumerWorkspace, SecondWorkspace} {
 		if _, err := c.Kubectl(ctx, "", workspaceYAML(workspace)); err != nil {
 			return err
 		}
@@ -238,8 +299,10 @@ func (c *Cluster) provision(ctx context.Context) error {
 	if err := c.waitExport(ctx); err != nil {
 		return err
 	}
-	if _, err := c.Kubectl(ctx, c.Consumer, BindingYAML); err != nil {
-		return err
+	for _, consumer := range []string{c.Consumer, c.ConsumerTwo} {
+		if _, err := c.Kubectl(ctx, consumer, BindingYAML); err != nil {
+			return err
+		}
 	}
 	return c.waitBinding(ctx)
 }
@@ -276,10 +339,16 @@ func (c *Cluster) waitExport(ctx context.Context) error {
 }
 
 func (c *Cluster) waitBinding(ctx context.Context) error {
-	return waitFor(ctx, 120*time.Second, func() bool {
-		out, err := c.Get(ctx, c.Consumer, "apibinding", Export, "-o", "jsonpath={.status.phase}")
-		return err == nil && strings.TrimSpace(out) == "Bound"
-	}, "apibinding "+Export+" to bind")
+	for _, consumer := range []string{c.Consumer, c.ConsumerTwo} {
+		err := waitFor(ctx, 120*time.Second, func() bool {
+			out, err := c.Get(ctx, consumer, "apibinding", Export, "-o", "jsonpath={.status.phase}")
+			return err == nil && strings.TrimSpace(out) == "Bound"
+		}, "the apibinding in "+consumer+" to bind")
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func spawn(logPath string, name string, args ...string) (*exec.Cmd, error) {

@@ -10,7 +10,6 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/rest"
 
 	"github.com/publicdomainrelay/kcp-libs/abc/cache"
 	"github.com/publicdomainrelay/kcp-libs/abc/driver"
@@ -18,37 +17,26 @@ import (
 	abcstore "github.com/publicdomainrelay/kcp-libs/abc/store"
 	"github.com/publicdomainrelay/kcp-libs/common/condition"
 	"github.com/publicdomainrelay/kcp-libs/common/deno"
-	"github.com/publicdomainrelay/kcp-libs/common/env"
 	"github.com/publicdomainrelay/kcp-libs/common/logging"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 	"github.com/publicdomainrelay/kcp-libs/common/statuspatch"
 	"github.com/publicdomainrelay/kcp-libs/factory/controller"
-	"github.com/publicdomainrelay/kcp-libs/fakekcp"
 	"github.com/publicdomainrelay/kcp-libs/impl/exportwatch"
 	"github.com/publicdomainrelay/kcp-libs/impl/informerwatch"
 	"github.com/publicdomainrelay/kcp-libs/impl/kcpstore"
 	"github.com/publicdomainrelay/kcp-libs/impl/metrics"
+	"github.com/publicdomainrelay/kcp-libs/internal/livekcp"
 )
 
 const (
-	apiVersion = "example.computer/v1alpha1"
+	namespace = "default"
 
-	kind = "Widget"
+	parentLabel = "example.computer/group"
 
-	providerWorkspace = "root:deno-provider"
-
-	export = "denoruntime"
-
-	workspaceID = "2j35eh7jjhsc8ny9"
-
-	workspacePath = "root:alice"
-
-	resource = "widgets"
-
-	parentLabel = "example.computer/widget-group"
+	groupName = "group-a"
 )
 
-var widgets = schema.GroupVersionResource{Group: "example.computer", Version: "v1alpha1", Resource: resource}
+var widgets = schema.GroupVersionResource{Group: livekcp.Group, Version: livekcp.Version, Resource: livekcp.Resource}
 
 type metadata struct {
 	Name string `json:"name"`
@@ -59,15 +47,11 @@ type metadata struct {
 
 	ResourceVersion string `json:"resourceVersion"`
 
-	Labels map[string]string `json:"labels"`
-
-	Finalizers []string `json:"finalizers"`
+	Labels map[string]string `json:"labels,omitempty"`
 }
 
 type spec struct {
 	Steps int32 `json:"steps"`
-
-	Parent string `json:"parent"`
 }
 
 type status struct {
@@ -81,9 +65,9 @@ type status struct {
 }
 
 type widget struct {
-	APIVersion string `json:"apiVersion"`
+	APIVersion string `json:"apiVersion,omitempty"`
 
-	Kind string `json:"kind"`
+	Kind string `json:"kind,omitempty"`
 
 	Metadata metadata `json:"metadata"`
 
@@ -96,8 +80,6 @@ type observed struct {
 	Widget widget
 
 	Siblings int32
-
-	Now time.Time
 }
 
 func decide(_ context.Context, o observed) (reconcile.Result[status], error) {
@@ -138,9 +120,10 @@ func handlerFor(set *cache.Set, resource *kcpstore.Resource[widget]) driver.Hand
 			return 0, false, err
 		}
 		group := obj.Metadata.Labels[parentLabel]
-		siblings := int32(len(set.ByIndex("widget", cache.ByClusterParent, ref.Key(key.Ref.LogicalCluster, key.Ref.Namespace, group))))
+		siblings := int32(len(set.ByIndex("widget", cache.ByClusterParent,
+			ref.Key(key.Ref.LogicalCluster, key.Ref.Namespace, group))))
 
-		result, err := reconcile.Decider(decide).Reconcile(ctx, observed{Widget: *obj, Siblings: siblings, Now: time.Now()})
+		result, err := reconcile.Decider(decide).Reconcile(ctx, observed{Widget: *obj, Siblings: siblings})
 		if err != nil {
 			return 0, false, err
 		}
@@ -161,8 +144,7 @@ func handlerFor(set *cache.Set, resource *kcpstore.Resource[widget]) driver.Hand
 			if err != nil {
 				return 0, false, err
 			}
-			target := key.Ref.WithResourceVersion(obj.Metadata.ResourceVersion)
-			if err := resource.PatchStatus(ctx, target, patch); err != nil {
+			if err := resource.PatchStatus(ctx, key.Ref.WithResourceVersion(obj.Metadata.ResourceVersion), patch); err != nil {
 				return 0, false, err
 			}
 		}
@@ -172,46 +154,42 @@ func handlerFor(set *cache.Set, resource *kcpstore.Resource[widget]) driver.Hand
 
 func Run(ctx context.Context, out io.Writer) error {
 	logger := logging.New(logging.Options{Service: "example-controller", Writer: out, Level: slog.LevelError})
-	cluster, err := fakekcp.New()
+	cluster, err := livekcp.Start(ctx)
 	if err != nil {
 		return err
 	}
-	defer cluster.Close()
+	defer cluster.Stop()
 
-	cluster.SetClusterPath(workspaceID, workspacePath)
-	cluster.AddEndpointSlice(export, cluster.URL()+"/services/apiexport/"+providerWorkspace+"/"+export)
-
-	ctx, cancel := context.WithTimeout(ctx, env.OrDuration("EXAMPLE_TIMEOUT", 30*time.Second))
-	defer cancel()
-
-	store, err := kcpstore.New(kcpstore.Options{Host: cluster.URL(), RestConfig: &rest.Config{Host: cluster.URL()}})
+	store, err := kcpstore.New(kcpstore.Options{Host: cluster.Server, RestConfig: cluster.Config})
 	if err != nil {
 		return err
 	}
 	endpoints, err := exportwatch.Await(ctx, exportwatch.Options{
 		Config:            store.Config(),
-		Host:              cluster.URL(),
-		ProviderWorkspace: providerWorkspace,
-		Exports:           []string{export},
+		Host:              cluster.Server,
+		ProviderWorkspace: cluster.Provider,
+		Exports:           []string{livekcp.Export},
 		Log:               logger,
 	})
 	if err != nil {
 		return err
 	}
-	bases := exportwatch.Paths(endpoints, export)
+	bases := exportwatch.Paths(endpoints, livekcp.Export)
 	if len(bases) == 0 {
-		return fmt.Errorf("example: no virtual workspace URL was published for %s", export)
+		return fmt.Errorf("example: kcp published no virtual workspace URL for %s", livekcp.Export)
 	}
-	fmt.Fprintf(out, "discovered %s at %s\n", export, bases[0])
-
-	seed(cluster, "alpha", 1)
-	seed(cluster, "beta", 1)
+	fmt.Fprintf(out, "kcp published %s at %s\n", livekcp.Export, bases[0])
 
 	resource := kcpstore.Of[widget](store, widgets)
 	var _ abcstore.Resource[widget] = resource
 	registry := metrics.New("example")
 	watched := cache.NewSet()
-	handler := handlerFor(watched, resource)
+
+	for _, name := range []string{"alpha", "beta"} {
+		if err := seed(ctx, resource, cluster.Consumer, name, 1); err != nil {
+			return err
+		}
+	}
 
 	ctl, err := controller.New(controller.Options{
 		Config:    store.Config(),
@@ -219,10 +197,10 @@ func Run(ctx context.Context, out io.Writer) error {
 		Resources: []informerwatch.Resource{{Kind: "widget", GVR: widgets}},
 		Indexers:  cache.IndexersFor(parentLabel, "", ""),
 		Set:       watched,
-		Handler:   handler,
+		Handler:   handlerFor(watched, resource),
 		Policy: driver.Policy{
-			Interval:          5 * time.Millisecond,
-			MinTransitionPoll: time.Millisecond,
+			Interval:          time.Second,
+			MinTransitionPoll: 10 * time.Millisecond,
 			ClampKinds:        map[string]bool{"widget": true},
 		},
 		Metrics: registry,
@@ -231,60 +209,57 @@ func Run(ctx context.Context, out io.Writer) error {
 	if err != nil {
 		return err
 	}
+	watchCtx, stop := context.WithCancel(ctx)
+	defer stop()
 	go func() {
-		_ = ctl.Run(ctx)
+		_ = ctl.Run(watchCtx)
 	}()
 
 	for _, name := range []string{"alpha", "beta"} {
-		if err := cluster.WaitFor(ctx, func() bool { return succeeded(cluster, name) }); err != nil {
+		obj, err := waitFor(ctx, resource, cluster.Consumer, name, string(deno.PhaseSucceeded))
+		if err != nil {
 			return err
 		}
-		fmt.Fprintf(out, "%s reached %s after %d passes\n", name, phaseOf(cluster, name), observedOf(cluster, name))
+		fmt.Fprintf(out, "%s reached %s after %d passes\n", name, obj.Status.Phase, obj.Status.Observed)
 	}
 
-	seed(cluster, "gamma", 1)
-	if err := cluster.WaitFor(ctx, func() bool { return succeeded(cluster, "gamma") }); err != nil {
+	if err := seed(ctx, resource, cluster.Consumer, "gamma", 1); err != nil {
 		return err
 	}
-	fmt.Fprintf(out, "gamma reached %s from the watch, seeing %d siblings in the cache\n",
-		phaseOf(cluster, "gamma"), siblingsOf(cluster, "gamma"))
-
-	fmt.Fprintf(out, "queue depth %d, cache age %s, patches %d\n", ctl.QueueDepth(), ctl.CacheAge().Round(time.Millisecond), cluster.Patches())
-	registry.Render(out)
+	gamma, err := waitFor(ctx, resource, cluster.Consumer, "gamma", string(deno.PhaseSucceeded))
+	if err != nil {
+		return err
+	}
+	fmt.Fprintf(out, "gamma reached %s from the watch, having seen %d of the group in the cache\n",
+		gamma.Status.Phase, gamma.Status.Siblings)
+	fmt.Fprintf(out, "reconciles %d, queue depth %d, cache age %s\n",
+		ctl.Reconciles(), ctl.QueueDepth(), ctl.CacheAge().Round(time.Millisecond))
 	return nil
 }
 
-func seed(cluster *fakekcp.Cluster, name string, steps int32) {
-	obj := fakekcp.Object(apiVersion, kind, "default", name)
-	fakekcp.WithLabel(obj, parentLabel, "group-a")
-	fakekcp.WithSpec(obj, map[string]any{"steps": steps, "parent": "group-a"})
-	cluster.Create(workspaceID, "default", resource, obj)
+func seed(ctx context.Context, resource *kcpstore.Resource[widget], cluster, name string, steps int32) error {
+	_ = resource.Delete(ctx, ref.New(cluster, namespace, name))
+	obj := &widget{APIVersion: livekcp.APIVersion, Kind: livekcp.Kind}
+	obj.Metadata.Name = name
+	obj.Metadata.Namespace = namespace
+	obj.Metadata.Labels = map[string]string{parentLabel: groupName}
+	obj.Spec.Steps = steps
+	return resource.Create(ctx, cluster, obj)
 }
 
-func bodyOf(cluster *fakekcp.Cluster, name string) map[string]any {
-	body, found := cluster.Get(workspaceID, "default", resource, name)
-	if !found {
-		return nil
+func waitFor(ctx context.Context, resource *kcpstore.Resource[widget], cluster, name, want string) (*widget, error) {
+	deadline := time.Now().Add(2 * time.Minute)
+	for time.Now().Before(deadline) {
+		obj, err := resource.Get(ctx, ref.New(cluster, namespace, name))
+		if err == nil && obj.Status.Phase == want {
+			return obj, nil
+		}
+		if ctx.Err() != nil {
+			return nil, ctx.Err()
+		}
+		time.Sleep(50 * time.Millisecond)
 	}
-	return body
-}
-
-func phaseOf(cluster *fakekcp.Cluster, name string) string {
-	return fakekcp.PhaseOf(bodyOf(cluster, name))
-}
-
-func succeeded(cluster *fakekcp.Cluster, name string) bool {
-	return deno.TerminalPolicyWorkflow(phaseOf(cluster, name))
-}
-
-func observedOf(cluster *fakekcp.Cluster, name string) int {
-	value, _ := fakekcp.StatusOf(bodyOf(cluster, name))["observed"].(float64)
-	return int(value)
-}
-
-func siblingsOf(cluster *fakekcp.Cluster, name string) int {
-	value, _ := fakekcp.StatusOf(bodyOf(cluster, name))["siblings"].(float64)
-	return int(value)
+	return nil, fmt.Errorf("example: %s never reached %s", name, want)
 }
 
 func main() {

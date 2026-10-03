@@ -11,7 +11,6 @@ No comments in the code; a package's path and names carry the meaning.
 common/    leaf: types, constants, pure helpers            external deps only
    ^
 abc/       interfaces and pure state, no I/O               common only
-fakekcp/   a fake kcp API server, for examples and tests   common + apimachinery
    ^
 impl/      concrete bindings: client-go, os/exec, net/http abc + common
    ^
@@ -19,12 +18,15 @@ factory/   composition: driver, admission, wiring          impl + abc + common
    ^
 examples/  runnable programs, one per use case             anything
 cmd/       thin entrypoints                                anything
+
+internal/  test support: a live kcp, and the import rules   not for production
 ```
 
 **Start at [`examples/`](examples/README.md).** Six runnable programs create
-real objects on a fake kcp API server and drive them with the library, with a
-table mapping every package to the situation it is for. `go run
-./examples/controller` is the whole reconcile loop in one file.
+real objects on a real kcp and drive them with the library, with a table
+mapping every package to the situation it is for. `go run
+./examples/controller` is the whole reconcile loop in one file, and it needs
+`kcp`, `kine` and `kubectl` on PATH, which is also what the live tests need.
 
 `internal/boundaries` is a test, not a package: it reads `go list -json ./...`
 and fails the build if any package imports against the arrow, if a `common`
@@ -68,9 +70,8 @@ package imports anything project-local, or if an `abc` package imports past
 | factory | `controller` | informers + workqueue + worker pool + requeue policy + metrics |
 | factory | `admission` | per-parent admission: leases, planning, and the wake of queued runs |
 | factory | `dns` | the FQDN table, a pod's own name, and one token per workspace |
-| fakekcp | `fakekcp` | a fake kcp API server: list, watch, patch, tokens, endpoint slices |
 | examples | `examples/*` | one runnable program per use case, each asserted by its own test |
-| tests | `internal/livekcp` | starts a real kcp and kine, applies a schema and an export, binds a consumer workspace |
+| support | `internal/livekcp` | starts a real kcp and kine, applies a schema and an export, binds consumer workspaces |
 
 ## The two pieces worth reading first
 
@@ -113,42 +114,42 @@ Where the code in `../deno-kcp` moves.
 | `internal/provider/kcpdns/embed.go` | `impl/assets` |
 | `api/v1alpha1/types_shared.go` | `common/denospec`, `common/deno` |
 
-## Two test tiers
+## Two tiers
 
-**Offline** — `go test ./...`, no cluster, no binaries. `fakekcp` serves the
-REST protocol the library speaks, so real client-go informers run against it.
-Fast, deterministic, and what the six examples and their assertions use.
+**Unit** — `go test ./...`, no cluster, no binaries, milliseconds. Everything
+pure: the queue, the requeue policy, the cache indexers, the status patches,
+the runners, the PKI orchestration, the transports against `httptest`.
 
-**Live** — `make test-live`, which needs `kcp`, `kine` and `kubectl` on PATH
-(override with `KCP_BIN`, `KINE_BIN`, `KUBECTL`). `internal/livekcp` starts a
-real kcp and kine in a temp directory, applies an `APIResourceSchema` and an
-`APIExport`, creates a consumer workspace with an `APIBinding`, and waits for
-it to bind. Two tests then drive the library against it:
+**Live** — anything that has to talk to kcp. `internal/livekcp` starts a real
+kcp on kine in a temp directory, applies an `APIResourceSchema` and an
+`APIExport`, creates two consumer workspaces with `APIBinding`s, and waits for
+them to bind. Directly against it:
 
 - `impl/kcpstore` — create, get, list, a status merge patch, a finalizer JSON
   patch, the cluster path annotation, delete, and a 404, all through the typed
-  resource against real kcp.
+  resource.
 - `factory/controller` — `exportwatch` discovers the real virtual workspace
   URL from the export's endpoint slice, wildcard informers watch it, the
-  workqueue delivers keys, and a decider drives two probes to `Succeeded`.
-  About 12 seconds.
+  workqueue delivers keys, and a decider drives two widgets to `Succeeded`.
 
-The live tier is opt-in because it costs a kcp startup per package and is
-slower than everything else combined. With `KCP_LIBS_REQUIRE_LIVE=1` the live
-tests fail instead of skipping when the binaries are absent, which is what CI
-should set.
+and the three examples that need a cluster: `examples/controller`,
+`examples/admission`, `examples/dns`. Each is about thirteen seconds, and each
+starts its own kcp unless one is already running:
 
-The fake is a model of kcp, not kcp. It cannot catch what the live tier
-catches: a write against a stale `resourceVersion` (kcp answers 409, the fake
-accepts it), authorization, or whether the endpoint slice is really published
-when the first `APIBinding` appears. Treat offline as the fast regression net
-and live as the authority.
+```bash
+KCP_LIBS_KUBECONFIG=/path/to/admin.kubeconfig go run ./examples/controller
+```
+
+Set that to reuse a cluster across examples (it also takes `KCP_LIBS_SERVER`).
+The live tests are opt-in: with `KCP_LIBS_REQUIRE_LIVE=1` they fail instead of
+skipping when `kcp`, `kine` or `kubectl` is missing, which is what CI should
+set. `KCP_BIN`, `KINE_BIN` and `KUBECTL` override the binaries.
 
 ## Commands
 
 ```bash
 make check                    # gofmt, go vet, go mod tidy -diff, go test
-make test                     # the offline tier
+make test                     # the unit tier
 make race
 make test-live                # the live tier: a real kcp and kine
 make examples                 # run all six examples
