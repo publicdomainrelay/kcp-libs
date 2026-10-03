@@ -100,7 +100,7 @@ func New(opts Options) (*Client, error) {
 }
 
 func (c *Client) Health(ctx context.Context) (pki.Health, error) {
-	status, body, err := c.do(ctx, http.MethodGet, "", "sys/health", nil)
+	status, body, err := c.request(ctx, http.MethodGet, "", "sys/health", nil)
 	if err != nil {
 		return pki.Health{}, err
 	}
