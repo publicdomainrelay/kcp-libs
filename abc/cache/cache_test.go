@@ -59,7 +59,7 @@ type runObject struct {
 
 func object(name, namespace, cluster, parent, phase string) *unstructured.Unstructured {
 	obj := map[string]any{
-		"apiVersion": "denocomputer.computer/v1alpha1",
+		"apiVersion": "deno.computer/v1alpha1",
 		"kind":       "PolicyWorkflowRun",
 		"metadata": map[string]any{
 			"name":        name,

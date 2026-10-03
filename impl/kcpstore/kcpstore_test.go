@@ -28,7 +28,7 @@ type runObject struct {
 	} `json:"status"`
 }
 
-var denoRuns = schema.GroupVersionResource{Group: "denocomputer.computer", Version: "v1alpha1", Resource: "denoruns"}
+var denoRuns = schema.GroupVersionResource{Group: "deno.computer", Version: "v1alpha1", Resource: "denoruns"}
 
 type request struct {
 	Method string
@@ -86,7 +86,7 @@ func writeJSON(w http.ResponseWriter, status int, body any) {
 
 func TestGetDecodesThroughTheClusterPath(t *testing.T) {
 	store, _ := newServer(t, []request{
-		{Method: "GET", Path: "/clusters/root:alice/apis/denocomputer.computer/v1alpha1/namespaces/default/denoruns/run-1"},
+		{Method: "GET", Path: "/clusters/root:alice/apis/deno.computer/v1alpha1/namespaces/default/denoruns/run-1"},
 	}, func(w http.ResponseWriter, _ *http.Request, _ int) {
 		writeJSON(w, 200, map[string]any{
 			"metadata": map[string]any{"name": "run-1", "namespace": "default"},
@@ -105,7 +105,7 @@ func TestGetDecodesThroughTheClusterPath(t *testing.T) {
 
 func TestListDecodesItems(t *testing.T) {
 	store, _ := newServer(t, []request{
-		{Method: "GET", Path: "/clusters/root:alice/apis/denocomputer.computer/v1alpha1/denoruns"},
+		{Method: "GET", Path: "/clusters/root:alice/apis/deno.computer/v1alpha1/denoruns"},
 	}, func(w http.ResponseWriter, _ *http.Request, _ int) {
 		writeJSON(w, 200, map[string]any{"items": []any{
 			map[string]any{"metadata": map[string]any{"name": "a"}},
@@ -124,7 +124,7 @@ func TestListDecodesItems(t *testing.T) {
 
 func TestCreatePostsTheObjectToItsNamespace(t *testing.T) {
 	store, _ := newServer(t, []request{
-		{Method: "POST", Path: "/clusters/root:alice/apis/denocomputer.computer/v1alpha1/namespaces/default/denoruns"},
+		{Method: "POST", Path: "/clusters/root:alice/apis/deno.computer/v1alpha1/namespaces/default/denoruns"},
 	}, func(w http.ResponseWriter, _ *http.Request, _ int) {
 		writeJSON(w, 201, map[string]any{"metadata": map[string]any{"name": "run-1"}})
 	})
@@ -139,7 +139,7 @@ func TestCreatePostsTheObjectToItsNamespace(t *testing.T) {
 
 func TestPatchStatusUsesTheSubresource(t *testing.T) {
 	store, seen := newServer(t, []request{
-		{Method: "PATCH", Path: "/clusters/root:alice/apis/denocomputer.computer/v1alpha1/namespaces/default/denoruns/run-1/status"},
+		{Method: "PATCH", Path: "/clusters/root:alice/apis/deno.computer/v1alpha1/namespaces/default/denoruns/run-1/status"},
 	}, func(w http.ResponseWriter, _ *http.Request, _ int) {
 		writeJSON(w, 200, map[string]any{})
 	})
@@ -161,8 +161,8 @@ func TestPatchStatusUsesTheSubresource(t *testing.T) {
 
 func TestRemoveFinalizerTestsTheCachedList(t *testing.T) {
 	store, seen := newServer(t, []request{
-		{Method: "GET", Path: "/clusters/root:alice/apis/denocomputer.computer/v1alpha1/namespaces/default/denoruns/run-1"},
-		{Method: "PATCH", Path: "/clusters/root:alice/apis/denocomputer.computer/v1alpha1/namespaces/default/denoruns/run-1"},
+		{Method: "GET", Path: "/clusters/root:alice/apis/deno.computer/v1alpha1/namespaces/default/denoruns/run-1"},
+		{Method: "PATCH", Path: "/clusters/root:alice/apis/deno.computer/v1alpha1/namespaces/default/denoruns/run-1"},
 	}, func(w http.ResponseWriter, _ *http.Request, index int) {
 		if index == 0 {
 			writeJSON(w, 200, map[string]any{
@@ -183,7 +183,7 @@ func TestRemoveFinalizerTestsTheCachedList(t *testing.T) {
 
 func TestFinalizersAndKnownRemoval(t *testing.T) {
 	store, _ := newServer(t, []request{
-		{Method: "GET", Path: "/clusters/root:alice/apis/denocomputer.computer/v1alpha1/namespaces/default/denoruns/run-1"},
+		{Method: "GET", Path: "/clusters/root:alice/apis/deno.computer/v1alpha1/namespaces/default/denoruns/run-1"},
 	}, func(w http.ResponseWriter, _ *http.Request, _ int) {
 		writeJSON(w, 200, map[string]any{
 			"metadata": map[string]any{"name": "run-1", "finalizers": []string{"a"}},

@@ -136,6 +136,11 @@ func (s *supervisor) start(entry processSpec) (string, error) {
 		started: time.Now(),
 		env:     entry.envMap,
 	}
+	writeState(run)
+	s.mu.Lock()
+	s.runs[id] = run
+	s.mu.Unlock()
+
 	go func() {
 		run.waitErr = cmd.Wait()
 		if cmd.ProcessState != nil {
@@ -145,11 +150,6 @@ func (s *supervisor) start(entry processSpec) (string, error) {
 		close(run.done)
 		s.forget(id)
 	}()
-	writeState(run)
-
-	s.mu.Lock()
-	s.runs[id] = run
-	s.mu.Unlock()
 	return id, nil
 }
 

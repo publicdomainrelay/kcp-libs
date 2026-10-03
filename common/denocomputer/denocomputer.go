@@ -21,15 +21,9 @@ const (
 
 	FinalizerDenoPod = "denopod.deno.computer/run"
 
-	FinalizerDenoJob = "denojob.deno.computer/run"
-
 	FinalizerPolicyEngine = "policyengine.deno.computer/run"
 
 	FinalizerPolicyWorkflowRun = "policyworkflowrun.deno.computer/run"
-
-	FinalizerPolicyWorkflowPod = "policyworkflowpod.deno.computer/run"
-
-	FinalizerRunTrigger = "runtrigger.deno.computer/run"
 
 	FinalizerOpenBao = "openbao.deno.computer/namespace"
 )

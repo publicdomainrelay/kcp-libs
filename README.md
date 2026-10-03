@@ -28,7 +28,7 @@ core to this module: the first consumer is a controller that runs Deno
 workloads, and the point of the module is that the next one does not have to
 write them again. The layers above them are generic on purpose and can be used
 without any of it -- `reconcile`, `queue`, `cache`, `kcpstore`, `informerwatch`,
-`exportwatch`, `metrics`, `statuspatch`, `ref`, `kcpclient` name no workload
+`exportwatch`, `metrics`, `statuspatch`, `ref`, `clientlimit` name no workload
 runtime at all.
 
 **Start at [`examples/`](examples/README.md).** Six runnable programs drive the
@@ -67,7 +67,7 @@ package imports anything project-local, or if an `abc` package imports past
 | abc | `abc/pki` | the OpenBao PKI client port, certificate types, `Provisioner` |
 | abc | `abc/store` | generic `Reader[T]`/`Writer[T]`/`Resource[T]`, the token minter, and `Unchanged`, which compares two values by the JSON a patch would carry |
 | abc | `abc/policy` | the policy engine client port |
-| impl | `impl/kcpstore` | client-go REST store: generic typed resources, status patches stamped with the cached resource version, finalizers, token minting, cluster paths, and the client rate-limit defaults the other transports share |
+| impl | `impl/kcpstore` | client-go REST store: generic typed resources, status patches, finalizers, token minting, cluster paths. `PatchStatus` stamps the resource version the caller put on the `Ref`; a `Ref` straight off the queue carries none, because the informer cache drops it, so a reconciler that wants a conflict rather than a blind overwrite has to read the object and pass what it read - which is what every example here does |
 | impl | `impl/exportwatch` | APIExportEndpointSlice discovery and the await loop for virtual workspace URLs |
 | impl | `impl/informerwatch` | shared dynamic informers over `/clusters/*`, indexers, event handlers |
 | impl | `impl/execrunner` | `os/exec` pod and engine runners: run directories, process groups, recovery, probes |
@@ -132,12 +132,15 @@ Where the code in `../deno-kcp` moves.
 | `internal/provider/kcpdns/embed.go` | `impl/assets` |
 | `api/v1alpha1/types_shared.go` | `common/denospec`, `common/denocomputer` |
 
-Two exported methods exist for the consumer rather than for this module's own
+The driver dispatches by kind and nothing more: one handler is given a key and decides what to do with it. It does not route between kinds for you, and it does not create or stop the children a decider asks for -- `Result.Ops` is the decider saying what it wants, and the consumer's `Bridge.Apply` is what carries it out against its own typed resources. That is deliberate: a generic executor would need a store per kind, which is the consumer's API surface, not the library's.
+
+Three exported methods exist for the consumer rather than for this module's own
 production code, and are kept for that reason: `reconcile.Result.AddFor`, which
-is how a decider that owns children asks for one to be created or stopped, and
-`kcpstore.Resource.AddFinalizer`, which is the add half of the finalizer patch
-that `RemoveFinalizer` takes back off. Both are exercised by tests here and
-neither has an in-module caller.
+is how a decider that owns children asks for one to be created or stopped,
+`kcpstore.Resource.AddFinalizer`, the add half of the finalizer patch that
+`RemoveFinalizer` takes back off, and `execrunner.Pod.Running`, which reports
+how many runs the supervisor still holds. Each is exercised by a test here and
+none has an in-module production caller.
 
 ## Two tiers
 
@@ -180,7 +183,7 @@ The other thing that made those numbers what they are: `impl/kcpstore` sets
 defaults every REST client to 5 requests a second with a burst of 10, and a
 controller that inherits that spends most of its time waiting on its own rate
 limiter -- the admission example went from 21.7s to 1.6s when it stopped.
-`kcpstore.Options` overrides both, and `common/clientlimit.Tuned` applies the same
+`kcpstore.Options` overrides both, and `common/clientlimit.Apply` applies the same
 defaults to a config you built yourself.
 
 Run one on its own with `go run ./examples/controller`, or point several at a

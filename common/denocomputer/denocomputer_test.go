@@ -1,27 +1,98 @@
 package denocomputer
 
-import "testing"
+import (
+	"os"
+	"path/filepath"
+	"regexp"
+	"strings"
+	"testing"
+)
 
-func TestTheVocabularyAddressesRealObjects(t *testing.T) {
-	for _, value := range []struct {
-		name string
+var declared = regexp.MustCompile(`(?m)^(?:const )?\s*(\w+) = "([^"]+)"`)
 
-		got string
+func consumerConstants(t *testing.T) map[string]string {
+	t.Helper()
+	root, err := filepath.Abs(".")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for {
+		candidate := filepath.Join(root, "deno-kcp", "api", "v1alpha1")
+		if info, err := os.Stat(candidate); err == nil && info.IsDir() {
+			return readConstants(t, candidate)
+		}
+		parent := filepath.Dir(root)
+		if parent == root {
+			break
+		}
+		root = parent
+	}
+	if os.Getenv("KCP_LIBS_REQUIRE_LIVE") == "1" {
+		t.Fatal("the consumer's api/v1alpha1 was not found; this test reads it as the source of truth")
+	}
+	t.Skip("the consumer checkout is not next to this module, so there is nothing to compare against")
+	return nil
+}
 
-		want string
-	}{
-		{"Group", Group, "deno.computer"},
-		{"APIVersion", APIVersion, "deno.computer/v1alpha1"},
-		{"PolicyWorkflowPodLabel", PolicyWorkflowPodLabel, "deno.computer/policyworkflowpod"},
-		{"JobRunLabel", JobRunLabel, "deno.computer/job"},
-		{"TriggerLabel", TriggerLabel, "deno.computer/trigger"},
-		{"FinalizerDenoRun", FinalizerDenoRun, "denorun.deno.computer/run"},
-		{"FinalizerDenoPod", FinalizerDenoPod, "denopod.deno.computer/run"},
-		{"FinalizerOpenBao", FinalizerOpenBao, "openbao.deno.computer/namespace"},
-		{"FinalizerPolicyWorkflowRun", FinalizerPolicyWorkflowRun, "policyworkflowrun.deno.computer/run"},
+func readConstants(t *testing.T, dir string) map[string]string {
+	t.Helper()
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	out := map[string]string{}
+	for _, entry := range entries {
+		if !strings.HasSuffix(entry.Name(), ".go") || strings.HasSuffix(entry.Name(), "_test.go") {
+			continue
+		}
+		body, err := os.ReadFile(filepath.Join(dir, entry.Name()))
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, match := range declared.FindAllStringSubmatch(string(body), -1) {
+			out[match[1]] = match[2]
+		}
+	}
+	return out
+}
+
+func TestTheGroupIsTheOneTheConsumerDeclares(t *testing.T) {
+	declared := consumerConstants(t)
+	if want := declared["GroupName"]; want != "" && Group != want {
+		t.Fatalf("Group = %q, the consumer declares %q", Group, want)
+	}
+	if want := declared["Version"]; want != "" && Version != want {
+		t.Fatalf("Version = %q, the consumer declares %q", Version, want)
+	}
+}
+
+func TestEveryFinalizerIsOneTheConsumerDeclares(t *testing.T) {
+	declared := consumerConstants(t)
+	for name, value := range map[string]string{
+		"FinalizerDenoRun":           FinalizerDenoRun,
+		"FinalizerDenoPod":           FinalizerDenoPod,
+		"FinalizerPolicyEngine":      FinalizerPolicyEngine,
+		"FinalizerPolicyWorkflowRun": FinalizerPolicyWorkflowRun,
+		"FinalizerOpenBao":           FinalizerOpenBao,
 	} {
-		if value.got != value.want {
-			t.Fatalf("%s = %q, want %q", value.name, value.got, value.want)
+		want, ok := declared[name]
+		if !ok {
+			t.Fatalf("the consumer declares no %s, so this one is invented", name)
+		}
+		if value != want {
+			t.Fatalf("%s = %q, the consumer declares %q", name, value, want)
+		}
+	}
+}
+
+func TestTheLabelIsTheOneTheConsumerDeclares(t *testing.T) {
+	declared := consumerConstants(t)
+	if want := declared["PolicyWorkflowPodLabel"]; want != "" && PolicyWorkflowPodLabel != want {
+		t.Fatalf("PolicyWorkflowPodLabel = %q, the consumer declares %q", PolicyWorkflowPodLabel, want)
+	}
+	for _, value := range []string{JobRunLabel, TriggerLabel} {
+		if !strings.HasPrefix(value, Group+"/") {
+			t.Fatalf("label %q is not in the %s group", value, Group)
 		}
 	}
 }

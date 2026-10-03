@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"math"
 	"runtime"
 	"sync"
 	"sync/atomic"
@@ -114,7 +115,10 @@ func New(opts Options) (*Controller, error) {
 	c.queueDepth = opts.Metrics.GaugeFunc("queue_depth", "work keys that are ready to reconcile", func() float64 {
 		return float64(c.queue.Len())
 	})
-	c.cacheAge = opts.Metrics.GaugeFunc("cache_age_seconds", "seconds since the last informer event", func() float64 {
+	c.cacheAge = opts.Metrics.GaugeFunc("cache_age_seconds", "seconds since the last informer event, NaN before the first one", func() float64 {
+		if c.lastEventNanos.Load() == 0 {
+			return math.NaN()
+		}
 		return c.CacheAge().Seconds()
 	})
 	return c, nil

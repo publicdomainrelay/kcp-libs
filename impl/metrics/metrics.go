@@ -49,7 +49,10 @@ func (r *Registry) Gauge(name, help string) prometheus.Gauge {
 
 func (r *Registry) GaugeFunc(name, help string, value func() float64) prometheus.GaugeFunc {
 	gauge := prometheus.NewGaugeFunc(prometheus.GaugeOpts{Name: r.Name(name), Help: help}, value)
-	return existing[prometheus.GaugeFunc](r, gauge)
+	if err := r.registry.Register(gauge); err != nil {
+		panic(fmt.Sprintf("metrics: %v; a gauge function is bound to one caller, so two of them cannot share a name", err))
+	}
+	return gauge
 }
 
 func (r *Registry) Summary(name, help string) prometheus.Summary {

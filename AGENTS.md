@@ -54,7 +54,7 @@ Deno is a core subject of this library, not an accident of where the code came
 from. The `deno.computer` vocabulary, the deno pod template and permissions,
 and the deno process runner belong here. The generic layers (reconcile, queue,
 cache, kcpstore, informerwatch, exportwatch, metrics, statuspatch, ref,
-kcpclient) name no workload runtime and are usable without them; keep it that
+clientlimit) name no workload runtime and are usable without them; keep it that
 way, and do not "clean up" the deno packages on the grounds that they are
 consumer-specific.
 

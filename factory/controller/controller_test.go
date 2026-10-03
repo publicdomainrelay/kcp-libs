@@ -19,7 +19,7 @@ func newTestController(t *testing.T, handler reconcile.Handler, policy reconcile
 	t.Helper()
 	controller, err := New(Options{
 		Config:  &rest.Config{Host: "https://kcp.invalid"},
-		Sources: []informerwatch.Source{{Base: "https://kcp.invalid", Resources: []informerwatch.Resource{{Kind: "denorun", GVR: schema.GroupVersionResource{Group: "denocomputer.computer", Version: "v1alpha1", Resource: "denoruns"}}}}},
+		Sources: []informerwatch.Source{{Base: "https://kcp.invalid", Resources: []informerwatch.Resource{{Kind: "denorun", GVR: schema.GroupVersionResource{Group: "deno.computer", Version: "v1alpha1", Resource: "denoruns"}}}}},
 		Handler: handler,
 		Policy:  policy,
 		Now:     time.Now,
