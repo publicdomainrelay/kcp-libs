@@ -142,14 +142,14 @@ func TestOperationOnTheObservedObjectHasNoTarget(t *testing.T) {
 	}
 }
 
-func TestFuncAdaptsAFunction(t *testing.T) {
-	reconciler := Func[runObserved, runStatus](decideRun)
+func TestReconcilerFuncAdaptsAFunction(t *testing.T) {
+	reconciler := ReconcilerFunc[runObserved, runStatus](decideRun)
 	res, err := reconciler.Reconcile(context.Background(), runObserved{})
 	if err != nil {
 		t.Fatal(err)
 	}
 	if !res.Has(KindStart) {
-		t.Fatal("Func must call the function it wraps")
+		t.Fatal("ReconcilerFunc must call the function it wraps")
 	}
 }
 
@@ -162,7 +162,7 @@ func TestBridgeReadsDecidesAndApplies(t *testing.T) {
 			}
 			return runObserved{Running: true}, nil
 		},
-		Decider: Func[runObserved, runStatus](decideRun),
+		Decider: ReconcilerFunc[runObserved, runStatus](decideRun),
 		Apply: func(_ context.Context, _ Key, observed runObserved, result Result[runStatus]) error {
 			if !observed.Running {
 				t.Fatal("Apply must receive what Read read")
@@ -217,12 +217,12 @@ func TestThePatchCarriesTheClearedFieldAsNull(t *testing.T) {
 	if value != nil {
 		t.Fatalf("the cleared field must be null, got %v", value)
 	}
-	if body.Status["phase"] != "Running" {
-		t.Fatalf("the rest of the status must survive: %s", patch)
+	if body.Status["phase"] != "Pending" {
+		t.Fatalf("the patch must carry the phase the decider decided, not the one it observed: %s", patch)
 	}
 }
 
-func TestThePatchOmitsWhatTheStatusDidNotCarry(t *testing.T) {
+func TestThePatchLeavesThePhaseAloneWhenTheDeciderDidNotSetOne(t *testing.T) {
 	patch, err := Patch(Result[runStatus]{Status: runStatus{Phase: "Running"}})
 	if err != nil {
 		t.Fatal(err)
@@ -236,12 +236,15 @@ func TestThePatchOmitsWhatTheStatusDidNotCarry(t *testing.T) {
 	if _, present := body.Status["runID"]; present {
 		t.Fatalf("an untouched field must not be in the patch: %s", patch)
 	}
+	if body.Status["phase"] != "Running" {
+		t.Fatalf("a decider that decided no phase must not restate one: %s", patch)
+	}
 }
 
 func TestBridgeReportsAFailedApply(t *testing.T) {
 	bridge := Bridge[runObserved, runStatus]{
 		Read:     func(context.Context, Key) (runObserved, error) { return runObserved{}, nil },
-		Decider:  Func[runObserved, runStatus](decideRun),
+		Decider:  ReconcilerFunc[runObserved, runStatus](decideRun),
 		Apply:    func(context.Context, Key, runObserved, Result[runStatus]) error { return errApply },
 		Terminal: func(string) bool { return false },
 	}

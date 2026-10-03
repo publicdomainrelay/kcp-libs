@@ -79,7 +79,7 @@ func (s *Store) Config() *rest.Config {
 	return s.cfg
 }
 
-func (s *Store) For(logicalCluster string, gv schema.GroupVersion) (rest.Interface, error) {
+func (s *Store) ClientFor(logicalCluster string, gv schema.GroupVersion) (rest.Interface, error) {
 	key := logicalCluster + "|" + gv.String()
 	s.mu.Lock()
 	if client, ok := s.clients[key]; ok {
@@ -121,7 +121,7 @@ func (r *Resource[T]) GVR() schema.GroupVersionResource {
 }
 
 func (r *Resource[T]) client(logicalCluster string) (rest.Interface, error) {
-	return r.store.For(logicalCluster, r.gvr.GroupVersion())
+	return r.store.ClientFor(logicalCluster, r.gvr.GroupVersion())
 }
 
 func (r *Resource[T]) GetRaw(ctx context.Context, target ref.Ref) ([]byte, error) {
@@ -309,7 +309,7 @@ func nameOf(raw []byte) string {
 }
 
 func (s *Store) ClusterPath(ctx context.Context, logicalCluster string) (string, error) {
-	c, err := s.For(logicalCluster, schema.GroupVersion{Group: "core.kcp.io", Version: "v1alpha1"})
+	c, err := s.ClientFor(logicalCluster, schema.GroupVersion{Group: "core.kcp.io", Version: "v1alpha1"})
 	if err != nil {
 		return "", err
 	}
@@ -336,7 +336,7 @@ func (s *Store) MintServiceAccountToken(ctx context.Context, logicalCluster, nam
 	if namespace == "" {
 		namespace = "default"
 	}
-	c, err := s.For(logicalCluster, schema.GroupVersion{Group: "", Version: "v1"})
+	c, err := s.ClientFor(logicalCluster, schema.GroupVersion{Group: "", Version: "v1"})
 	if err != nil {
 		return "", err
 	}

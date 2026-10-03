@@ -11,6 +11,8 @@ import (
 	"github.com/publicdomainrelay/kcp-libs/common/statuspatch"
 )
 
+const PhaseField = "phase"
+
 type Kind string
 
 const (
@@ -81,6 +83,9 @@ func Patch[Status any](result Result[Status]) ([]byte, error) {
 	if err := json.Unmarshal(body, &fields); err != nil {
 		return nil, fmt.Errorf("reconcile: decode the status: %w", err)
 	}
+	if result.Phase != "" {
+		fields[PhaseField] = result.Phase
+	}
 	for _, name := range result.ClearFields {
 		fields[name] = nil
 	}
@@ -95,8 +100,8 @@ type Reconciler[Observed, Status any] interface {
 	Reconcile(ctx context.Context, observed Observed) (Result[Status], error)
 }
 
-type Func[Observed, Status any] func(ctx context.Context, observed Observed) (Result[Status], error)
+type ReconcilerFunc[Observed, Status any] func(ctx context.Context, observed Observed) (Result[Status], error)
 
-func (f Func[Observed, Status]) Reconcile(ctx context.Context, observed Observed) (Result[Status], error) {
+func (f ReconcilerFunc[Observed, Status]) Reconcile(ctx context.Context, observed Observed) (Result[Status], error) {
 	return f(ctx, observed)
 }

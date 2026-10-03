@@ -16,7 +16,7 @@ impl/      concrete bindings: client-go, os/exec, net/http abc + common
    ^
 factory/   composition: driver, admission, wiring          impl + abc + common
    ^
-examples/  runnable programs, one per use case             anything
+examples/  runnable programs, one per use case             everything below
 
 internal/  test support: a live kcp, and the import rules   not for production
 ```
@@ -76,7 +76,7 @@ package imports anything project-local, or if an `abc` package imports past
 | impl | `impl/openbaoclient` | a typed adapter over the official `github.com/openbao/openbao/api/v2` client |
 | impl | `impl/pkiprovisioner` | one intermediate CA per namespace, root in the root namespace, cached |
 | impl | `impl/policyclient` | the gha-lite policy engine HTTP client, including verdict extraction |
-| impl | `impl/metrics` | a thin wrapper over `prometheus/client_golang`: `Counter`/`Gauge`/`Summary` registered on a private registry, with a renderer for tests and examples. `queue_depth` counts keys ready to run, not keys waiting on a backoff, because the workqueue does not expose its delaying queue |
+| impl | `impl/metrics` | a thin wrapper over `prometheus/client_golang`. A counter or a gauge registered twice with the same help is shared; a gauge *function* is bound to one source, so a second registration for the same name panics rather than export the first one's number: `Counter`/`Gauge`/`Summary` registered on a private registry, with a renderer for tests and examples. `queue_depth` counts keys ready to run, not keys waiting on a backoff, because the workqueue does not expose its delaying queue |
 | impl | `impl/assets` | writes a caller's asset set (a shim, a probe) into a directory, once. The exec runner writes its own run directory and does not use this |
 | factory | `controller` | informers + workqueue + worker pool + requeue policy + metrics; one `Source` per APIExport, since a resource may only be listed against the export that serves it |
 | factory | `admission` | per-parent admission: leases, planning, and the wake of queued runs |
@@ -102,7 +102,7 @@ ask for children to be created or stopped), and a list of status fields to
 write as null, because a merge patch cannot clear a field it is not told
 about.
 
-**`abc/reconcile`** owns the requeue policy too. `Policy.Next` reproduces the measured
+The same package owns the requeue policy. `Policy.Next` reproduces the measured
 behaviour: a terminal key with no requeue stops, an unset requeue becomes the
 interval, and a key whose kind is clamped is re-checked at
 `MinTransitionPoll` because a running process is only visible by asking it.
@@ -133,11 +133,26 @@ Where the code in `../deno-kcp` moves.
 | `internal/provider/kcpdns/embed.go` | `impl/assets` |
 | `api/v1alpha1/types_shared.go` | `common/denospec`, `common/denocomputer` |
 
-The driver dispatches by kind and nothing more: one handler is given a key and decides what to do with it. It does not route between kinds for you, and it does not create or stop the children a decider asks for -- `Result.Ops` is the decider saying what it wants, and the consumer's `Bridge.Apply` is what carries it out against its own typed resources. That is deliberate: a generic executor would need a store per kind, which is the consumer's API surface, not the library's.
+The driver dispatches by kind and nothing more: one handler is given a key and
+decides what to do with it. It does not route between kinds for you, and it
+does not create or stop the children a decider asks for -- `Result.Ops` is the
+decider saying what it wants, and the consumer's `Bridge.Apply` is what carries
+it out against its own typed resources. That is deliberate: a generic executor
+would need a store per kind, which is the consumer's API surface, not the
+library's.
+
+`Bridge` runs Read, then Decide, then Apply, once. A consumer whose pass has to
+observe what it just did before it can decide again -- starting a workload and
+re-reading it in the same pass, as one of the consumers here does to save a
+trip through the queue -- keeps its own loop for that pass. The library's shape
+is the level-triggered one: an operation is a request, and the next event is
+what reports whether it took.
 
 Some of the surface here exists for the consumer rather than for this module's
-own production code. Each has a caller in deno-kcp; none has one here, and each
-is exercised by a test:
+own production code: each row has a caller in deno-kcp and none has one here.
+Most are exercised by a test in this module; the last two rows are the
+vocabulary a consumer's own types are described with, and carry no behaviour to
+test:
 
 | Export | What the consumer does with it |
 |---|---|

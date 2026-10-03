@@ -97,7 +97,7 @@ func handlerFor(set *cache.Set, resource *kcpstore.Resource[widget]) reconcile.H
 				ref.Key(key.Ref.LogicalCluster, key.Ref.Namespace, group))))
 			return observed{Widget: *obj, Siblings: siblings}, nil
 		},
-		Decider: reconcile.Func[observed, status](decide),
+		Decider: reconcile.ReconcilerFunc[observed, status](decide),
 		Apply: func(ctx context.Context, key reconcile.Key, o observed, result reconcile.Result[status]) error {
 			next := status{
 				Phase:      result.Phase,
@@ -108,7 +108,7 @@ func handlerFor(set *cache.Set, resource *kcpstore.Resource[widget]) reconcile.H
 			if abcstore.Unchanged(next, o.Widget.Status) {
 				return nil
 			}
-			patch, err := reconcile.Patch(reconcile.Result[status]{Status: next})
+			patch, err := reconcile.Patch(result)
 			if err != nil {
 				return err
 			}

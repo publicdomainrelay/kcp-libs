@@ -84,14 +84,17 @@ func newSupervisor(prefix, runsDir string) *supervisor {
 }
 
 func (s *supervisor) nextID() string {
-	return fmt.Sprintf("%s-%s-%d", s.prefix, time.Now().UTC().Format("20060102T150405"), s.seq.Add(1))
+	return fmt.Sprintf("%s-%s-%d", s.prefix, time.Now().UTC().Format("20060102T150405.000000000"), s.seq.Add(1))
 }
 
 func (s *supervisor) start(entry processSpec) (string, error) {
 	id := s.nextID()
 	dir := filepath.Join(s.runsDir, id)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		return "", fmt.Errorf("execrunner: create %s directory: %w", s.prefix, err)
+	if err := os.MkdirAll(s.runsDir, 0o755); err != nil {
+		return "", fmt.Errorf("execrunner: create the runs directory: %w", err)
+	}
+	if err := os.Mkdir(dir, 0o755); err != nil {
+		return "", fmt.Errorf("execrunner: create the %s directory: %w", s.prefix, err)
 	}
 	for name, body := range entry.files {
 		if err := os.WriteFile(filepath.Join(dir, name), body, 0o644); err != nil {
@@ -124,6 +127,7 @@ func (s *supervisor) start(entry processSpec) (string, error) {
 	cmd.Stderr = stderr
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	if err := cmd.Start(); err != nil {
+		_ = os.RemoveAll(dir)
 		return "", fmt.Errorf("execrunner: start %s process: %w", s.prefix, err)
 	}
 
@@ -138,6 +142,7 @@ func (s *supervisor) start(entry processSpec) (string, error) {
 	}
 	if err := writeState(run); err != nil {
 		_ = syscall.Kill(-run.pid, syscall.SIGKILL)
+		_ = os.RemoveAll(dir)
 		return "", err
 	}
 	s.mu.Lock()

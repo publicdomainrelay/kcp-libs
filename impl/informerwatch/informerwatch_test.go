@@ -1,6 +1,7 @@
 package informerwatch
 
 import (
+	"strings"
 	"testing"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -101,5 +102,23 @@ func TestAWatchSourceMustNameABaseAndItsResources(t *testing.T) {
 		if err := Run(t.Context(), opts); err == nil {
 			t.Fatalf("%s must be refused", name)
 		}
+	}
+}
+
+func TestAKindWatchedTwiceIsRefused(t *testing.T) {
+	source := func(base string) Source {
+		return Source{Base: base, Resources: []Resource{{Kind: "widget", GVR: gvr("widgets")}}}
+	}
+	opts := Options{
+		Config:  config(t),
+		Enqueue: func(string, ref.Ref) {},
+		Sources: []Source{source("https://kcp.example/a"), source("https://kcp.example/b")},
+	}
+	err := Run(t.Context(), opts)
+	if err == nil {
+		t.Fatal("a kind watched from two sources would have one of its indexes replaced by the other")
+	}
+	if !strings.Contains(err.Error(), "watched twice") {
+		t.Fatalf("err = %v", err)
 	}
 }

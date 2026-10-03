@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-var declared = regexp.MustCompile(`(?m)^(?:const )?\s*(\w+) = "([^"]+)"`)
+var assignment = regexp.MustCompile(`^\s*(\w+)(?:\s+\w+)?\s*=\s*"([^"]+)"`)
 
 func consumerConstants(t *testing.T) map[string]string {
 	t.Helper()
@@ -49,7 +49,15 @@ func readConstants(t *testing.T, dir string) map[string]string {
 		if err != nil {
 			t.Fatal(err)
 		}
-		for _, match := range declared.FindAllStringSubmatch(string(body), -1) {
+		for _, line := range strings.Split(string(body), "\n") {
+			line = strings.TrimSpace(line)
+			if line == "" || strings.HasPrefix(line, "//") {
+				continue
+			}
+			match := assignment.FindStringSubmatch(strings.TrimPrefix(line, "const "))
+			if match == nil {
+				continue
+			}
 			out[match[1]] = match[2]
 		}
 	}
@@ -105,12 +113,28 @@ func TestTheLabelIsTheOneTheConsumerDeclares(t *testing.T) {
 	}
 }
 
-func TestThePhasesAndConditionsAreTheOnesTheApiServerStores(t *testing.T) {
-	if string(PhaseSucceeded) != "Succeeded" || string(PhaseCancelled) != "Cancelled" {
-		t.Fatalf("phases = %q, %q", PhaseSucceeded, PhaseCancelled)
-	}
-	if ConditionReady != "Ready" || ConditionComplete != "Complete" {
-		t.Fatalf("conditions = %q, %q", ConditionReady, ConditionComplete)
+func TestThePhasesAndConditionsAreTheOnesTheConsumerStores(t *testing.T) {
+	declared := consumerConstants(t)
+	for name, value := range map[string]string{
+		"DenoRunPending":          string(PhasePending),
+		"DenoRunRunning":          string(PhaseRunning),
+		"DenoRunSucceeded":        string(PhaseSucceeded),
+		"DenoRunFailed":           string(PhaseFailed),
+		"PolicyWorkflowCancelled": string(PhaseCancelled),
+		"RunTriggerTriggered":     string(PhaseTriggered),
+		"ConditionReady":          ConditionReady,
+		"ConditionComplete":       ConditionComplete,
+		"ConditionFailed":         ConditionFailed,
+		"ConditionSuspended":      ConditionSuspended,
+		"ConditionCancelled":      ConditionCancelled,
+	} {
+		want, ok := declared[name]
+		if !ok {
+			t.Fatalf("the consumer declares no %s, so this module's value for it is invented", name)
+		}
+		if value != want {
+			t.Fatalf("%s = %q, the consumer declares %q", name, value, want)
+		}
 	}
 }
 

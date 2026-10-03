@@ -2,6 +2,8 @@ package metrics
 
 import (
 	"bytes"
+	"io"
+	"net/http"
 	"strings"
 	"testing"
 
@@ -90,6 +92,49 @@ func TestListenServesMetrics(t *testing.T) {
 	if server.Address() == "" {
 		t.Fatal("the server must report its bound address")
 	}
+	response, err := http.Get("http://" + server.Address() + "/metrics")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer response.Body.Close()
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(body), "kcp_reconciles_total 1") {
+		t.Fatalf("the endpoint must serve the metric: %s", body)
+	}
+}
+
+func TestAGaugeFunctionIsReadAtScrapeAndCannotBeShared(t *testing.T) {
+	registry := New("kcp")
+	value := 1.0
+	registry.GaugeFunc("queue_depth", "work keys waiting", func() float64 { return value })
+	value = 7
+	var buffer bytes.Buffer
+	if err := registry.Render(&buffer); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(buffer.String(), "kcp_queue_depth 7") {
+		t.Fatalf("the scrape must read the function, not a captured value:\n%s", buffer.String())
+	}
+	defer func() {
+		if recover() == nil {
+			t.Fatal("a second gauge function for the same name would export the wrong number silently")
+		}
+	}()
+	registry.GaugeFunc("queue_depth", "work keys waiting", func() float64 { return 0 })
+}
+
+func TestAGaugeFunctionCannotStealAnotherMetricsName(t *testing.T) {
+	registry := New("kcp")
+	registry.Gauge("queue_depth", "work keys waiting")
+	defer func() {
+		if recover() == nil {
+			t.Fatal("registering a function over an existing metric must not be silent")
+		}
+	}()
+	registry.GaugeFunc("queue_depth", "work keys waiting", func() float64 { return 0 })
 }
 
 func TestTheRegistryIsAStandardRegisterer(t *testing.T) {
