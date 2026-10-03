@@ -65,6 +65,8 @@ type processSpec struct {
 	envForDir func(dir string, caller []string) []string
 }
 
+const retainedRunsLimit = 128
+
 type supervisor struct {
 	prefix string
 
@@ -78,11 +80,15 @@ type supervisor struct {
 
 	envs map[string]map[string]string
 
+	completed []string
+
+	retainLimit int
+
 	seq atomic.Int64
 }
 
 func newSupervisor(prefix, runsDir, doneFile string) *supervisor {
-	return &supervisor{prefix: prefix, runsDir: runsDir, doneFile: doneFile, runs: map[string]*process{}, envs: map[string]map[string]string{}}
+	return &supervisor{prefix: prefix, runsDir: runsDir, doneFile: doneFile, runs: map[string]*process{}, envs: map[string]map[string]string{}, retainLimit: retainedRunsLimit}
 }
 
 func (s *supervisor) nextID() string {
@@ -165,6 +171,7 @@ func (s *supervisor) start(entry processSpec) (string, error) {
 		if s.doneFile != "" {
 			s.forget(id)
 		}
+		s.retain(id)
 	}()
 	return id, nil
 }
@@ -179,6 +186,24 @@ func (s *supervisor) forget(id string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	delete(s.runs, id)
+}
+
+func (s *supervisor) retain(id string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.completed = append(s.completed, id)
+	for len(s.completed) > s.retainLimit {
+		oldest := s.completed[0]
+		s.completed = s.completed[1:]
+		delete(s.runs, oldest)
+		delete(s.envs, oldest)
+	}
+}
+
+func (s *supervisor) retained() int {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return len(s.envs)
 }
 
 func writeDone(run *process, doneFile string) {

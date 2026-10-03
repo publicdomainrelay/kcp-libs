@@ -295,6 +295,48 @@ func TestAgentAddressEnvironmentIsIgnored(t *testing.T) {
 	}
 }
 
+func TestTheEnvironmentCannotInstallAProxy(t *testing.T) {
+	plain := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"initialized":true,"sealed":false,"version":"2.0.0"}`))
+	}))
+	t.Cleanup(plain.Close)
+	secure := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"initialized":true,"sealed":false,"version":"2.0.0"}`))
+	}))
+	t.Cleanup(secure.Close)
+	trusted := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: secure.Certificate().Raw})
+
+	cases := []struct {
+		env     string
+		address string
+		ca      []byte
+	}{
+		{"BAO_PROXY_ADDR", plain.URL, nil},
+		{"HTTPS_PROXY", secure.URL, trusted},
+	}
+	for _, tc := range cases {
+		t.Run(tc.env, func(t *testing.T) {
+			t.Setenv(tc.env, "http://127.0.0.1:1")
+			client, err := New(Options{Address: tc.address, Token: "t", CACert: tc.ca})
+			if err != nil {
+				t.Fatal(err)
+			}
+			transport, ok := client.client.CloneConfig().HttpClient.Transport.(*http.Transport)
+			if !ok {
+				t.Fatal("the client carries no HTTP transport")
+			}
+			if transport.Proxy != nil {
+				t.Fatalf("%s must not reach the connection", tc.env)
+			}
+			if _, err := client.Health(context.Background()); err != nil {
+				t.Fatalf("the address the caller supplied must be the one dialled: %v", err)
+			}
+		})
+	}
+}
+
 func TestCASerialWithoutACAReportsBothSentinels(t *testing.T) {
 	client, _ := newServer(t, func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(404)

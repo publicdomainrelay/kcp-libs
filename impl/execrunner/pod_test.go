@@ -777,6 +777,48 @@ func TestPodProbeAfterExitKeepsTheRunEnvironment(t *testing.T) {
 	}
 }
 
+func TestTheSupervisorBoundsRetainedRuns(t *testing.T) {
+	dir := t.TempDir()
+	stub := writeStub(t, dir, `if [ -n "$HOLD" ]; then sleep 30; else exit 0; fi`)
+	pod, err := NewPod(PodOptions{DenoBin: stub, RunsDir: filepath.Join(dir, "runs")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	pod.sup.retainLimit = 4
+	finished := make([]string, 0, 7)
+	for range 7 {
+		id, err := pod.Start(context.Background(), runner.PodRequest{Name: "pds", Script: "x"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		finished = append(finished, id)
+	}
+	for _, id := range finished {
+		observeUntilDone(t, pod, id)
+	}
+	deadline := time.Now().Add(10 * time.Second)
+	for time.Now().Before(deadline) && pod.sup.retained() > pod.sup.retainLimit {
+		time.Sleep(5 * time.Millisecond)
+	}
+	if got := pod.sup.retained(); got > pod.sup.retainLimit {
+		t.Fatalf("the supervisor retains %d finished run environments, but the bound is %d", got, pod.sup.retainLimit)
+	}
+
+	live, err := pod.Start(context.Background(), runner.PodRequest{Name: "pds", Script: "x", Env: map[string]string{"HOLD": "1"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := pod.sup.lookup(live); !ok {
+		t.Fatal("a run that is still alive must not be evicted")
+	}
+	if env := pod.sup.envOf(live); env["HOLD"] != "1" {
+		t.Fatalf("a live run's environment must be retained: %v", env)
+	}
+	if err := pod.Stop(context.Background(), live); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestEngineReportsTheWaitErrorWhenStopped(t *testing.T) {
 	dir := t.TempDir()
 	stub := writeStub(t, dir, `sleep 30`)

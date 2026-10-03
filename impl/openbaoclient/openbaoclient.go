@@ -88,6 +88,7 @@ func New(opts Options) (*Client, error) {
 	if !ok {
 		return nil, errors.New("openbao: the client carries no HTTP transport")
 	}
+	transport.Proxy = nil
 	tlsConfig := transport.TLSClientConfig
 	if tlsConfig == nil {
 		tlsConfig = &tls.Config{}
