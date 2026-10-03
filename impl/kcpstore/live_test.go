@@ -6,7 +6,9 @@ import (
 	"time"
 
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
+	"github.com/publicdomainrelay/kcp-libs/common/statuspatch"
 	"github.com/publicdomainrelay/kcp-libs/internal/livekcp"
+	"github.com/publicdomainrelay/kcp-libs/internal/livekcp/livetest"
 )
 
 type probeSpec struct {
@@ -22,7 +24,7 @@ type probeStatus struct {
 type probe = livekcp.Object[probeSpec, probeStatus]
 
 func TestLiveKcpstoreAgainstRealKCP(t *testing.T) {
-	livekcp.Require(t)
+	livetest.Require(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 
@@ -64,7 +66,7 @@ func TestLiveKcpstoreAgainstRealKCP(t *testing.T) {
 		t.Fatalf("listed = %+v", listed)
 	}
 
-	patch, err := StatusPatch(map[string]any{"phase": "Running", "observed": 2})
+	patch, err := statuspatch.Merge(map[string]any{"phase": "Running", "observed": 2})
 	if err != nil {
 		t.Fatal(err)
 	}

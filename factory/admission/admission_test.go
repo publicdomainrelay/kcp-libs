@@ -78,7 +78,7 @@ func TestAdmitGrantsALeaseAndRefusesTheSecond(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if second.Allowed || second.Reason != denocomputer.ReasonAtCapacity {
+	if second.Allowed || second.Reason != queue.ReasonAtCapacity {
 		t.Fatalf("the second run = %+v", second)
 	}
 }

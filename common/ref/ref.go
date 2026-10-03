@@ -36,10 +36,6 @@ func (r Ref) WithNamespace(namespace string) Ref {
 	return r
 }
 
-func (r Ref) IsZero() bool {
-	return r.LogicalCluster == "" && r.Namespace == "" && r.Name == ""
-}
-
 func BaseHost(host string) string {
 	host = strings.TrimSuffix(host, "/")
 	if i := strings.Index(host, APIPathPrefix); i >= 0 {

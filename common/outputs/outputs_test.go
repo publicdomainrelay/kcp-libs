@@ -25,13 +25,3 @@ func TestStringify(t *testing.T) {
 		t.Fatalf("list = %q", got["list"])
 	}
 }
-
-func TestMerge(t *testing.T) {
-	merged := Merge(map[string]string{"allow": "true"}, map[string]string{"violations": "[]"})
-	if len(merged) != 2 || merged["allow"] != "true" || merged["violations"] != "[]" {
-		t.Fatalf("merged = %v", merged)
-	}
-	if Merge(nil, nil) != nil {
-		t.Fatal("no inputs must merge to nothing")
-	}
-}

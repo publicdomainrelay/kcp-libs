@@ -3,7 +3,7 @@ package controller
 import "time"
 
 func (c *Controller) recordEvent() {
-	c.lastEventNanos.Store(time.Now().UnixNano())
+	c.lastEventNanos.Store(c.opts.Now().UnixNano())
 }
 
 func (c *Controller) CacheAge() time.Duration {
@@ -11,5 +11,5 @@ func (c *Controller) CacheAge() time.Duration {
 	if last == 0 {
 		return 0
 	}
-	return time.Since(time.Unix(0, last))
+	return c.opts.Now().Sub(time.Unix(0, last))
 }

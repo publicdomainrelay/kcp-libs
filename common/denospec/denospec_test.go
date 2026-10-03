@@ -72,9 +72,12 @@ func TestEffectiveRestartPolicy(t *testing.T) {
 }
 
 func TestProbeCommandCarriesTheShimsLease(t *testing.T) {
-	command := ProbeCommand("/runs/.kcpdns/shim.ts", "/runs/.kcpdns/probe.ts", "pds.default.alice.svc.kcp.local", "/health",
+	command := ProbeCommand("deno", "/runs/.kcpdns/shim.ts", "/runs/.kcpdns/probe.ts", "pds.default.alice.svc.kcp.local", "/health",
 		[]string{"KCP_SERVICE_DOMAIN", "KCP_DNS_TABLE"})
 	joined := strings.Join(command, " ")
+	if command[0] != "deno" {
+		t.Fatalf("the argv must name the runtime it runs: %v", command)
+	}
 	for _, want := range []string{
 		"run",
 		"--allow-env=KCP_SERVICE_DOMAIN,KCP_DNS_TABLE",
@@ -91,7 +94,10 @@ func TestProbeCommandCarriesTheShimsLease(t *testing.T) {
 }
 
 func TestProbeCommandDefaultsThePath(t *testing.T) {
-	command := ProbeCommand("shim", "probe", "name", "", nil)
+	command := ProbeCommand("", "shim", "probe", "name", "", nil)
+	if command[0] != "deno" {
+		t.Fatalf("the runtime defaults to deno: %v", command)
+	}
 	if command[len(command)-1] != "/" {
 		t.Fatalf("path = %q, want /", command[len(command)-1])
 	}

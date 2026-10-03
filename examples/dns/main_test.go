@@ -7,11 +7,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/publicdomainrelay/kcp-libs/internal/livekcp"
+	"github.com/publicdomainrelay/kcp-libs/internal/livekcp/livetest"
 )
 
 func TestRunBuildsTheTableAndTheTokens(t *testing.T) {
-	livekcp.Require(t)
+	livetest.Require(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 

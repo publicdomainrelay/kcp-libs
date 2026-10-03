@@ -2,9 +2,13 @@ package reconcile
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"slices"
 	"time"
 
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
+	"github.com/publicdomainrelay/kcp-libs/common/statuspatch"
 )
 
 type Kind string
@@ -34,7 +38,7 @@ type Result[Status any] struct {
 
 	Ops []Operation
 
-	Clear []string
+	ClearFields []string
 
 	RequeueAfter time.Duration
 }
@@ -64,13 +68,27 @@ func (r Result[Status]) ReleasesFinalizer() bool {
 	return r.Has(KindRemoveFinalizer)
 }
 
-func (r Result[Status]) Cleared(field string) bool {
-	for _, name := range r.Clear {
-		if name == field {
-			return true
-		}
+func (r Result[Status]) IsCleared(field string) bool {
+	return slices.Contains(r.ClearFields, field)
+}
+
+func Patch[Status any](result Result[Status]) ([]byte, error) {
+	fields := map[string]any{}
+	body, err := json.Marshal(result.Status)
+	if err != nil {
+		return nil, fmt.Errorf("reconcile: encode the status: %w", err)
 	}
-	return false
+	if err := json.Unmarshal(body, &fields); err != nil {
+		return nil, fmt.Errorf("reconcile: decode the status: %w", err)
+	}
+	for _, name := range result.ClearFields {
+		fields[name] = nil
+	}
+	patch, err := statuspatch.Merge(fields)
+	if err != nil {
+		return nil, fmt.Errorf("reconcile: %w", err)
+	}
+	return patch, nil
 }
 
 type Reconciler[Observed, Status any] interface {

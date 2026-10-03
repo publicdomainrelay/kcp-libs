@@ -47,6 +47,11 @@ func (r *Registry) Gauge(name, help string) prometheus.Gauge {
 	return existing[prometheus.Gauge](r, gauge)
 }
 
+func (r *Registry) GaugeFunc(name, help string, value func() float64) prometheus.GaugeFunc {
+	gauge := prometheus.NewGaugeFunc(prometheus.GaugeOpts{Name: r.Name(name), Help: help}, value)
+	return existing[prometheus.GaugeFunc](r, gauge)
+}
+
 func (r *Registry) Summary(name, help string) prometheus.Summary {
 	summary := prometheus.NewSummary(prometheus.SummaryOpts{Name: r.Name(name), Help: help})
 	return existing[prometheus.Summary](r, summary)

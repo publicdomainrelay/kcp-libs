@@ -15,7 +15,6 @@ import (
 	"github.com/publicdomainrelay/kcp-libs/common/denocomputer"
 	"github.com/publicdomainrelay/kcp-libs/common/logging"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
-	"github.com/publicdomainrelay/kcp-libs/common/statuspatch"
 	"github.com/publicdomainrelay/kcp-libs/factory/controller"
 	"github.com/publicdomainrelay/kcp-libs/impl/exportwatch"
 	"github.com/publicdomainrelay/kcp-libs/impl/informerwatch"
@@ -109,12 +108,7 @@ func handlerFor(set *cache.Set, resource *kcpstore.Resource[widget]) reconcile.H
 			if abcstore.Unchanged(next, o.Widget.Status) {
 				return nil
 			}
-			patch, err := statuspatch.Merge(map[string]any{
-				"phase":      next.Phase,
-				"observed":   next.Observed,
-				"siblings":   next.Siblings,
-				"conditions": statuspatch.Optional(next.Conditions),
-			})
+			patch, err := reconcile.Patch(reconcile.Result[status]{Status: next})
 			if err != nil {
 				return err
 			}

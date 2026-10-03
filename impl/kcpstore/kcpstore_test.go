@@ -10,7 +10,8 @@ import (
 	"testing"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/rest"
+
+	"github.com/publicdomainrelay/kcp-libs/common/statuspatch"
 
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 )
@@ -143,7 +144,7 @@ func TestPatchStatusUsesTheSubresource(t *testing.T) {
 		writeJSON(w, 200, map[string]any{})
 	})
 	resource := Of[runObject](store, denoRuns)
-	patch, err := StatusPatch(map[string]any{"phase": "Succeeded"})
+	patch, err := statuspatch.Merge(map[string]any{"phase": "Succeeded"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -274,30 +275,5 @@ func TestPathCacheResolvesOnce(t *testing.T) {
 func TestNewRequiresAHost(t *testing.T) {
 	if _, err := New(Options{}); err == nil {
 		t.Fatal("a host is required")
-	}
-}
-
-func TestTunedRaisesTheClientRateLimit(t *testing.T) {
-	configured := Tuned(&rest.Config{}, 0, 0)
-	if configured.QPS != DefaultQPS || configured.Burst != DefaultBurst {
-		t.Fatalf("tuned = (%v, %d), want (%v, %d)", configured.QPS, configured.Burst, DefaultQPS, DefaultBurst)
-	}
-	if configured.QPS <= 5 {
-		t.Fatal("the default client-go limiters are 5 qps and a burst of 10, which starves a controller")
-	}
-}
-
-func TestTunedKeepsWhatTheCallerSet(t *testing.T) {
-	source := &rest.Config{QPS: 7, Burst: 9}
-	tuned := Tuned(source, 0, 0)
-	if tuned.QPS != 7 || tuned.Burst != 9 {
-		t.Fatalf("tuned = (%v, %d), want the caller's (7, 9)", tuned.QPS, tuned.Burst)
-	}
-	if source.QPS != 7 {
-		t.Fatal("Tuned must not mutate the config it was given")
-	}
-	overridden := Tuned(&rest.Config{}, 11, 12)
-	if overridden.QPS != 11 || overridden.Burst != 12 {
-		t.Fatalf("tuned = (%v, %d), want the options (11, 12)", overridden.QPS, overridden.Burst)
 	}
 }

@@ -1,7 +1,7 @@
 package denocomputer
 
 const (
-	Group = "denocomputer.computer"
+	Group = "deno.computer"
 
 	Version = "v1alpha1"
 
@@ -9,29 +9,29 @@ const (
 )
 
 const (
-	PolicyWorkflowPodLabel = "denocomputer.computer/policyworkflowpod"
+	PolicyWorkflowPodLabel = "deno.computer/policyworkflowpod"
 
-	JobRunLabel = "denocomputer.computer/job"
+	JobRunLabel = "deno.computer/job"
 
-	TriggerLabel = "denocomputer.computer/trigger"
+	TriggerLabel = "deno.computer/trigger"
 )
 
 const (
-	FinalizerDenoRun = "denorun.denocomputer.computer/run"
+	FinalizerDenoRun = "denorun.deno.computer/run"
 
-	FinalizerDenoPod = "denopod.denocomputer.computer/run"
+	FinalizerDenoPod = "denopod.deno.computer/run"
 
-	FinalizerDenoJob = "denojob.denocomputer.computer/run"
+	FinalizerDenoJob = "denojob.deno.computer/run"
 
-	FinalizerPolicyEngine = "policyengine.denocomputer.computer/run"
+	FinalizerPolicyEngine = "policyengine.deno.computer/run"
 
-	FinalizerPolicyWorkflowRun = "policyworkflowrun.denocomputer.computer/run"
+	FinalizerPolicyWorkflowRun = "policyworkflowrun.deno.computer/run"
 
-	FinalizerPolicyWorkflowPod = "policyworkflowpod.denocomputer.computer/run"
+	FinalizerPolicyWorkflowPod = "policyworkflowpod.deno.computer/run"
 
-	FinalizerRunTrigger = "runtrigger.denocomputer.computer/run"
+	FinalizerRunTrigger = "runtrigger.deno.computer/run"
 
-	FinalizerOpenBao = "openbao.denocomputer.computer/namespace"
+	FinalizerOpenBao = "openbao.deno.computer/namespace"
 )
 
 const (
@@ -51,10 +51,6 @@ const (
 )
 
 const (
-	ReasonAtCapacity = "AtCapacity"
-
-	ReasonSuperseded = "Superseded"
-
 	ReasonPolicyWorkflowPodMissing = "PolicyWorkflowPodMissing"
 
 	ReasonEngineNotReady = "EngineNotReady"

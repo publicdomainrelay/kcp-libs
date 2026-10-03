@@ -16,6 +16,7 @@ import (
 	"k8s.io/client-go/rest"
 
 	"github.com/publicdomainrelay/kcp-libs/common/kcp"
+	"github.com/publicdomainrelay/kcp-libs/common/kcpclient"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 	"github.com/publicdomainrelay/kcp-libs/common/statuspatch"
 )
@@ -33,28 +34,7 @@ type Options struct {
 }
 
 func (o Options) tuned(cfg *rest.Config) *rest.Config {
-	return Tuned(cfg, o.QPS, o.Burst)
-}
-
-const DefaultQPS float32 = 50
-
-const DefaultBurst = 100
-
-func Tuned(cfg *rest.Config, qps float32, burst int) *rest.Config {
-	out := rest.CopyConfig(cfg)
-	if qps <= 0 {
-		qps = DefaultQPS
-	}
-	if burst <= 0 {
-		burst = DefaultBurst
-	}
-	if out.QPS <= 0 {
-		out.QPS = qps
-	}
-	if out.Burst <= 0 {
-		out.Burst = burst
-	}
-	return out
+	return kcpclient.Tuned(cfg, o.QPS, o.Burst)
 }
 
 type Store struct {
@@ -97,10 +77,6 @@ func New(opts Options) (*Store, error) {
 
 func (s *Store) Config() *rest.Config {
 	return s.cfg
-}
-
-func (s *Store) HTTPClient() *http.Client {
-	return s.http
 }
 
 func (s *Store) For(logicalCluster string, gv schema.GroupVersion) (rest.Interface, error) {
@@ -221,7 +197,7 @@ func (r *Resource[T]) PatchStatus(ctx context.Context, target ref.Ref, patch []b
 	if err != nil {
 		return err
 	}
-	body, err := statusBody(patch, target.ResourceVersion)
+	body, err := statuspatch.WithResourceVersion(patch, target.ResourceVersion)
 	if err != nil {
 		return err
 	}

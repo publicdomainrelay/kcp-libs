@@ -2,6 +2,7 @@ package reconcile
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"testing"
 	"time"
@@ -10,11 +11,11 @@ import (
 )
 
 type runStatus struct {
-	Phase string
+	Phase string `json:"phase,omitempty"`
 
-	RunID string
+	RunID string `json:"runID,omitempty"`
 
-	Retries int32
+	Retries int32 `json:"retries,omitempty"`
 }
 
 type runObserved struct {
@@ -31,7 +32,7 @@ func decideRun(_ context.Context, o runObserved) (Result[runStatus], error) {
 	case o.Failed:
 		res.Phase = "Pending"
 		res.Status.RunID = ""
-		res.Clear = append(res.Clear, "runID")
+		res.ClearFields = append(res.ClearFields, "runID")
 		res.RequeueAfter = 2 * time.Second
 	case o.Running:
 		res.Status.RunID = "workload-1"
@@ -50,10 +51,10 @@ func TestARetryCarriesTheClearedFieldSignal(t *testing.T) {
 	if res.Status.RunID != "" {
 		t.Fatal("the retry must not carry the dead workload's id")
 	}
-	if !res.Cleared("runID") {
+	if !res.IsCleared("runID") {
 		t.Fatal("a merge patch cannot clear a field it is not told about; the run id must be in Clear")
 	}
-	if res.Cleared("startTime") {
+	if res.IsCleared("startTime") {
 		t.Fatal("Clear must name only the fields the decider cleared")
 	}
 }
@@ -63,8 +64,8 @@ func TestAStartCarriesNoClearedField(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(res.Clear) != 0 {
-		t.Fatalf("cleared = %v, want none", res.Clear)
+	if len(res.ClearFields) != 0 {
+		t.Fatalf("cleared = %v, want none", res.ClearFields)
 	}
 	if !res.Has(KindStart) {
 		t.Fatal("the first pass must ask for a start")
@@ -191,6 +192,49 @@ func TestBridgeReadsDecidesAndApplies(t *testing.T) {
 	}
 	if !applied {
 		t.Fatal("the bridge must apply the result")
+	}
+}
+
+func TestThePatchCarriesTheClearedFieldAsNull(t *testing.T) {
+	res, err := decideRun(context.Background(), runObserved{Phase: "Running", Failed: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	patch, err := Patch(res)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var body struct {
+		Status map[string]any `json:"status"`
+	}
+	if err := json.Unmarshal(patch, &body); err != nil {
+		t.Fatal(err)
+	}
+	value, present := body.Status["runID"]
+	if !present {
+		t.Fatalf("a merge patch cannot clear a field it omits: %s", patch)
+	}
+	if value != nil {
+		t.Fatalf("the cleared field must be null, got %v", value)
+	}
+	if body.Status["phase"] != "Running" {
+		t.Fatalf("the rest of the status must survive: %s", patch)
+	}
+}
+
+func TestThePatchOmitsWhatTheStatusDidNotCarry(t *testing.T) {
+	patch, err := Patch(Result[runStatus]{Status: runStatus{Phase: "Running"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var body struct {
+		Status map[string]any `json:"status"`
+	}
+	if err := json.Unmarshal(patch, &body); err != nil {
+		t.Fatal(err)
+	}
+	if _, present := body.Status["runID"]; present {
+		t.Fatalf("an untouched field must not be in the patch: %s", patch)
 	}
 }
 

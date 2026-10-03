@@ -1,12 +1,14 @@
 package condition
 
 import (
+	"slices"
+
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func Copy(in []metav1.Condition) []metav1.Condition {
-	return append([]metav1.Condition(nil), in...)
+	return slices.Clone(in)
 }
 
 func Set(list *[]metav1.Condition, generation int64, status metav1.ConditionStatus, kind, reason, message string) {

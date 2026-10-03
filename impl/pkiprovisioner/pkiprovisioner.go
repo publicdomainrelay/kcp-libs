@@ -245,16 +245,6 @@ func (p *Provisioner) CachedRootPEM() []byte {
 	return []byte(p.root.Certificate)
 }
 
-func (p *Provisioner) Root() *pki.RootCA {
-	p.rootMu.Lock()
-	defer p.rootMu.Unlock()
-	if p.root == nil {
-		return nil
-	}
-	root := *p.root
-	return &root
-}
-
 func LeafChain(cert pki.Cert) string {
 	var builder strings.Builder
 	builder.WriteString(cert.Certificate)

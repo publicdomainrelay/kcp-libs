@@ -143,3 +143,37 @@ func TestDefaultWorkersIsBounded(t *testing.T) {
 		t.Fatalf("workers = %d", workers)
 	}
 }
+
+func TestCacheAgeMeasuresTheInformerNotTheReconciler(t *testing.T) {
+	now := time.Unix(1000, 0)
+	controller := newTestController(t, reconcile.HandlerFunc(func(context.Context, reconcile.Key) (time.Duration, bool, error) {
+		return 0, true, nil
+	}), reconcile.Policy{Interval: time.Hour})
+	controller.opts.Now = func() time.Time { return now }
+
+	if age := controller.CacheAge(); age != 0 {
+		t.Fatalf("before any event the age is unknown, got %v", age)
+	}
+	controller.onEvent()
+	now = now.Add(30 * time.Second)
+	if age := controller.CacheAge(); age != 30*time.Second {
+		t.Fatalf("age = %v, want 30s since the informer's event", age)
+	}
+
+	processed := make(chan struct{}, 1)
+	controller.opts.Handler = reconcile.HandlerFunc(func(context.Context, reconcile.Key) (time.Duration, bool, error) {
+		processed <- struct{}{}
+		return 0, true, nil
+	})
+	go controller.worker(context.Background())
+	defer controller.queue.ShutDown()
+	controller.Enqueue("widget", ref.New("root:alice", "default", "one"))
+	select {
+	case <-processed:
+	case <-time.After(5 * time.Second):
+		t.Fatal("the handler never ran")
+	}
+	if age := controller.CacheAge(); age != 30*time.Second {
+		t.Fatalf("a reconcile must not reset the cache age, got %v", age)
+	}
+}

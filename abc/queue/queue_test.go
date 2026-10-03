@@ -56,8 +56,8 @@ func TestDecision(t *testing.T) {
 		t.Fatal("allow with a free slot must admit")
 	}
 	allowed, reason, message := Decision(PolicyAllow, int32Ptr(2), 2, 0)
-	if allowed || reason != denocomputer.ReasonAtCapacity {
-		t.Fatalf("allow at capacity = (%v, %q), want (false, %q)", allowed, reason, denocomputer.ReasonAtCapacity)
+	if allowed || reason != ReasonAtCapacity {
+		t.Fatalf("allow at capacity = (%v, %q), want (false, %q)", allowed, reason, ReasonAtCapacity)
 	}
 	if message == "" {
 		t.Fatal("a refusal must carry a message")
@@ -138,7 +138,7 @@ func TestPlanReplaceAdmitsNewestAndPreempts(t *testing.T) {
 	if len(newest.Preempt) != 2 {
 		t.Fatalf("preempt = %d refs, want 2", len(newest.Preempt))
 	}
-	if planned[ref.New("root:alice", "default", "old")].Reason != denocomputer.ReasonSuperseded {
+	if planned[ref.New("root:alice", "default", "old")].Reason != ReasonSuperseded {
 		t.Fatal("an older pending run is superseded")
 	}
 	if planned[ref.New("root:alice", "default", "middle")].Gated {

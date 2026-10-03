@@ -3,6 +3,7 @@ package servicenames
 import (
 	"context"
 	"encoding/json"
+	"slices"
 	"time"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -61,21 +62,21 @@ type Options struct {
 	ServiceAccountNamespace string
 }
 
-type DNS struct {
+type Resolver struct {
 	opts Options
 }
 
-func New(opts Options) *DNS {
+func New(opts Options) *Resolver {
 	if opts.Domain == "" {
 		opts.Domain = kcp.DefaultServiceDomain
 	}
 	if opts.ServiceAccountNamespace == "" {
 		opts.ServiceAccountNamespace = "default"
 	}
-	return &DNS{opts: opts}
+	return &Resolver{opts: opts}
 }
 
-func (d *DNS) Name(ctx context.Context, name, namespace, logicalCluster string) string {
+func (d *Resolver) Name(ctx context.Context, name, namespace, logicalCluster string) string {
 	cluster := logicalCluster
 	if d.opts.Paths != nil {
 		if path := d.opts.Paths.Lookup(ctx, logicalCluster); path != "" {
@@ -85,7 +86,7 @@ func (d *DNS) Name(ctx context.Context, name, namespace, logicalCluster string) 
 	return kcp.ServiceFQDN(name, namespace, cluster, d.opts.Domain)
 }
 
-func (d *DNS) Table(ctx context.Context) (map[string]string, []string) {
+func (d *Resolver) Table(ctx context.Context) (map[string]string, []string) {
 	table := map[string]string{}
 	seen := map[string]bool{}
 	var workspaces []string
@@ -110,7 +111,7 @@ func (d *DNS) Table(ctx context.Context) (map[string]string, []string) {
 	return table, workspaces
 }
 
-func (d *DNS) Tokens(ctx context.Context, workspaces []string, account *denospec.ServiceAccountRef) string {
+func (d *Resolver) Tokens(ctx context.Context, workspaces []string, account *denospec.ServiceAccountRef) string {
 	out := map[string]string{}
 	if account != nil && d.opts.Minter != nil {
 		namespace := account.Namespace
@@ -132,14 +133,14 @@ func (d *DNS) Tokens(ctx context.Context, workspaces []string, account *denospec
 	return string(body)
 }
 
-func (d *DNS) Env(ctx context.Context, target ref.Ref, selfArgs, selfEnv string, account *denospec.ServiceAccountRef) map[string]string {
+func (d *Resolver) Env(ctx context.Context, target ref.Ref, selfArgs, selfEnv string, account *denospec.ServiceAccountRef) map[string]string {
 	env := map[string]string{
 		DomainKey:    d.opts.Domain,
 		NamespaceKey: target.Namespace,
 	}
 	table, workspaces := d.Table(ctx)
 	if self := AdvertisedAddress(selfArgs, selfEnv); self != "" {
-		if !contains(workspaces, target.LogicalCluster) {
+		if !slices.Contains(workspaces, target.LogicalCluster) {
 			workspaces = append(workspaces, target.LogicalCluster)
 		}
 		table[d.Name(ctx, target.Name, target.Namespace, target.LogicalCluster)] = self
@@ -193,13 +194,4 @@ func envOf(pod *unstructured.Unstructured, key string) string {
 	env, _, _ := unstructured.NestedMap(pod.Object, "spec", "env")
 	value, _ := env[key].(string)
 	return value
-}
-
-func contains(haystack []string, needle string) bool {
-	for _, candidate := range haystack {
-		if candidate == needle {
-			return true
-		}
-	}
-	return false
 }

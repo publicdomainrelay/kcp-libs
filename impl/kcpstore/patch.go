@@ -1,8 +1,6 @@
 package kcpstore
 
 import (
-	"fmt"
-
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 
@@ -21,18 +19,6 @@ func IsNotFound(err error) bool {
 
 func IsConflict(err error) bool {
 	return apierrors.IsConflict(err)
-}
-
-func StatusPatch(status map[string]any) ([]byte, error) {
-	body, err := statuspatch.Merge(status)
-	if err != nil {
-		return nil, fmt.Errorf("kcpstore: %w", err)
-	}
-	return body, nil
-}
-
-func statusBody(patch []byte, resourceVersion string) ([]byte, error) {
-	return statuspatch.WithResourceVersion(patch, resourceVersion)
 }
 
 func removeFinalizerPatch(current []string, dropped string) ([]byte, error) {

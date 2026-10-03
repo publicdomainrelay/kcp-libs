@@ -66,9 +66,9 @@ type Controller struct {
 
 	reconcileSeconds prometheus.Summary
 
-	queueDepth prometheus.Gauge
+	queueDepth prometheus.GaugeFunc
 
-	cacheAge prometheus.Gauge
+	cacheAge prometheus.GaugeFunc
 }
 
 func New(opts Options) (*Controller, error) {
@@ -111,8 +111,12 @@ func New(opts Options) (*Controller, error) {
 		queue: workqueue.NewTypedRateLimitingQueue(workqueue.DefaultTypedControllerRateLimiter[reconcile.Key]()),
 	}
 	c.reconcileSeconds = opts.Metrics.Summary("reconcile_seconds", "time spent inside a reconcile")
-	c.queueDepth = opts.Metrics.Gauge("queue_depth", "work keys that are ready to reconcile")
-	c.cacheAge = opts.Metrics.Gauge("cache_age_seconds", "seconds since the last informer event")
+	c.queueDepth = opts.Metrics.GaugeFunc("queue_depth", "work keys that are ready to reconcile", func() float64 {
+		return float64(c.queue.Len())
+	})
+	c.cacheAge = opts.Metrics.GaugeFunc("cache_age_seconds", "seconds since the last informer event", func() float64 {
+		return c.CacheAge().Seconds()
+	})
 	return c, nil
 }
 
@@ -197,7 +201,6 @@ func (c *Controller) Run(ctx context.Context) error {
 
 func (c *Controller) onEvent() {
 	c.recordEvent()
-	c.cacheAge.Set(0)
 }
 
 func (c *Controller) worker(ctx context.Context) {
@@ -212,10 +215,6 @@ func (c *Controller) worker(ctx context.Context) {
 			start := c.opts.Now()
 			after, terminal, err := c.opts.Handler.Process(ctx, key)
 			c.reconcileSeconds.Observe(c.opts.Now().Sub(start).Seconds())
-			c.queueDepth.Set(float64(c.queue.Len()))
-			if age := c.CacheAge(); age > 0 {
-				c.cacheAge.Set(age.Seconds())
-			}
 			if err != nil {
 				if ctx.Err() != nil {
 					return
@@ -232,7 +231,6 @@ func (c *Controller) worker(ctx context.Context) {
 				c.queue.AddRateLimited(key)
 				return
 			}
-			c.recordEvent()
 			c.queue.Forget(key)
 			delay, requeue := c.opts.Policy.Next(key, after, terminal)
 			if !requeue {

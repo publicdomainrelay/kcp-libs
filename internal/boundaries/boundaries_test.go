@@ -53,7 +53,7 @@ func TestTestSupportIsNotImportedByProductionCode(t *testing.T) {
 	}
 }
 
-func TestNoLayerImportsFromAbove(t *testing.T) {
+func TestLayerDependenciesFlowOneWay(t *testing.T) {
 	for _, entry := range packages(t) {
 		if strings.HasSuffix(entry.ImportPath, "/internal/boundaries") {
 			continue
@@ -73,8 +73,8 @@ func TestNoLayerImportsFromAbove(t *testing.T) {
 			if layer == "internal" || importedLayer == "internal" {
 				continue
 			}
-			if rank(importedLayer) > rank(layer) {
-				t.Fatalf("%s (%s) imports %s (%s); a package may not import from a layer above it",
+			if rank(importedLayer) >= rank(layer) {
+				t.Fatalf("%s (%s) imports %s (%s); dependencies must flow common <- abc <- impl <- factory <- examples, and a layer may not import its own",
 					entry.ImportPath, layer, imported, importedLayer)
 			}
 		}
@@ -122,7 +122,7 @@ func TestCommonDoesNotImportProjectLocalPackages(t *testing.T) {
 		if !strings.HasPrefix(entry.ImportPath, module+"common/") {
 			continue
 		}
-		for _, imported := range entry.Imports {
+		for _, imported := range append(append([]string(nil), entry.Imports...), entry.TestImports...) {
 			if strings.HasPrefix(imported, module) {
 				t.Fatalf("%s imports %s; the common layer must be leaf packages", entry.ImportPath, imported)
 			}
@@ -135,7 +135,7 @@ func TestAbcImportsOnlyCommon(t *testing.T) {
 		if !strings.HasPrefix(entry.ImportPath, module+"abc/") {
 			continue
 		}
-		for _, imported := range entry.Imports {
+		for _, imported := range append(append([]string(nil), entry.Imports...), entry.TestImports...) {
 			if strings.HasPrefix(imported, module) && !strings.HasPrefix(imported, module+"common/") {
 				t.Fatalf("%s imports %s; the abc layer may import common only", entry.ImportPath, imported)
 			}

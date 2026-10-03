@@ -102,13 +102,13 @@ func TestFinalizerAdd(t *testing.T) {
 	}
 }
 
-func TestFinalizersOfAndHas(t *testing.T) {
+func TestFinalizersOf(t *testing.T) {
 	body := []byte(`{"kind":"DenoRun","metadata":{"name":"r","finalizers":["a","b"]}}`)
 	finalizers, err := FinalizersOf(body)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(finalizers) != 2 || !HasFinalizer(finalizers, "b") || HasFinalizer(finalizers, "c") {
+	if len(finalizers) != 2 || finalizers[0] != "a" || finalizers[1] != "b" {
 		t.Fatalf("finalizers = %v", finalizers)
 	}
 }

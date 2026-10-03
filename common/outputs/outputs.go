@@ -26,16 +26,3 @@ func StringifyValue(value any) string {
 	}
 	return string(encoded)
 }
-
-func Merge(groups ...map[string]string) map[string]string {
-	var out map[string]string
-	for _, group := range groups {
-		for key, value := range group {
-			if out == nil {
-				out = map[string]string{}
-			}
-			out[key] = value
-		}
-	}
-	return out
-}

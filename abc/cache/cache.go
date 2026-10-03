@@ -57,12 +57,6 @@ func (s *Set) of(kind string) []Indexer {
 	return append([]Indexer(nil), s.indexers[kind]...)
 }
 
-func (s *Set) Registered(kind string) bool {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	return len(s.indexers[kind]) > 0
-}
-
 func (s *Set) Get(kind string, r ref.Ref) (any, bool) {
 	key := r.Key()
 	for _, indexer := range s.of(kind) {

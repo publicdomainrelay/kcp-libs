@@ -90,17 +90,16 @@ func TestRunRefusesAnIncompleteConfiguration(t *testing.T) {
 	}
 }
 
-func TestOneSourcePerExport(t *testing.T) {
-	sources := []Source{
-		{Base: "https://kcp.example/services/apiexport/root:p/denoruntime", Resources: []Resource{
-			{Kind: "denopod", GVR: gvr("denopods")},
-			{Kind: "denorun", GVR: gvr("denoruns")},
-		}},
-		{Base: "https://kcp.example/services/apiexport/root:p/policyworkflowruns", Resources: []Resource{
-			{Kind: "policyworkflowrun", GVR: gvr("policyworkflowruns")},
-		}},
+func TestAWatchSourceMustNameABaseAndItsResources(t *testing.T) {
+	config := &rest.Config{Host: "https://kcp.invalid"}
+	enqueue := func(string, ref.Ref) {}
+	cases := map[string]Options{
+		"no base":     {Config: config, Enqueue: enqueue, Sources: []Source{{Resources: []Resource{{Kind: "widget", GVR: gvr("widgets")}}}}},
+		"no resource": {Config: config, Enqueue: enqueue, Sources: []Source{{Base: "https://kcp.example/widgets"}}},
 	}
-	if len(sources) != 2 || len(sources[0].Resources) != 2 || len(sources[1].Resources) != 1 {
-		t.Fatalf("sources = %+v", sources)
+	for name, opts := range cases {
+		if err := Run(t.Context(), opts); err == nil {
+			t.Fatalf("%s must be refused", name)
+		}
 	}
 }

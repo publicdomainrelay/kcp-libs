@@ -21,6 +21,11 @@ cluster for all six, because kcp's own startup is about ten seconds and is the
 same every time; point `KCP_LIBS_KUBECONFIG` at an existing cluster to do the
 same by hand.
 
+Watching two exports at once, each with its own resource set, is not an
+example: it is `factory/controller`'s live test, which reconciles a `Widget`
+from one export and a `Gadget` from another because that is the only way to
+prove the driver keeps them apart.
+
 The three that need a cluster share one permissive object, a `Widget`:
 `livekcp.Object[Spec, Status]` is the envelope, so an example writes only the
 fields its story needs. The other three need no cluster and never touch it.
@@ -75,7 +80,7 @@ fails the build if anything outside `examples/` and tests reaches into
 
 | Package | Reach for it when | Shown in |
 |---|---|---|
-| `abc/reconcile` | you are writing a decider, or you need the requeue rules; `Bridge` turns one into the other | `controller` `Bridge`, `Policy` |
+| `abc/reconcile` | you are writing a decider, or you need the requeue rules; `Bridge` turns one into the other and `Patch` turns a result into the merge patch | `controller` `Bridge`, `Patch`, `Policy` |
 | `abc/cache` | you want the informer's objects by index instead of a list, and you own the set | `controller` `cache.NewSet`, `IndexersFor`, `ByIndex` |
 | `factory/controller` | you want informers plus a workqueue plus a worker pool, wired | `controller` `controller.New` |
 | `impl/kcpstore` | you need to read or write a CRD on kcp, typed or raw | `controller`, `admission`, `dns` |
@@ -102,6 +107,7 @@ fails the build if anything outside `examples/` and tests reaches into
 | `factory/servicenames` | a workload resolves a peer by name, and tokens are per workspace | `dns` |
 | `common/kcp` | a workspace path has to become DNS labels, or back | `dns` `ServiceLabels` |
 | `common/ref` | you need the identity of an object: cluster, namespace, name | `controller`, `admission`, `dns`, `workloads` |
+| `common/expiring` | you need a ttl-bounded map | `abc/queue` `Leases`, `abc/runref`, `abc/joballoc` (all four live under `abc/`) |
 | `common/statuspatch` | the status write is a merge patch, or a finalizer patch | `controller`, `admission` |
 | `common/condition` | a status carries `metav1.Condition` and you edit one | `controller` `decide` |
 | `common/denocomputer` | you are working in the `deno.computer` vocabulary | `controller` phases and condition |
@@ -111,9 +117,7 @@ fails the build if anything outside `examples/` and tests reaches into
 
 ## What each example is about
 
-**`controller`** — the whole loop, and the only example that watches two
-exports at once: widgets from one, gadgets from the other, each on its own
-`Source`. A `Widget` is created in a workspace, the
+**`controller`** — the whole loop. A `Widget` is created in a workspace, the
 informer sees it, the workqueue delivers the key, the decider says what phase
 it should be in, and the handler patches the status. It shows the difference
 between the list path (two widgets seeded before the controller starts) and the

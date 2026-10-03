@@ -62,9 +62,9 @@ func TestTableUsesTheWorkspacePath(t *testing.T) {
 		}
 		return ""
 	})
-	dns := New(Options{Source: source, Paths: paths, Domain: "kcp.local"})
+	resolver := New(Options{Source: source, Paths: paths, Domain: "kcp.local"})
 
-	table, workspaces := dns.Table(context.Background())
+	table, workspaces := resolver.Table(context.Background())
 	if len(table) != 1 {
 		t.Fatalf("table = %v", table)
 	}
@@ -77,12 +77,12 @@ func TestTableUsesTheWorkspacePath(t *testing.T) {
 }
 
 func TestEnvCarriesTheSelfNameBeforeThePodIsObserved(t *testing.T) {
-	dns := New(Options{
+	resolver := New(Options{
 		Source: SourceFunc(func() []*unstructured.Unstructured { return nil }),
 		Domain: "kcp.local",
 	})
 	target := ref.New("root:alice", "default", "pds")
-	env := dns.Env(context.Background(), target, `["--port","8080"]`, "", nil)
+	env := resolver.Env(context.Background(), target, `["--port","8080"]`, "", nil)
 	var table map[string]string
 	if err := json.Unmarshal([]byte(env[TableKey]), &table); err != nil {
 		t.Fatal(err)
@@ -109,7 +109,7 @@ func (f *fakeMinter) MintServiceAccountToken(_ context.Context, logicalCluster, 
 
 func TestTokensAreMintedPerWorkspace(t *testing.T) {
 	minter := &fakeMinter{}
-	dns := New(Options{
+	resolver := New(Options{
 		Source: SourceFunc(func() []*unstructured.Unstructured {
 			return []*unstructured.Unstructured{pod("pds", "default", "cluster-a", map[string]string{ArgsKey: `["--port","80"]`})}
 		}),
@@ -117,7 +117,7 @@ func TestTokensAreMintedPerWorkspace(t *testing.T) {
 		Domain: "kcp.local",
 	})
 	target := ref.New("root:bob", "default", "web")
-	env := dns.Env(context.Background(), target, `["--port","80"]`, "", &denospec.ServiceAccountRef{Name: "reader"})
+	env := resolver.Env(context.Background(), target, `["--port","80"]`, "", &denospec.ServiceAccountRef{Name: "reader"})
 	if env[TokensKey] == "" {
 		t.Fatal("a named service account must produce a token table")
 	}

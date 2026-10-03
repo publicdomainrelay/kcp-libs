@@ -14,6 +14,7 @@ import (
 	"github.com/publicdomainrelay/kcp-libs/impl/informerwatch"
 	"github.com/publicdomainrelay/kcp-libs/impl/kcpstore"
 	"github.com/publicdomainrelay/kcp-libs/internal/livekcp"
+	"github.com/publicdomainrelay/kcp-libs/internal/livekcp/livetest"
 )
 
 type probeSpec struct {
@@ -29,7 +30,7 @@ type probeStatus struct {
 type probe = livekcp.Object[probeSpec, probeStatus]
 
 func TestLiveControllerAgainstRealKCP(t *testing.T) {
-	livekcp.Require(t)
+	livetest.Require(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 

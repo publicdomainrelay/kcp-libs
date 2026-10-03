@@ -14,8 +14,8 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 
+	"github.com/publicdomainrelay/kcp-libs/common/kcpclient"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
-	"github.com/publicdomainrelay/kcp-libs/impl/kcpstore"
 )
 
 var EndpointSliceGVR = schema.GroupVersionResource{Group: "apis.kcp.io", Version: "v1alpha1", Resource: "apiexportendpointslices"}
@@ -51,7 +51,7 @@ func Client(opts Options) (dynamic.Interface, error) {
 	if opts.Config == nil {
 		return nil, errors.New("exportwatch: a rest config is required")
 	}
-	cfg := kcpstore.Tuned(opts.Config, 0, 0)
+	cfg := kcpclient.Tuned(opts.Config, 0, 0)
 	cfg.Host = opts.host() + ref.APIPathPrefix + opts.ProviderWorkspace
 	client, err := dynamic.NewForConfig(cfg)
 	if err != nil {

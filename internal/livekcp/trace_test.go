@@ -1,18 +1,21 @@
-package livekcp
+package livekcp_test
 
 import (
 	"context"
 	"testing"
 	"time"
+
+	"github.com/publicdomainrelay/kcp-libs/internal/livekcp"
+	"github.com/publicdomainrelay/kcp-libs/internal/livekcp/livetest"
 )
 
 func TestLiveStartupBreakdown(t *testing.T) {
-	Require(t)
+	livetest.Require(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 
 	started := time.Now()
-	cluster, err := Start(ctx)
+	cluster, err := livekcp.Start(ctx)
 	if err != nil {
 		t.Fatalf("start: %v", err)
 	}

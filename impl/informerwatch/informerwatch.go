@@ -14,8 +14,8 @@ import (
 	k8scache "k8s.io/client-go/tools/cache"
 
 	"github.com/publicdomainrelay/kcp-libs/abc/cache"
+	"github.com/publicdomainrelay/kcp-libs/common/kcpclient"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
-	"github.com/publicdomainrelay/kcp-libs/impl/kcpstore"
 )
 
 type Resource struct {
@@ -65,6 +65,14 @@ func Run(ctx context.Context, opts Options) error {
 	if opts.Enqueue == nil {
 		return errors.New("informerwatch: an enqueue function is required")
 	}
+	for _, source := range opts.Sources {
+		if source.Base == "" {
+			return errors.New("informerwatch: every source needs a base URL")
+		}
+		if len(source.Resources) == 0 {
+			return errors.New("informerwatch: every source needs at least one resource")
+		}
+	}
 	stop := ctx.Done()
 	var factories []dynamicinformer.DynamicSharedInformerFactory
 	for _, source := range opts.Sources {
@@ -84,6 +92,9 @@ func Run(ctx context.Context, opts Options) error {
 	for _, factory := range factories {
 		for resource, synced := range factory.WaitForCacheSync(stop) {
 			if !synced {
+				if ctx.Err() != nil {
+					return nil
+				}
 				return fmt.Errorf("informerwatch: the cache for %s did not sync", resource.Resource)
 			}
 		}
@@ -93,7 +104,7 @@ func Run(ctx context.Context, opts Options) error {
 }
 
 func factoryClient(config *rest.Config, base string) (dynamic.Interface, error) {
-	cfg := kcpstore.Tuned(config, 0, 0)
+	cfg := kcpclient.Tuned(config, 0, 0)
 	cfg.Host = strings.TrimSuffix(base, "/") + ref.APIPathPrefix + "*"
 	client, err := dynamic.NewForConfig(cfg)
 	if err != nil {

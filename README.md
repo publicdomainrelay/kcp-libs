@@ -27,7 +27,7 @@ of them talk to a real kcp and need `kcp` and `kubectl` on PATH, which is also
 what the live tests need; the other three need nothing but Go. `go run
 ./examples/controller` is the whole reconcile loop in one file.
 
-`internal/boundaries` is a test, not a package: it reads `go list -json ./...`
+`internal/boundaries` is a test-only package: it reads `go list -json ./...`
 and fails the build if any package imports against the arrow, if a `common`
 package imports anything project-local, or if an `abc` package imports past
 `common`.
@@ -42,6 +42,7 @@ package imports anything project-local, or if an `abc` package imports past
 | common | `common/statuspatch` | merge-patch bodies, resource-version stamping, finalizer JSON patches, `Optional` |
 | common | `common/denocomputer` | the `deno.computer` API group vocabulary: labels, finalizers, conditions, phases, terminal predicates. Named for the group, not the runtime. Kept whole rather than trimmed to what this module calls: a consumer adopting the library needs the words, and half a vocabulary is worse than none |
 | common | `common/denospec` | the shared wire shape: pod template, exec probe, service account ref, permissions, deno argv |
+| common | `common/kcpclient` | the client rate-limit defaults every transport shares, so a controller does not inherit client-go's 5 requests a second |
 | common | `common/expiring` | a ttl map with `Set`, `Get`, `Peek`, `Delete`, `DeleteIf`, `Expire`, `Range`, `SetPruning`. Backs the leases, the start index and the job allocations |
 | common | `common/ttl` | retention and active-deadline decisions |
 | common | `common/outputs` | `map[string]any` to `map[string]string` |
@@ -149,8 +150,9 @@ dominates and it is the same every time:
 | | |
 |---|---|
 | kcp ready to serve (`/readyz` returns 200) | ~10s |
-| provision: three workspaces, an export, two bindings | ~0.6s |
-| one live test, cluster already up | 0.8 - 2.9s |
+| provision: three workspaces, two exports, four bindings | ~0.6s |
+| one live test, cluster already up | 1 - 3s |
+| one example, cluster already up | 0.2 - 2s |
 
 `make test-live` and `make examples` run the whole tier against a single
 cluster through `scripts/live.sh`, so those ten seconds are paid once. Both
@@ -161,7 +163,7 @@ The other thing that made those numbers what they are: `impl/kcpstore` sets
 defaults every REST client to 5 requests a second with a burst of 10, and a
 controller that inherits that spends most of its time waiting on its own rate
 limiter -- the admission example went from 21.7s to 1.6s when it stopped.
-`kcpstore.Options` overrides both, and `kcpstore.Tuned` applies the same
+`kcpstore.Options` overrides both, and `common/kcpclient.Tuned` applies the same
 defaults to a config you built yourself.
 
 Run one on its own with `go run ./examples/controller`, or point several at a

@@ -87,16 +87,6 @@ func (p *Pod) Probe(_ context.Context, _ string, _ []string, _ time.Duration) (b
 	return p.opts.ProbeResult, nil
 }
 
-func (p *Pod) Requests() map[string]runner.PodRequest {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-	out := make(map[string]runner.PodRequest, len(p.runs))
-	for id, run := range p.runs {
-		out[id] = run.req
-	}
-	return out
-}
-
 type EngineOptions struct {
 	ExitsAfterPolls int
 }

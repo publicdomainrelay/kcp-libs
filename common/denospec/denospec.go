@@ -152,8 +152,11 @@ func validateValues(what string, values []string) error {
 	return nil
 }
 
-func ProbeCommand(shim, probe, name, path string, allowEnv []string) []string {
-	args := []string{"run", "--allow-env=" + strings.Join(allowEnv, ","), "--allow-net", "--preload", shim, probe, name}
+func ProbeCommand(runtime, shim, probe, name, path string, allowEnv []string) []string {
+	if runtime == "" {
+		runtime = "deno"
+	}
+	args := []string{runtime, "run", "--allow-env=" + strings.Join(allowEnv, ","), "--allow-net", "--preload", shim, probe, name}
 	if path == "" {
 		path = "/"
 	}

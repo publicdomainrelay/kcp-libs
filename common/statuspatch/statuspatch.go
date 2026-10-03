@@ -83,12 +83,3 @@ func FinalizersOf(body []byte) ([]string, error) {
 	}
 	return obj.Metadata.Finalizers, nil
 }
-
-func HasFinalizer(finalizers []string, want string) bool {
-	for _, finalizer := range finalizers {
-		if finalizer == want {
-			return true
-		}
-	}
-	return false
-}

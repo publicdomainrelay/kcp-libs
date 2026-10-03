@@ -7,8 +7,6 @@ import (
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 )
 
-const DefaultLeaseTTL = expiring.DefaultTTL
-
 type Lease struct {
 	Parent ref.Ref
 }
