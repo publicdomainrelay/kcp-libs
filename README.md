@@ -21,6 +21,16 @@ examples/  runnable programs, one per use case             anything
 internal/  test support: a live kcp, and the import rules   not for production
 ```
 
+Deno is a first-class concern here, not an incidental one. `common/denocomputer`
+(the `deno.computer` API group's vocabulary), `common/denospec` (its pod
+template, permissions and deno argv), `abc/runner` and `impl/execrunner` are
+core to this module: the first consumer is a controller that runs Deno
+workloads, and the point of the module is that the next one does not have to
+write them again. The layers above them are generic on purpose and can be used
+without any of it -- `reconcile`, `queue`, `cache`, `kcpstore`, `informerwatch`,
+`exportwatch`, `metrics`, `statuspatch`, `ref`, `kcpclient` name no workload
+runtime at all.
+
 **Start at [`examples/`](examples/README.md).** Six runnable programs drive the
 library, with a table mapping every package to the situation it is for. Three
 of them talk to a real kcp and need `kcp` and `kubectl` on PATH, which is also
