@@ -42,6 +42,28 @@ func (g *Gauge) SetInt(value int64) {
 	g.Set(float64(value))
 }
 
+func (g *Gauge) Add(delta float64) {
+	for {
+		old := g.value.Load()
+		next := math.Float64bits(math.Float64frombits(old) + delta)
+		if g.value.CompareAndSwap(old, next) {
+			return
+		}
+	}
+}
+
+func (g *Gauge) Raise(value float64) {
+	for {
+		old := g.value.Load()
+		if math.Float64frombits(old) >= value {
+			return
+		}
+		if g.value.CompareAndSwap(old, math.Float64bits(value)) {
+			return
+		}
+	}
+}
+
 func (g *Gauge) Value() float64 {
 	return math.Float64frombits(g.value.Load())
 }

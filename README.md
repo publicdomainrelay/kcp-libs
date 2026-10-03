@@ -41,6 +41,9 @@ package imports anything project-local, or if an `abc` package imports past
 | abc | `abc/queue` | **the queue semantics**: capacity, `Decision`, `Plan`, `PlanIndex`, `PlanByParent`, `WakeList`, `Leases` |
 | abc | `abc/driver` | work `Key`, `Handler`, `Queue`, and the requeue `Policy` |
 | abc | `abc/cache` | `Indexer`/`Set`, index names and index functions, `Decode[T]` |
+| abc | `abc/probe` | liveness failure counters and the threshold decision |
+| abc | `abc/runref` | the in-memory runID-to-ref index, and the duplicate-start guard |
+| abc | `abc/joballoc` | created-but-unobserved run names, held until the status write lands |
 | abc | `abc/runner` | `PodRunner`/`EngineRunner` and their request/status types |
 | abc | `abc/pki` | the OpenBao PKI client port, certificate types, `Provisioner` |
 | abc | `abc/store` | generic `Reader[T]`/`Writer[T]`/`Resource[T]`, token minter, path resolver |
@@ -87,7 +90,9 @@ Where the code in `../deno-kcp` moves.
 | `internal/provider/admission.go` | `abc/queue`, `factory/admission` |
 | `internal/provider/metrics.go` | `impl/metrics` |
 | `internal/provider/service_dns.go` | `common/kcp`, `factory/dns` (name and token table composition) |
-| `internal/provider/run_refs.go`, `reconcile_run.go` dedupe state | `common/ref` keyed maps, `abc/queue.Leases` |
+| `internal/provider/run_refs.go` | `abc/runref` |
+| `internal/provider/provider.go` job allocation state | `abc/joballoc` |
+| `internal/provider/provider_runtime.go` probe tracker | `abc/probe` |
 | `internal/openbao/openbao.go` | `impl/openbaoclient` |
 | `internal/baopki/baopki.go` | `impl/pkiprovisioner`, `abc/pki` |
 | `internal/provider/policy_client.go` | `impl/policyclient`, `abc/policy` |
