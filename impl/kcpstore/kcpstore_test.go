@@ -331,6 +331,22 @@ func TestPathCacheRetriesATransientFailure(t *testing.T) {
 	}
 }
 
+func TestPathCacheCachesAWorkspaceWithNoPath(t *testing.T) {
+	store, seen := newServer(t, nil, func(w http.ResponseWriter, _ *http.Request, _ int) {
+		writeJSON(w, 200, map[string]any{"metadata": map[string]any{"annotations": map[string]any{}}})
+	})
+	cache := NewPathCache(store)
+	if path := cache.Lookup(context.Background(), "2j35"); path != "" {
+		t.Fatalf("path = %q, want empty for a workspace carrying no path", path)
+	}
+	if path := cache.Lookup(context.Background(), "2j35"); path != "" {
+		t.Fatalf("cached path = %q, want empty", path)
+	}
+	if len(*seen) != 1 {
+		t.Fatalf("requests = %d, want the answer cached: a workspace with no path is not an outage", len(*seen))
+	}
+}
+
 func TestNewRequiresAHost(t *testing.T) {
 	if _, err := New(Options{}); err == nil {
 		t.Fatal("a host is required")
