@@ -1,0 +1,59 @@
+package assets
+
+import (
+	"os"
+	"path/filepath"
+	"testing"
+)
+
+func TestMaterialiseWritesAndCaches(t *testing.T) {
+	dir := filepath.Join(t.TempDir(), ".kcpdns")
+	set := &Set{Dir: dir, Files: map[string][]byte{
+		"shim.ts":  []byte("export {}"),
+		"probe.ts": []byte("Deno.exit(0)"),
+	}}
+	paths, err := set.Materialise()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(paths) != 2 {
+		t.Fatalf("paths = %v", paths)
+	}
+	body, err := os.ReadFile(paths["shim.ts"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(body) != "export {}" {
+		t.Fatalf("shim = %q", body)
+	}
+	if err := os.Remove(paths["shim.ts"]); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := set.Materialise(); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(paths["shim.ts"]); err == nil {
+		t.Fatal("a second materialise is cached and must not rewrite")
+	}
+}
+
+func TestPathNamesAMissingFile(t *testing.T) {
+	set := &Set{Dir: t.TempDir(), Files: map[string][]byte{"a.ts": []byte("x")}}
+	if _, err := set.Path("b.ts"); err == nil {
+		t.Fatal("an unknown asset must be an error")
+	}
+	path, err := set.Path("a.ts")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if filepath.Base(path) != "a.ts" {
+		t.Fatalf("path = %q", path)
+	}
+}
+
+func TestMaterialiseWithoutADirectory(t *testing.T) {
+	set := &Set{Files: map[string][]byte{"a.ts": []byte("x")}}
+	if _, err := set.Materialise(); err != ErrNoDirectory {
+		t.Fatalf("err = %v", err)
+	}
+}

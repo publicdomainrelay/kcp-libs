@@ -1,0 +1,87 @@
+package ref
+
+import "strings"
+
+const APIPathPrefix = "/clusters/"
+
+type Ref struct {
+	LogicalCluster string
+
+	Namespace string
+
+	Name string
+
+	ResourceVersion string
+}
+
+func New(logicalCluster, namespace, name string) Ref {
+	return Ref{LogicalCluster: logicalCluster, Namespace: namespace, Name: name}
+}
+
+func Key(logicalCluster, namespace, name string) string {
+	return logicalCluster + "/" + namespace + "/" + name
+}
+
+func (r Ref) Key() string {
+	return Key(r.LogicalCluster, r.Namespace, r.Name)
+}
+
+func (r Ref) Cluster() Ref {
+	return Ref{LogicalCluster: r.LogicalCluster}
+}
+
+func (r Ref) WithResourceVersion(version string) Ref {
+	r.ResourceVersion = version
+	return r
+}
+
+func (r Ref) WithNamespace(namespace string) Ref {
+	r.Namespace = namespace
+	return r
+}
+
+func (r Ref) WithName(name string) Ref {
+	r.Name = name
+	return r
+}
+
+func (r Ref) IsZero() bool {
+	return r.LogicalCluster == "" && r.Namespace == "" && r.Name == ""
+}
+
+func (r Ref) Empty() bool {
+	return r.IsZero()
+}
+
+func BaseHost(host string) string {
+	host = strings.TrimSuffix(host, "/")
+	if i := strings.Index(host, APIPathPrefix); i >= 0 {
+		return host[:i]
+	}
+	return host
+}
+
+func ClusterURL(host, logicalCluster string) string {
+	return BaseHost(host) + APIPathPrefix + logicalCluster
+}
+
+func ClusterInURL(host string) string {
+	rest := host
+	if i := strings.Index(rest, APIPathPrefix); i >= 0 {
+		rest = rest[i+len(APIPathPrefix):]
+	} else {
+		return ""
+	}
+	if i := strings.Index(rest, "/"); i >= 0 {
+		return rest[:i]
+	}
+	return rest
+}
+
+func ReplaceClusterInURL(host, logicalCluster string) string {
+	current := ClusterInURL(host)
+	if current == "" {
+		return host
+	}
+	return strings.Replace(host, APIPathPrefix+current, APIPathPrefix+logicalCluster, 1)
+}

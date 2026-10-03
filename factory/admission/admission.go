@@ -1,0 +1,117 @@
+package admission
+
+import (
+	"context"
+	"time"
+
+	"github.com/publicdomainrelay/kcp-libs/abc/queue"
+	"github.com/publicdomainrelay/kcp-libs/common/deno"
+	"github.com/publicdomainrelay/kcp-libs/common/ref"
+)
+
+type Source interface {
+	Parent(ctx context.Context, run queue.Run) (ref.Ref, bool, error)
+
+	Runs(ctx context.Context, parent ref.Ref) ([]queue.Run, error)
+
+	Capacity(ctx context.Context, parent ref.Ref) (queue.Capacity, *queue.Blocker, error)
+}
+
+type Options struct {
+	Source Source
+
+	Leases *queue.Leases
+
+	LeaseTTL time.Duration
+
+	Now func() time.Time
+
+	Terminal func(phase string) bool
+
+	Wake func(kind string, r ref.Ref)
+
+	RunKind string
+
+	ParentKind string
+}
+
+type Admission struct {
+	opts Options
+}
+
+func New(opts Options) *Admission {
+	if opts.Leases == nil {
+		opts.Leases = queue.NewLeases(opts.LeaseTTL)
+	}
+	if opts.Now == nil {
+		opts.Now = time.Now
+	}
+	if opts.Terminal == nil {
+		opts.Terminal = deno.TerminalPolicyWorkflow
+	}
+	return &Admission{opts: opts}
+}
+
+func (a *Admission) Leases() *queue.Leases {
+	return a.opts.Leases
+}
+
+func (a *Admission) Admit(ctx context.Context, run queue.Run) (queue.Admission, error) {
+	parent, ok, err := a.opts.Source.Parent(ctx, run)
+	if err != nil {
+		return queue.Admission{}, err
+	}
+	if !ok {
+		return queue.Admission{}, nil
+	}
+	runs, err := a.opts.Source.Runs(ctx, parent)
+	if err != nil {
+		return queue.Admission{}, err
+	}
+	capacity, blocker, err := a.opts.Source.Capacity(ctx, parent)
+	if err != nil {
+		return queue.Admission{}, err
+	}
+	now := a.opts.Now()
+	observed := make(map[ref.Ref]string, len(runs))
+	for _, candidate := range runs {
+		observed[candidate.Ref] = candidate.Phase
+	}
+	reserved := a.opts.Leases.Count(parent, observed, now)
+	if _, present := observed[run.Ref]; !present {
+		runs = append(append([]queue.Run(nil), runs...), run)
+	}
+	admission := queue.PlanIndex(runs, capacity, blocker, reserved)[run.Ref]
+	if admission.Gated && admission.Allowed {
+		a.opts.Leases.Grant(run.Ref, parent, now)
+	}
+	return admission, nil
+}
+
+func (a *Admission) Release(ctx context.Context, run queue.Run) {
+	a.opts.Leases.Forget(run.Ref)
+}
+
+func (a *Admission) Wake(ctx context.Context, parent ref.Ref) error {
+	if a.opts.Wake == nil {
+		return nil
+	}
+	runs, err := a.opts.Source.Runs(ctx, parent)
+	if err != nil {
+		return err
+	}
+	capacity, _, err := a.opts.Source.Capacity(ctx, parent)
+	if err != nil {
+		return err
+	}
+	limit, unlimited := queue.Limit(capacity.Policy, capacity.MaxConcurrent)
+	if a.opts.RunKind != "" {
+		for _, run := range queue.WakeList(runs, a.opts.Terminal, limit, unlimited) {
+			a.opts.Wake(a.opts.RunKind, run)
+		}
+	}
+	if a.opts.ParentKind != "" {
+		a.opts.Wake(a.opts.ParentKind, parent)
+	}
+	return nil
+}

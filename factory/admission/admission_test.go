@@ -1,0 +1,152 @@
+package admission
+
+import (
+	"context"
+	"testing"
+	"time"
+
+	"github.com/publicdomainrelay/kcp-libs/abc/queue"
+	"github.com/publicdomainrelay/kcp-libs/common/deno"
+	"github.com/publicdomainrelay/kcp-libs/common/ref"
+)
+
+type fakeSource struct {
+	parent ref.Ref
+
+	runs []queue.Run
+
+	capacity queue.Capacity
+
+	blocker *queue.Blocker
+
+	missing bool
+}
+
+func (f *fakeSource) Parent(context.Context, queue.Run) (ref.Ref, bool, error) {
+	return f.parent, !f.missing, nil
+}
+
+func (f *fakeSource) Runs(context.Context, ref.Ref) ([]queue.Run, error) {
+	return append([]queue.Run(nil), f.runs...), nil
+}
+
+func (f *fakeSource) Capacity(context.Context, ref.Ref) (queue.Capacity, *queue.Blocker, error) {
+	return f.capacity, f.blocker, nil
+}
+
+func run(name, phase string, seconds int) queue.Run {
+	return queue.Run{
+		Ref:     ref.New("root:alice", "default", name),
+		Phase:   phase,
+		Created: time.Unix(int64(seconds), 0).UTC(),
+	}
+}
+
+func newTestAdmission(source *fakeSource) (*Admission, *[]ref.Ref) {
+	woken := &[]ref.Ref{}
+	return New(Options{
+		Source:     source,
+		Now:        func() time.Time { return time.Unix(1000, 0) },
+		RunKind:    "policyworkflowrun",
+		ParentKind: "policyworkflowpod",
+		Wake: func(_ string, r ref.Ref) {
+			*woken = append(*woken, r)
+		},
+	}), woken
+}
+
+func TestAdmitGrantsALeaseAndRefusesTheSecond(t *testing.T) {
+	source := &fakeSource{
+		parent:   ref.New("root:alice", "default", "pod"),
+		capacity: queue.Capacity{Policy: queue.PolicyForbid},
+		runs:     []queue.Run{run("a", string(deno.PhasePending), 1), run("b", string(deno.PhasePending), 2)},
+	}
+	admission, _ := newTestAdmission(source)
+	first, err := admission.Admit(context.Background(), source.runs[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !first.Allowed {
+		t.Fatal("the oldest run must be admitted")
+	}
+	second, err := admission.Admit(context.Background(), source.runs[1])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if second.Allowed || second.Reason != deno.ReasonAtCapacity {
+		t.Fatalf("the second run = %+v", second)
+	}
+}
+
+func TestAdmitWithNoParentIsNotGated(t *testing.T) {
+	source := &fakeSource{parent: ref.New("root:alice", "default", "pod"), missing: true}
+	admission, _ := newTestAdmission(source)
+	result, err := admission.Admit(context.Background(), run("a", string(deno.PhasePending), 1))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Gated {
+		t.Fatalf("a run with no parent is not gated: %+v", result)
+	}
+}
+
+func TestAdmitReportsABlocker(t *testing.T) {
+	source := &fakeSource{
+		parent:   ref.New("root:alice", "default", "pod"),
+		capacity: queue.Capacity{Policy: queue.PolicyForbid},
+		blocker:  &queue.Blocker{Reason: deno.ReasonEngineNotReady, Message: "no endpoint"},
+		runs:     []queue.Run{run("a", string(deno.PhasePending), 1)},
+	}
+	admission, _ := newTestAdmission(source)
+	result, err := admission.Admit(context.Background(), source.runs[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !result.Gated || result.Allowed || result.Reason != deno.ReasonEngineNotReady {
+		t.Fatalf("blocked admission = %+v", result)
+	}
+}
+
+func TestWakeEnqueuesCapacityManyPlusTheParent(t *testing.T) {
+	source := &fakeSource{
+		parent:   ref.New("root:alice", "default", "pod"),
+		capacity: queue.Capacity{Policy: queue.PolicyForbid},
+		runs: []queue.Run{
+			run("a", string(deno.PhasePending), 1),
+			run("b", string(deno.PhasePending), 2),
+			run("c", string(deno.PhasePending), 3),
+		},
+	}
+	admission, woken := newTestAdmission(source)
+	if err := admission.Wake(context.Background(), source.parent); err != nil {
+		t.Fatal(err)
+	}
+	if len(*woken) != 2 {
+		t.Fatalf("woken = %v, want the oldest run plus the parent", *woken)
+	}
+	if (*woken)[0].Name != "a" {
+		t.Fatalf("first wake = %q, want the oldest pending run", (*woken)[0].Name)
+	}
+	if (*woken)[1] != source.parent {
+		t.Fatalf("last wake = %v, want the parent", (*woken)[1])
+	}
+}
+
+func TestReleaseDropsTheLease(t *testing.T) {
+	source := &fakeSource{
+		parent:   ref.New("root:alice", "default", "pod"),
+		capacity: queue.Capacity{Policy: queue.PolicyForbid},
+		runs:     []queue.Run{run("a", string(deno.PhasePending), 1)},
+	}
+	admission, _ := newTestAdmission(source)
+	if _, err := admission.Admit(context.Background(), source.runs[0]); err != nil {
+		t.Fatal(err)
+	}
+	if admission.Leases().Len() != 1 {
+		t.Fatal("the admitted run must hold a lease")
+	}
+	admission.Release(context.Background(), source.runs[0])
+	if admission.Leases().Len() != 0 {
+		t.Fatal("release must drop the lease")
+	}
+}
