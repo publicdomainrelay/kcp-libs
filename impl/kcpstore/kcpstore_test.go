@@ -309,6 +309,28 @@ func TestPathCacheCachesAMiss(t *testing.T) {
 	}
 }
 
+func TestPathCacheRetriesATransientFailure(t *testing.T) {
+	store, seen := newServer(t, nil, func(w http.ResponseWriter, _ *http.Request, index int) {
+		if index == 0 {
+			writeJSON(w, 500, map[string]any{"kind": "Status", "code": 500})
+			return
+		}
+		writeJSON(w, 200, map[string]any{
+			"metadata": map[string]any{"annotations": map[string]string{"kcp.io/path": "root:alice"}},
+		})
+	})
+	cache := NewPathCache(store)
+	if path := cache.Lookup(context.Background(), "2j35"); path != "" {
+		t.Fatalf("path = %q, want empty while the store is failing", path)
+	}
+	if path := cache.Lookup(context.Background(), "2j35"); path != "root:alice" {
+		t.Fatalf("path = %q, want the second lookup to retry a failure that was not a not-found", path)
+	}
+	if len(*seen) != 2 {
+		t.Fatalf("requests = %d, want the transient failure retried", len(*seen))
+	}
+}
+
 func TestNewRequiresAHost(t *testing.T) {
 	if _, err := New(Options{}); err == nil {
 		t.Fatal("a host is required")
