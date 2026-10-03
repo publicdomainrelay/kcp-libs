@@ -305,6 +305,31 @@ func TestPodStopIsReportedAsFailure(t *testing.T) {
 	}
 }
 
+func TestARecoveredRunTheRecordCallsStoppedHasFinished(t *testing.T) {
+	dir := t.TempDir()
+	runsDir := filepath.Join(dir, "runs")
+	id := "pod-stopped"
+	runDir := filepath.Join(runsDir, id)
+	if err := os.MkdirAll(runDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	state := fmt.Sprintf(`{"pid":%d,"started":%q,"ticks":1,"stopped":true}`, os.Getpid(), time.Now().UTC().Format(time.RFC3339Nano))
+	if err := os.WriteFile(filepath.Join(runDir, "state.json"), []byte(state), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	pod, err := NewPod(PodOptions{DenoBin: "true", RunsDir: runsDir})
+	if err != nil {
+		t.Fatal(err)
+	}
+	status, err := pod.Observe(context.Background(), id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if status.State != runner.StateFailed || status.Message != "the deno process was stopped" {
+		t.Fatalf("a run the record calls stopped must not read as running: %+v", status)
+	}
+}
+
 func TestARecoveredRunThatLeftItsMarkerHasFinished(t *testing.T) {
 	dir := t.TempDir()
 	runsDir := filepath.Join(dir, "runs")

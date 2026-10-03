@@ -149,7 +149,7 @@ func (p *Pod) result(run *process) (runner.PodStatus, error) {
 }
 
 func (p *Pod) exitCode(run *process) (int32, error) {
-	body, err := os.ReadFile(filepath.Join(run.dir, "done.json"))
+	body, err := os.ReadFile(filepath.Join(run.dir, p.sup.doneFile))
 	if err == nil {
 		var done podDone
 		if err := json.Unmarshal(body, &done); err == nil {

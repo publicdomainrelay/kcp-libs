@@ -232,7 +232,7 @@ func (s *supervisor) recover(id string) (*process, error) {
 			started = parsed
 		}
 	}
-	recovered := &process{dir: dir, pid: state.PID, ticks: state.Ticks, started: started, env: s.envOf(id)}
+	recovered := &process{dir: dir, pid: state.PID, ticks: state.Ticks, started: started}
 	recovered.stopped.Store(state.Stopped)
 	return recovered, nil
 }
@@ -259,6 +259,9 @@ func (s *supervisor) finished(run *process) bool {
 		default:
 			return false
 		}
+	}
+	if run.stopped.Load() {
+		return true
 	}
 	if s.doneFile != "" {
 		if _, err := os.Stat(filepath.Join(run.dir, s.doneFile)); err == nil {
