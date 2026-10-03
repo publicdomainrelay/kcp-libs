@@ -73,7 +73,7 @@ virtual workspace URL comes from the export's endpoint slice, the wildcard
 informers watch it, and the status patches land on a real API server.
 
 The harness is not importable from the library layers: `internal/boundaries`
-fails the build if anything outside `examples/` and tests reaches into
+fails the test tier if anything outside `examples/` and tests reaches into
 `internal/`.
 
 ## When you would reach for each package

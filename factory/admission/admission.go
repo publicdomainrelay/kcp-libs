@@ -84,10 +84,6 @@ func (a *Admission) Admit(ctx context.Context, run queue.Run) (queue.Admission, 
 	return admission, nil
 }
 
-func (a *Admission) Release(ctx context.Context, run queue.Run) {
-	a.opts.Leases.Forget(run.Ref)
-}
-
 func (a *Admission) Wake(ctx context.Context, parent ref.Ref) error {
 	if a.opts.Wake == nil {
 		return nil

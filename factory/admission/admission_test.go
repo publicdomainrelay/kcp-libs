@@ -139,22 +139,3 @@ func TestWakeEnqueuesCapacityManyPlusTheParent(t *testing.T) {
 		t.Fatalf("last wake = %v, want the parent", (*woken)[1])
 	}
 }
-
-func TestReleaseDropsTheLease(t *testing.T) {
-	source := &fakeSource{
-		parent:   ref.New("root:alice", "default", "pod"),
-		capacity: queue.Capacity{Policy: queue.PolicyForbid},
-		runs:     []queue.Run{run("a", string(denocomputer.PhasePending), 1)},
-	}
-	admission, _ := newTestAdmission(source)
-	if _, err := admission.Admit(context.Background(), source.runs[0]); err != nil {
-		t.Fatal(err)
-	}
-	if admission.Leases().Len() != 1 {
-		t.Fatal("the admitted run must hold a lease")
-	}
-	admission.Release(context.Background(), source.runs[0])
-	if admission.Leases().Len() != 0 {
-		t.Fatal("release must drop the lease")
-	}
-}

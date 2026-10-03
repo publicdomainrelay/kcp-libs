@@ -11,6 +11,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
+	"github.com/publicdomainrelay/kcp-libs/abc/store"
 	"github.com/publicdomainrelay/kcp-libs/common/statuspatch"
 
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
@@ -29,6 +30,8 @@ type runObject struct {
 }
 
 var denoRuns = schema.GroupVersionResource{Group: "deno.computer", Version: "v1alpha1", Resource: "denoruns"}
+
+var _ store.Resource[runObject] = Of[runObject](nil, denoRuns)
 
 type request struct {
 	Method string

@@ -200,8 +200,7 @@ func Run(ctx context.Context, out io.Writer) error {
 		gamma.Status.Phase, gamma.Status.Siblings)
 	fmt.Fprintf(out, "reconciles %d, queue depth %d, cache age %s\n",
 		ctl.Reconciles(), ctl.QueueDepth(), ctl.CacheAge().Round(time.Millisecond))
-	registry.Render(out)
-	return nil
+	return registry.Render(out)
 }
 
 func succeeded(obj widget) bool {

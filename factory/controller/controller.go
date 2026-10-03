@@ -67,6 +67,8 @@ type Controller struct {
 
 	reconcileSeconds prometheus.Summary
 
+	conflictsTotal prometheus.Counter
+
 	queueDepth prometheus.GaugeFunc
 
 	cacheAge prometheus.GaugeFunc
@@ -112,6 +114,7 @@ func New(opts Options) (*Controller, error) {
 		queue: workqueue.NewTypedRateLimitingQueue(workqueue.DefaultTypedControllerRateLimiter[reconcile.Key]()),
 	}
 	c.reconcileSeconds = opts.Metrics.Summary("reconcile_seconds", "time spent inside a reconcile")
+	c.conflictsTotal = opts.Metrics.Counter("conflicts_total", "writes rejected by optimistic concurrency")
 	c.queueDepth = opts.Metrics.GaugeFunc("queue_depth", "work keys that are ready to reconcile", func() float64 {
 		return float64(c.queue.Len())
 	})
@@ -225,6 +228,7 @@ func (c *Controller) worker(ctx context.Context) {
 				}
 				if c.opts.IsConflict(err) {
 					c.conflicts.Add(1)
+					c.conflictsTotal.Inc()
 					c.queue.Forget(key)
 					c.queue.AddAfter(key, c.opts.Policy.ConflictAfter())
 					return

@@ -32,13 +32,14 @@ without any of it -- `reconcile`, `queue`, `cache`, `kcpstore`, `informerwatch`,
 runtime at all.
 
 **Start at [`examples/`](examples/README.md).** Six runnable programs drive the
-library, with a table mapping every package to the situation it is for. Three
+library, with a table mapping every library package to the situation it is for.
+Three
 of them talk to a real kcp and need `kcp` and `kubectl` on PATH, which is also
 what the live tests need; the other three need nothing but Go. `go run
 ./examples/controller` is the whole reconcile loop in one file.
 
 `internal/boundaries` is a test-only package: it reads `go list -json ./...`
-and fails the build if any package imports against the arrow, if a `common`
+and fails the test tier if any package imports against the arrow, if a `common`
 package imports anything project-local, or if an `abc` package imports past
 `common`.
 
@@ -134,13 +135,23 @@ Where the code in `../deno-kcp` moves.
 
 The driver dispatches by kind and nothing more: one handler is given a key and decides what to do with it. It does not route between kinds for you, and it does not create or stop the children a decider asks for -- `Result.Ops` is the decider saying what it wants, and the consumer's `Bridge.Apply` is what carries it out against its own typed resources. That is deliberate: a generic executor would need a store per kind, which is the consumer's API surface, not the library's.
 
-Three exported methods exist for the consumer rather than for this module's own
-production code, and are kept for that reason: `reconcile.Result.AddFor`, which
-is how a decider that owns children asks for one to be created or stopped,
-`kcpstore.Resource.AddFinalizer`, the add half of the finalizer patch that
-`RemoveFinalizer` takes back off, and `execrunner.Pod.Running`, which reports
-how many runs the supervisor still holds. Each is exercised by a test here and
-none has an in-module production caller.
+Some of the surface here exists for the consumer rather than for this module's
+own production code. Each has a caller in deno-kcp; none has one here, and each
+is exercised by a test:
+
+| Export | What the consumer does with it |
+|---|---|
+| `reconcile.Result.AddFor` | asks for a child to be created or stopped |
+| `reconcile.Result.Deletes`, `ReleasesFinalizer` | the accessors that replaced the boolean fields they used to read |
+| `kcpstore.Resource.AddFinalizer` | the add half of the finalizer patch `RemoveFinalizer` takes back off |
+| `execrunner.Pod.Running` | how many runs the supervisor still holds |
+| `abc/cache.PhaseOf` | reads a phase off a cached object |
+| `common/ttl.Deadline`, `Effective` | an active deadline, and a run's retention |
+| `abc/joballoc.MergeNames` | merges `status.runs` |
+| `abc/runref.Keep` | the keep-or-forget rule that reads the cached phase, not the computed one |
+| `common/condition.Remove` | clears a condition, which is how a resume un-suspends |
+| `common/denospec.PodTemplate`, `ExecProbe` | the CRD shapes a workload is described with |
+| `common/denocomputer.TerminalDenoRun`, `TerminalDenoPod`, `TerminalDenoJob` | one terminal predicate per kind |
 
 ## Two tiers
 
@@ -202,6 +213,13 @@ etcd, or a kine on its own port) when you want instances in parallel.
 
 The live tests are opt-in: with `KCP_LIBS_REQUIRE_LIVE=1` they fail instead of
 skipping when a binary is missing, which is what CI should set.
+
+`common/denocomputer` has a contract test that reads the consumer's own
+`api/v1alpha1` for the group, the version, the finalizers and the label, so a
+rename here cannot silently stop addressing real objects. It reads a sibling
+checkout, so it skips when that checkout is not next to this module; set
+`KCP_LIBS_REQUIRE_CONSUMER=1` where it is present to make a missing checkout a
+failure rather than a skip.
 
 ## Commands
 

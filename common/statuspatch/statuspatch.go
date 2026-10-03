@@ -3,7 +3,6 @@ package statuspatch
 import (
 	"encoding/json"
 	"fmt"
-	"reflect"
 )
 
 func Merge(status map[string]any) ([]byte, error) {
@@ -28,20 +27,6 @@ func WithResourceVersion(body []byte, version string) ([]byte, error) {
 		return nil, fmt.Errorf("statuspatch: encode patch with a resource version: %w", err)
 	}
 	return stamped, nil
-}
-
-func Optional(value any) any {
-	if value == nil {
-		return nil
-	}
-	rv := reflect.ValueOf(value)
-	switch rv.Kind() {
-	case reflect.Pointer, reflect.Map, reflect.Slice, reflect.Interface, reflect.Chan, reflect.Func:
-		if rv.IsNil() {
-			return nil
-		}
-	}
-	return value
 }
 
 func FinalizerRemove(current []string, dropped string) ([]byte, error) {

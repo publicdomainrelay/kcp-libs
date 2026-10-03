@@ -3,9 +3,6 @@ package statuspatch
 import (
 	"encoding/json"
 	"testing"
-	"time"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestMergeWrapsStatus(t *testing.T) {
@@ -19,26 +16,6 @@ func TestMergeWrapsStatus(t *testing.T) {
 	}
 	if obj["status"]["phase"] != "Running" {
 		t.Fatalf("body = %s", body)
-	}
-}
-
-func TestOptionalClearsNilButKeepsValues(t *testing.T) {
-	var absent *metav1.Time
-	if Optional(absent) != nil {
-		t.Fatal("a nil pointer must clear the field")
-	}
-	now := metav1.NewTime(time.Unix(1, 0))
-	if Optional(&now) == nil {
-		t.Fatal("a set pointer must survive")
-	}
-	if Optional(map[string]string(nil)) != nil {
-		t.Fatal("a nil map must clear the field")
-	}
-	if Optional([]string{"a"}) == nil {
-		t.Fatal("a set slice must survive")
-	}
-	if Optional([]string(nil)) != nil {
-		t.Fatal("a nil slice must clear the field")
 	}
 }
 

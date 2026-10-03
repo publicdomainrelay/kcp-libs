@@ -136,7 +136,10 @@ func (s *supervisor) start(entry processSpec) (string, error) {
 		started: time.Now(),
 		env:     entry.envMap,
 	}
-	writeState(run)
+	if err := writeState(run); err != nil {
+		_ = syscall.Kill(-run.pid, syscall.SIGKILL)
+		return "", err
+	}
 	s.mu.Lock()
 	s.runs[id] = run
 	s.mu.Unlock()
@@ -176,12 +179,15 @@ func writeDone(run *process, resultFile string) {
 	_ = os.WriteFile(filepath.Join(run.dir, resultFile), body, 0o644)
 }
 
-func writeState(run *process) {
+func writeState(run *process) error {
 	body, err := json.Marshal(runState{PID: run.pid, Started: run.started.Format(time.RFC3339Nano), Ticks: run.ticks, Stopped: run.stopped.Load()})
 	if err != nil {
-		return
+		return fmt.Errorf("execrunner: encode the run state: %w", err)
 	}
-	_ = os.WriteFile(filepath.Join(run.dir, "state.json"), body, 0o644)
+	if err := os.WriteFile(filepath.Join(run.dir, "state.json"), body, 0o644); err != nil {
+		return fmt.Errorf("execrunner: write the run state: %w", err)
+	}
+	return nil
 }
 
 func (s *supervisor) lookup(id string) (*process, bool) {
@@ -263,7 +269,7 @@ func (s *supervisor) stop(id string) error {
 		return nil
 	}
 	run.stopped.Store(true)
-	writeState(run)
+	_ = writeState(run)
 	if run.pid > 0 {
 		_ = syscall.Kill(-run.pid, syscall.SIGKILL)
 	}

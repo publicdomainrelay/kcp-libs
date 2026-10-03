@@ -165,7 +165,11 @@ func (r *Resource[T]) Create(ctx context.Context, logicalCluster string, obj *T)
 	if err != nil {
 		return fmt.Errorf("kcpstore: encode %s: %w", r.gvr.Resource, err)
 	}
-	response, err := c.Post().Namespace(namespaceOf(raw)).Resource(r.gvr.Resource).Body(raw).Do(ctx).Raw()
+	namespace, err := namespaceOf(raw)
+	if err != nil {
+		return err
+	}
+	response, err := c.Post().Namespace(namespace).Resource(r.gvr.Resource).Body(raw).Do(ctx).Raw()
 	if err != nil {
 		return fmt.Errorf("kcpstore: create %s %s in %s: %w%s", r.gvr.Resource, nameOf(raw), logicalCluster, err, detail(response))
 	}
@@ -282,14 +286,16 @@ func decodeList[T any](raw []byte) ([]T, error) {
 	return list.Items, nil
 }
 
-func namespaceOf(raw []byte) string {
+func namespaceOf(raw []byte) (string, error) {
 	var obj struct {
 		Metadata struct {
 			Namespace string `json:"namespace"`
 		} `json:"metadata"`
 	}
-	_ = json.Unmarshal(raw, &obj)
-	return obj.Metadata.Namespace
+	if err := json.Unmarshal(raw, &obj); err != nil {
+		return "", fmt.Errorf("kcpstore: encode does not round trip: %w", err)
+	}
+	return obj.Metadata.Namespace, nil
 }
 
 func nameOf(raw []byte) string {

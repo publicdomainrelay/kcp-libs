@@ -48,17 +48,6 @@ func (m *Map[K, V]) Get(key K, at time.Time) (V, bool) {
 	return entry.Value, true
 }
 
-func (m *Map[K, V]) Peek(key K) (V, bool) {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	entry, ok := m.entries[key]
-	if !ok {
-		var zero V
-		return zero, false
-	}
-	return entry.Value, true
-}
-
 func (m *Map[K, V]) Delete(key K) {
 	m.mu.Lock()
 	defer m.mu.Unlock()

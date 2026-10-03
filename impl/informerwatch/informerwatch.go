@@ -65,12 +65,19 @@ func Run(ctx context.Context, opts Options) error {
 	if opts.Enqueue == nil {
 		return errors.New("informerwatch: an enqueue function is required")
 	}
+	seen := map[string]bool{}
 	for _, source := range opts.Sources {
 		if source.Base == "" {
 			return errors.New("informerwatch: every source needs a base URL")
 		}
 		if len(source.Resources) == 0 {
 			return errors.New("informerwatch: every source needs at least one resource")
+		}
+		for _, resource := range source.Resources {
+			if seen[resource.Kind] {
+				return fmt.Errorf("informerwatch: %s is watched twice, and the second watcher would replace the first one's index", resource.Kind)
+			}
+			seen[resource.Kind] = true
 		}
 	}
 	stop := ctx.Done()

@@ -20,7 +20,9 @@ func TestRenderIncludesEveryFamily(t *testing.T) {
 	summary.Observe(1.5)
 
 	var buffer bytes.Buffer
-	registry.Render(&buffer)
+	if err := registry.Render(&buffer); err != nil {
+		t.Fatal(err)
+	}
 	body := buffer.String()
 	for _, want := range []string{
 		"# TYPE kcp_reconciles_total counter",
@@ -49,7 +51,9 @@ func TestRegisteringANameTwiceReturnsTheSameCollector(t *testing.T) {
 		t.Fatalf("counter = %v, want 1", got)
 	}
 	var buffer bytes.Buffer
-	registry.Render(&buffer)
+	if err := registry.Render(&buffer); err != nil {
+		t.Fatal(err)
+	}
 	if strings.Count(buffer.String(), "# TYPE kcp_reconciles_total") != 1 {
 		t.Fatalf("a repeated name must be described once:\n%s", buffer.String())
 	}

@@ -73,15 +73,18 @@ func existing[T prometheus.Collector](r *Registry, collector T) T {
 	return collector
 }
 
-func (r *Registry) Render(w io.Writer) {
+func (r *Registry) Render(w io.Writer) error {
 	families, err := r.registry.Gather()
 	if err != nil {
-		return
+		return fmt.Errorf("metrics: gather: %w", err)
 	}
 	encoder := expfmt.NewEncoder(w, r.format())
 	for _, family := range families {
-		_ = encoder.Encode(family)
+		if err := encoder.Encode(family); err != nil {
+			return fmt.Errorf("metrics: encode %s: %w", family.GetName(), err)
+		}
 	}
+	return nil
 }
 
 func (r *Registry) Handler() http.Handler {

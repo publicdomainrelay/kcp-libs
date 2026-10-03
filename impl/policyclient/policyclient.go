@@ -26,7 +26,7 @@ func New() *Client {
 	return &Client{http: &http.Client{Timeout: 30 * time.Second}}
 }
 
-func NewWithClient(client *http.Client) *Client {
+func newWithClient(client *http.Client) *Client {
 	return &Client{http: client}
 }
 

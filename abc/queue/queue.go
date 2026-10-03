@@ -82,7 +82,7 @@ func (a Admission) Waiting() bool {
 }
 
 func Limit(policy Policy, maxConcurrent *int32) (int32, bool) {
-	if policy == PolicyAllow {
+	if EffectivePolicy(policy) == PolicyAllow {
 		if maxConcurrent == nil || *maxConcurrent <= 0 {
 			return 0, true
 		}

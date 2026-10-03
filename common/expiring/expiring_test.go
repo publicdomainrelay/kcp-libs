@@ -33,21 +33,6 @@ func TestDefaultTTLWhenUnset(t *testing.T) {
 	}
 }
 
-func TestPeekIgnoresExpiry(t *testing.T) {
-	entries := NewMap[string, int](time.Minute)
-	now := time.Unix(1000, 0)
-	entries.Set("a", 1, now)
-	if value, ok := entries.Peek("a"); !ok || value != 1 {
-		t.Fatalf("peek = (%d, %v)", value, ok)
-	}
-	if _, ok := entries.Peek("b"); ok {
-		t.Fatal("a missing key must not be found")
-	}
-	if _, ok := entries.Get("a", now.Add(time.Hour)); ok {
-		t.Fatal("get still expires")
-	}
-}
-
 func TestDeleteAndDeleteIf(t *testing.T) {
 	entries := NewMap[string, int](time.Minute)
 	now := time.Unix(1000, 0)

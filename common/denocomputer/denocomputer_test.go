@@ -27,8 +27,8 @@ func consumerConstants(t *testing.T) map[string]string {
 		}
 		root = parent
 	}
-	if os.Getenv("KCP_LIBS_REQUIRE_LIVE") == "1" {
-		t.Fatal("the consumer's api/v1alpha1 was not found; this test reads it as the source of truth")
+	if os.Getenv("KCP_LIBS_REQUIRE_CONSUMER") == "1" {
+		t.Fatal("the consumer's api/v1alpha1 was not found; this test reads it as the source of truth, so set KCP_LIBS_REQUIRE_CONSUMER only where the checkout is present")
 	}
 	t.Skip("the consumer checkout is not next to this module, so there is nothing to compare against")
 	return nil
@@ -58,11 +58,19 @@ func readConstants(t *testing.T, dir string) map[string]string {
 
 func TestTheGroupIsTheOneTheConsumerDeclares(t *testing.T) {
 	declared := consumerConstants(t)
-	if want := declared["GroupName"]; want != "" && Group != want {
+	want, ok := declared["GroupName"]
+	if !ok {
+		t.Fatal("the consumer declares no GroupName, so the group this module uses cannot be checked against it")
+	}
+	if Group != want {
 		t.Fatalf("Group = %q, the consumer declares %q", Group, want)
 	}
-	if want := declared["Version"]; want != "" && Version != want {
-		t.Fatalf("Version = %q, the consumer declares %q", Version, want)
+	version, ok := declared["Version"]
+	if !ok {
+		t.Fatal("the consumer declares no Version")
+	}
+	if Version != version {
+		t.Fatalf("Version = %q, the consumer declares %q", Version, version)
 	}
 }
 

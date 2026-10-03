@@ -40,7 +40,7 @@ func TestSubmitPostsTheWorkflowAndReturnsTheTaskID(t *testing.T) {
 	}))
 	t.Cleanup(instance.Close)
 
-	client := NewWithClient(instance.Client())
+	client := newWithClient(instance.Client())
 	id, err := client.Submit(context.Background(), instance.URL+"/", []byte(`{"jobs":{"a":{}}}`), map[string]string{"perspective": "alice"})
 	if err != nil {
 		t.Fatal(err)
@@ -63,7 +63,7 @@ func TestSubmitReportsAnEngineRefusal(t *testing.T) {
 		_, _ = w.Write([]byte("bad workflow"))
 	}))
 	t.Cleanup(instance.Close)
-	client := NewWithClient(instance.Client())
+	client := newWithClient(instance.Client())
 	_, err := client.Submit(context.Background(), instance.URL, []byte(`{}`), nil)
 	if err == nil || !strings.Contains(err.Error(), "400") {
 		t.Fatalf("err = %v", err)
@@ -77,7 +77,7 @@ func statusServer(t *testing.T, body string, code int) (*Client, string) {
 		_, _ = w.Write([]byte(body))
 	}))
 	t.Cleanup(instance.Close)
-	return NewWithClient(instance.Client()), instance.URL
+	return newWithClient(instance.Client()), instance.URL
 }
 
 func TestStatusIsRunningUntilTheEngineReportsATerminalState(t *testing.T) {
@@ -152,7 +152,7 @@ func TestStatusPrefixesMultiplePolicyVerdicts(t *testing.T) {
 }
 
 func TestStatusIsRunningWhenTheEngineIsUnreachable(t *testing.T) {
-	client := NewWithClient(&http.Client{Timeout: time.Millisecond})
+	client := newWithClient(&http.Client{Timeout: time.Millisecond})
 	task, err := client.Status(context.Background(), "http://127.0.0.1:1", "task-7")
 	if err != nil {
 		t.Fatal(err)
