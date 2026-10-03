@@ -28,6 +28,8 @@ func TestRunBuildsTheTableAndTheTokens(t *testing.T) {
 		"the pod carries 3 names and a token for 2 workspaces",
 		"its own name is in the table from its first moment: 127.0.0.1:8080",
 		"kcp minted a token for root:consumer: true",
+		"the shim and probe are written under .kcpdns: shim.ts and probe.ts",
+		"a readiness probe preloads shim.ts and is granted KCP_SERVICE_DOMAIN,KCP_DNS_TABLE,KCP_TOKENS,KCP_SERVER",
 		"a service that binds 0.0.0.0 advertises 127.0.0.1:3000",
 		"the workspace path reads as labels: root:consumer becomes consumer",
 	} {

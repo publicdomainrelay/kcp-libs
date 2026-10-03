@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/publicdomainrelay/kcp-libs/abc/pki"
-	"github.com/publicdomainrelay/kcp-libs/common/expiring"
+	"github.com/publicdomainrelay/kcp-libs/common/expiringmap"
 )
 
 const DefaultAuthorityTTL = 5 * time.Minute
@@ -47,7 +47,7 @@ type Provisioner struct {
 
 	root *pki.RootCA
 
-	namespaces *expiring.Map[string, pki.Authority]
+	namespaces *expiringmap.Map[string, pki.Authority]
 }
 
 var _ pki.Provisioner = (*Provisioner)(nil)
@@ -80,7 +80,7 @@ func New(opts Options) (*Provisioner, error) {
 	if opts.Now == nil {
 		opts.Now = time.Now
 	}
-	return &Provisioner{opts: opts, namespaces: expiring.NewMap[string, pki.Authority](opts.AuthorityTTL)}, nil
+	return &Provisioner{opts: opts, namespaces: expiringmap.NewMap[string, pki.Authority](opts.AuthorityTTL)}, nil
 }
 
 func (p *Provisioner) EnsureRoot(ctx context.Context) (pki.RootCA, error) {

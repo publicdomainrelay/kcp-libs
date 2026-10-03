@@ -3,7 +3,7 @@ package queue
 import (
 	"time"
 
-	"github.com/publicdomainrelay/kcp-libs/common/expiring"
+	"github.com/publicdomainrelay/kcp-libs/common/expiringmap"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 )
 
@@ -12,11 +12,11 @@ type Lease struct {
 }
 
 type Leases struct {
-	entries *expiring.Map[ref.Ref, Lease]
+	entries *expiringmap.Map[ref.Ref, Lease]
 }
 
 func NewLeases(ttl time.Duration) *Leases {
-	return &Leases{entries: expiring.NewMap[ref.Ref, Lease](ttl)}
+	return &Leases{entries: expiringmap.NewMap[ref.Ref, Lease](ttl)}
 }
 
 func (l *Leases) TTL() time.Duration {

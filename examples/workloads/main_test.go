@@ -15,8 +15,8 @@ func TestRunExecutesAndSimulatesWorkloads(t *testing.T) {
 	printed := out.String()
 	for _, want := range []string{
 		"materialised the stand-in runtime at bin",
-		"permissions became --allow-net=denocomputer.land --deny-env",
-		"the process started with argv run --allow-net=denocomputer.land --deny-env main.ts",
+		"permissions became --allow-net=deno.land --deny-env",
+		"the process started with argv run --allow-net=deno.land --deny-env main.ts",
 		"finished succeeded with answer 42",
 		"the readiness probe passed: true",
 		"finished failed with exit code 7",

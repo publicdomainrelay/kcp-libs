@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -16,6 +18,7 @@ import (
 	"github.com/publicdomainrelay/kcp-libs/common/kcp"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 	"github.com/publicdomainrelay/kcp-libs/factory/servicenames"
+	"github.com/publicdomainrelay/kcp-libs/impl/assets"
 	"github.com/publicdomainrelay/kcp-libs/impl/kcpstore"
 	"github.com/publicdomainrelay/kcp-libs/internal/livekcp"
 )
@@ -120,6 +123,20 @@ func Run(ctx context.Context, out io.Writer) error {
 	fmt.Fprintf(out, "its own name is in the table from its first moment: %s\n",
 		injected[resolver.Name(ctx, firstPod, namespace, cluster.ConsumerCluster)])
 	fmt.Fprintf(out, "kcp minted a token for %s: %v\n", cluster.ConsumerCluster, tokens[cluster.ConsumerCluster] != "")
+
+	dir, err := os.MkdirTemp("", "kcpdns")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(dir)
+	paths, err := assets.DNSSet(dir).Materialise()
+	if err != nil {
+		return err
+	}
+	fmt.Fprintf(out, "the shim and probe are written under %s: %s and %s\n",
+		assets.DNSDirName, filepath.Base(paths[assets.ShimName]), filepath.Base(paths[assets.ProbeName]))
+	fmt.Fprintf(out, "a readiness probe preloads %s and is granted %s\n",
+		assets.ShimName, strings.Join(assets.DNSProbeEnv, ","))
 	fmt.Fprintf(out, "a service that binds 0.0.0.0 advertises %s\n",
 		servicenames.AdvertisedAddress("", `{"PORT":"3000","HOSTNAME":"0.0.0.0"}`))
 	fmt.Fprintf(out, "the workspace path reads as labels: %s becomes %s\n",

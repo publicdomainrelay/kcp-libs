@@ -5,7 +5,10 @@ module is `github.com/publicdomainrelay/kcp-libs`.
 
 The org-root ABC layering pattern, translated to idiomatic Go: one module, one
 package per concept-layer, and a dependency arrow that only points one way.
-No comments in the code; a package's path and names carry the meaning.
+No comments in the Go code; a package's path and names carry the meaning. The
+two TypeScript files under `impl/assets` are carried verbatim from the consumer,
+comments included, so the copy stays byte-identical to the one it is pinned
+against.
 
 ```
 common/    leaf: types, constants, pure helpers            external deps only
@@ -54,7 +57,7 @@ package imports anything project-local, or if an `abc` package imports past
 | common | `common/denocomputer` | the `deno.computer` API group vocabulary: labels, finalizers, conditions, phases, terminal predicates. Named for the group, not the runtime. Kept whole rather than trimmed to what this module calls: a consumer adopting the library needs the words, and half a vocabulary is worse than none |
 | common | `common/denospec` | the shared wire shape: pod template, exec probe, service account ref, permissions, deno argv |
 | common | `common/clientlimit` | `Apply`, which raises a rest config off client-go's 5-requests-a-second default. Shared by the three transports that build one |
-| common | `common/expiring` | a ttl map with `Set`, `Get`, `Delete`, `DeleteIf`, `Expire`, `Range`, `SetPruning`. Backs the leases, the start index and the job allocations |
+| common | `common/expiringmap` | a ttl map with `Set`, `Get`, `Delete`, `DeleteIf`, `Expire`, `Range`, `SetPruning`. Backs the leases, the start index and the job allocations |
 | common | `common/ttl` | retention and active-deadline decisions |
 | common | `common/outputs` | `map[string]any` to `map[string]string` |
 | common | `common/logging` | JSON slog logger |
@@ -77,10 +80,10 @@ package imports anything project-local, or if an `abc` package imports past
 | impl | `impl/pkiprovisioner` | one intermediate CA per namespace, root in the root namespace, cached |
 | impl | `impl/policyclient` | the gha-lite policy engine HTTP client, including verdict extraction |
 | impl | `impl/metrics` | a thin wrapper over `prometheus/client_golang`. A counter or a gauge registered twice with the same help is shared; a gauge *function* is bound to one source, so a second registration for the same name panics rather than export the first one's number: `Counter`/`Gauge`/`Summary` registered on a private registry, with a renderer for tests and examples. `queue_depth` counts keys ready to run, not keys waiting on a backoff, because the workqueue does not expose its delaying queue |
-| impl | `impl/assets` | writes a caller's asset set (a shim, a probe) into a directory, once. The exec runner writes its own run directory and does not use this |
-| factory | `controller` | informers + workqueue + worker pool + requeue policy + metrics; one `Source` per APIExport, since a resource may only be listed against the export that serves it |
-| factory | `admission` | per-parent admission: leases, planning, and the wake of queued runs |
-| factory | `servicenames` | the FQDN-to-address table, a workload's own name, and one token per workspace. Not a DNS server: it builds the table a resolver shim is handed |
+| impl | `impl/assets` | writes a caller's asset set (a shim, a probe) into a directory, once. The exec runner writes its own run directory and does not use this. `DNSSet` is the one set carried here: the preload shim and readiness probe a workload resolves cluster names with, embedded and written under `.kcpdns`. Their keys are the ones `factory/servicenames` injects and `common/denospec.ProbeCommand` preloads them with, so the two halves of the DNS contract ship together |
+| factory | `factory/controller` | informers + workqueue + worker pool + requeue policy + metrics; one `Source` per APIExport, since a resource may only be listed against the export that serves it |
+| factory | `factory/admission` | per-parent admission: leases, planning, and the wake of queued runs |
+| factory | `factory/servicenames` | the FQDN-to-address table, a workload's own name, and one token per workspace. Not a DNS server: it builds the table a resolver shim is handed |
 | examples | `examples/*` | one runnable program per use case, each asserted by its own test |
 | support | `internal/livekcp` | starts a real kcp, applies a schema and an export, binds consumer workspaces |
 
@@ -201,9 +204,10 @@ dominates and it is the same every time:
 | one live test, cluster already up | 1 - 3s |
 | one example, cluster already up | 0.2 - 2s |
 
-`make test-live` and `make examples` run the whole tier against a single
-cluster through `scripts/live.sh`, so those ten seconds are paid once. Both
-take about 17s in total, against about 43s and 28s if each started its own.
+`make test-live` and `make examples` each run the whole tier against a single
+cluster through `scripts/live.sh`, so those ten seconds are paid once: about
+17s each that way, against about 39s and 41s with every package booting its
+own.
 
 The other thing that made those numbers what they are: `impl/kcpstore` sets
 `QPS` and `Burst` on the config it builds, defaulting to 50 and 100. client-go

@@ -3,11 +3,11 @@ package runref
 import (
 	"time"
 
-	"github.com/publicdomainrelay/kcp-libs/common/expiring"
+	"github.com/publicdomainrelay/kcp-libs/common/expiringmap"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 )
 
-const DefaultTTL = expiring.DefaultTTL
+const DefaultTTL = expiringmap.DefaultTTL
 
 type Record struct {
 	Ref ref.Ref
@@ -30,11 +30,11 @@ type Current struct {
 }
 
 type Index struct {
-	entries *expiring.Map[string, Record]
+	entries *expiringmap.Map[string, Record]
 }
 
 func New(ttl time.Duration) *Index {
-	return &Index{entries: expiring.NewMap[string, Record](ttl)}
+	return &Index{entries: expiringmap.NewMap[string, Record](ttl)}
 }
 
 func (i *Index) Record(r ref.Ref, runID, uid string, now time.Time) {

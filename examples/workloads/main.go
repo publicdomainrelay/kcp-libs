@@ -47,7 +47,7 @@ func Run(ctx context.Context, out io.Writer) error {
 	}
 	var _ runner.PodRunner = pod
 	permissions := &denospec.Permissions{
-		Net: &denospec.Permission{AllowList: []string{"denocomputer.land"}},
+		Net: &denospec.Permission{AllowList: []string{"deno.land"}},
 		Env: &denospec.Permission{Deny: true},
 	}
 	args, err := denospec.Args(permissions)

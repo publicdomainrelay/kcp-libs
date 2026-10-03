@@ -111,7 +111,7 @@ fails the test tier if anything outside `examples/` and tests reaches into
 | `common/kcp` | a workspace path has to become DNS labels, or back | `dns` `ServiceLabels` |
 | `common/ref` | you need the identity of an object: cluster, namespace, name | `controller`, `admission`, `dns`, `workloads` |
 | `common/clientlimit` | you are building a rest config and want more than client-go's 5 requests a second | `impl/kcpstore`, `impl/exportwatch`, `impl/informerwatch` |
-| `common/expiring` | you need a ttl-bounded map | `abc/queue` `Leases`, `abc/runref`, `abc/joballoc` (the callers live under `abc/`) |
+| `common/expiringmap` | you need a ttl-bounded map | `abc/queue` `Leases`, `abc/runref`, `abc/joballoc` (the callers live under `abc/`) |
 | `common/statuspatch` | the status write is a merge patch, or a finalizer patch | `controller`, `admission` |
 | `common/condition` | a status carries `metav1.Condition` and you edit one | `controller` `decide` |
 | `common/denocomputer` | you are working in the `deno.computer` vocabulary | `controller` phases and condition |

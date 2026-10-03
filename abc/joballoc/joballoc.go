@@ -3,11 +3,11 @@ package joballoc
 import (
 	"time"
 
-	"github.com/publicdomainrelay/kcp-libs/common/expiring"
+	"github.com/publicdomainrelay/kcp-libs/common/expiringmap"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 )
 
-const DefaultTTL = expiring.DefaultTTL
+const DefaultTTL = expiringmap.DefaultTTL
 
 type Allocation struct {
 	Name string
@@ -16,11 +16,11 @@ type Allocation struct {
 }
 
 type Allocator struct {
-	byJob *expiring.Map[ref.Ref, []Allocation]
+	byJob *expiringmap.Map[ref.Ref, []Allocation]
 }
 
 func New(ttl time.Duration) *Allocator {
-	return &Allocator{byJob: expiring.NewMap[ref.Ref, []Allocation](ttl)}
+	return &Allocator{byJob: expiringmap.NewMap[ref.Ref, []Allocation](ttl)}
 }
 
 func (a *Allocator) TTL() time.Duration {

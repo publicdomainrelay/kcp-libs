@@ -1,4 +1,4 @@
-package expiring
+package expiringmap
 
 import (
 	"sort"

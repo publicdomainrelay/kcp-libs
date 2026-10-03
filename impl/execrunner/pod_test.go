@@ -151,6 +151,28 @@ func TestPodProbeRunsInTheRunDirectory(t *testing.T) {
 	}
 }
 
+func TestPodWritesTheConfigFilesDenoReads(t *testing.T) {
+	dir := t.TempDir()
+	stub := writeStub(t, dir, `exit 0`)
+	pod, err := NewPod(PodOptions{DenoBin: stub, RunsDir: filepath.Join(dir, "runs")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	id, err := pod.Start(context.Background(), runner.PodRequest{
+		Name:     "pds",
+		DenoJSON: `{"imports":{"x":"./x.ts"}}`,
+		DenoLock: `{"version":"5"}`,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	probe := []string{"/bin/sh", "-c", `grep -q '"x"' deno.json && grep -q '"version"' deno.lock`}
+	passed, err := pod.Probe(context.Background(), id, probe, time.Second)
+	if err != nil || !passed {
+		t.Fatalf("deno auto-discovers a config only under its own names, probe = (%v, %v)", passed, err)
+	}
+}
+
 func TestPodRunnerTimeoutFailsTheRun(t *testing.T) {
 	dir := t.TempDir()
 	stub := writeStub(t, dir, `sleep 30`)
