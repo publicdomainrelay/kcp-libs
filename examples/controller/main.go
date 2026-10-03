@@ -128,7 +128,7 @@ func decide(_ context.Context, o observed) (reconcile.Result[status], error) {
 	return result, nil
 }
 
-func handlerFor(ctl **controller.Controller, resource *kcpstore.Resource[widget]) driver.Handler {
+func handlerFor(set *cache.Set, resource *kcpstore.Resource[widget]) driver.Handler {
 	return driver.HandlerFunc(func(ctx context.Context, key driver.Key) (time.Duration, bool, error) {
 		obj, err := resource.Get(ctx, key.Ref)
 		if err != nil {
@@ -138,7 +138,7 @@ func handlerFor(ctl **controller.Controller, resource *kcpstore.Resource[widget]
 			return 0, false, err
 		}
 		group := obj.Metadata.Labels[parentLabel]
-		siblings := int32(len((*ctl).Set().ByIndex("widget", cache.ByClusterParent, ref.Key(key.Ref.LogicalCluster, key.Ref.Namespace, group))))
+		siblings := int32(len(set.ByIndex("widget", cache.ByClusterParent, ref.Key(key.Ref.LogicalCluster, key.Ref.Namespace, group))))
 
 		result, err := reconcile.Decider(decide).Reconcile(ctx, observed{Widget: *obj, Siblings: siblings, Now: time.Now()})
 		if err != nil {
@@ -210,14 +210,15 @@ func Run(ctx context.Context, out io.Writer) error {
 	resource := kcpstore.Of[widget](store, widgets)
 	var _ abcstore.Resource[widget] = resource
 	registry := metrics.New("example")
-	var ctl *controller.Controller
-	handler := handlerFor(&ctl, resource)
+	watched := cache.NewSet()
+	handler := handlerFor(watched, resource)
 
-	ctl, err = controller.New(controller.Options{
+	ctl, err := controller.New(controller.Options{
 		Config:    store.Config(),
 		Bases:     bases,
 		Resources: []informerwatch.Resource{{Kind: "widget", GVR: widgets}},
 		Indexers:  cache.IndexersFor(parentLabel, "", ""),
+		Set:       watched,
 		Handler:   handler,
 		Policy: driver.Policy{
 			Interval:          5 * time.Millisecond,

@@ -29,6 +29,8 @@ type Options struct {
 
 	Indexers cache.Indexers
 
+	Set *cache.Set
+
 	Reactor informerwatch.Reactor
 
 	Handler driver.Handler
@@ -103,9 +105,12 @@ func New(opts Options) (*Controller, error) {
 	if opts.Metrics == nil {
 		opts.Metrics = metrics.New("controller")
 	}
+	if opts.Set == nil {
+		opts.Set = cache.NewSet()
+	}
 	c := &Controller{
 		opts:  opts,
-		set:   cache.NewSet(),
+		set:   opts.Set,
 		queue: workqueue.NewTypedRateLimitingQueue(workqueue.DefaultTypedControllerRateLimiter[driver.Key]()),
 	}
 	c.reconcileSeconds = opts.Metrics.Summary("reconcile_seconds", "time spent inside a reconcile")

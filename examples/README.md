@@ -47,7 +47,7 @@ if production code imports it.
 |---|---|---|
 | `abc/reconcile` | you are writing a decider: pure `Observed -> Result`, no I/O | `controller` `decide` |
 | `abc/driver` | you need the requeue rules: interval, clamp, conflict, terminal | `controller` `Policy` |
-| `abc/cache` | you want the informer's objects by index instead of a list | `controller` `cache.IndexersFor`, `ByIndex` |
+| `abc/cache` | you want the informer's objects by index instead of a list, and you own the set | `controller` `cache.NewSet`, `IndexersFor`, `ByIndex` |
 | `factory/controller` | you want informers plus a workqueue plus a worker pool, wired | `controller` `controller.New` |
 | `impl/kcpstore` | you need to read or write a CRD on kcp, typed or raw | every example |
 | `impl/exportwatch` | you need the APIExport virtual workspace URL at startup | `controller` `exportwatch.Await` |

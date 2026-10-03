@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"strings"
@@ -16,7 +17,7 @@ type vault struct {
 
 	mounts map[string]map[string]string
 
-	serial map[string]string
+	provisioned map[string]bool
 
 	roles map[string]bool
 
@@ -37,12 +38,12 @@ func newVault() (*vault, error) {
 		return nil, err
 	}
 	fake := &vault{
-		namespaces: map[string]bool{"": true},
-		mounts:     map[string]map[string]string{},
-		serial:     map[string]string{},
-		roles:      map[string]bool{},
-		listener:   listener,
-		url:        "http://" + listener.Addr().String(),
+		namespaces:  map[string]bool{"": true},
+		mounts:      map[string]map[string]string{},
+		provisioned: map[string]bool{},
+		roles:       map[string]bool{},
+		listener:    listener,
+		url:         "http://" + listener.Addr().String(),
 	}
 	fake.server = &http.Server{Handler: fake}
 	go func() {
@@ -94,7 +95,7 @@ func (v *vault) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case strings.HasSuffix(path, "/root/generate/internal"):
 		v.serveRootGenerate(w, namespace)
 	case strings.HasSuffix(path, "/root/sign-intermediate"):
-		v.serveSignIntermediate(w)
+		v.serveSignIntermediate(w, r)
 	case strings.HasSuffix(path, "/intermediate/generate/internal"):
 		v.data(w, map[string]any{"csr": "CSR", "private_key": "INTERMEDIATE-KEY"})
 	case strings.HasSuffix(path, "/intermediate/set-signed"):
@@ -149,9 +150,9 @@ func (v *vault) serveMountEnable(w http.ResponseWriter, namespace, path string) 
 
 func (v *vault) serveCA(w http.ResponseWriter, namespace string) {
 	v.mu.Lock()
-	issued := v.serial[namespace]
+	issued := v.provisioned[namespace]
 	v.mu.Unlock()
-	if issued == "" {
+	if !issued {
 		writeError(w, http.StatusNotFound, "no authority in namespace "+namespace)
 		return
 	}
@@ -165,9 +166,9 @@ func (v *vault) serveCA(w http.ResponseWriter, namespace string) {
 
 func (v *vault) serveChain(w http.ResponseWriter, namespace string) {
 	v.mu.Lock()
-	issued := v.serial[namespace]
+	issued := v.provisioned[namespace]
 	v.mu.Unlock()
-	if issued == "" {
+	if !issued {
 		writeError(w, http.StatusNotFound, "no authority in namespace "+namespace)
 		return
 	}
@@ -196,13 +197,18 @@ func (v *vault) serveRootGenerate(w http.ResponseWriter, namespace string) {
 		return
 	}
 	v.mu.Lock()
-	v.serial[namespace] = authority.serial
+	v.provisioned[namespace] = true
 	v.mu.Unlock()
 	v.data(w, map[string]any{"certificate": authority.pem, "serial_number": authority.serial})
 }
 
-func (v *vault) serveSignIntermediate(w http.ResponseWriter) {
-	authority, err := caFor("signed")
+func (v *vault) serveSignIntermediate(w http.ResponseWriter, r *http.Request) {
+	raw, _ := io.ReadAll(r.Body)
+	var body struct {
+		CommonName string `json:"common_name"`
+	}
+	_ = json.Unmarshal(raw, &body)
+	authority, err := caFor(body.CommonName)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -217,7 +223,7 @@ func (v *vault) serveSignIntermediate(w http.ResponseWriter) {
 
 func (v *vault) serveSetSigned(w http.ResponseWriter, namespace string) {
 	v.mu.Lock()
-	v.serial[namespace] = "set"
+	v.provisioned[namespace] = true
 	v.mu.Unlock()
 	w.WriteHeader(http.StatusNoContent)
 }
@@ -230,11 +236,11 @@ func (v *vault) serveRole(w http.ResponseWriter, namespace, path string) {
 }
 
 func (v *vault) serveIssue(w http.ResponseWriter, namespace, path string) {
+	mount, role, _ := strings.Cut(path, "/issue/")
 	v.mu.Lock()
 	v.issued++
 	serial := fmt.Sprintf("EE:%02X", v.issued)
-	role := path[strings.Index(path, "/issue/")+len("/issue/"):]
-	allowed := v.roles[namespace+"/"+path[:strings.Index(path, "/issue/")]+"/roles/"+role]
+	allowed := v.roles[namespace+"/"+mount+"/roles/"+role]
 	v.mu.Unlock()
 	if !allowed {
 		writeError(w, http.StatusForbidden, "role "+role+" does not exist")
