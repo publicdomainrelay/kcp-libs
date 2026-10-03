@@ -14,11 +14,12 @@ go run ./examples/policy        # submitting a workflow and reading the verdict
 go run ./examples/dns           # cluster-local names and per-workspace tokens
 ```
 
-`controller`, `admission` and `dns` need `kcp`, `kine` and `kubectl` on PATH
-(`KCP_BIN`, `KINE_BIN`, `KUBECTL` override). Each starts a real kcp on kine in
-a temp directory and drives it -- about thirteen seconds apiece. Point
-`KCP_LIBS_KUBECONFIG` at an existing cluster's admin kubeconfig to reuse one
-instead of starting another.
+`controller`, `admission` and `dns` need `kcp` and `kubectl` on PATH
+(`KCP_BIN`, `KUBECTL` override). Each starts a real kcp -- with its own
+embedded etcd -- in a temp directory and drives it. `make examples` starts one
+cluster for all six, because kcp's own startup is about ten seconds and is the
+same every time; point `KCP_LIBS_KUBECONFIG` at an existing cluster to do the
+same by hand.
 
 The other three need no cluster: `workloads` runs real processes, and `pki` and
 `policy` talk to a fake vault and a fake policy engine, because those are
@@ -41,7 +42,7 @@ behaviour, so a broken library breaks a line of prose.
 
 ## The cluster
 
-`internal/livekcp` starts kcp on kine in a temp directory, applies an
+`internal/livekcp` starts kcp in a temp directory, applies an
 `APIResourceSchema` and an `APIExport` for one example kind (`Widget`, in
 `example.computer/v1alpha1`, with permissive `spec` and `status`), creates a
 provider workspace and two consumer workspaces bound to that export, and waits

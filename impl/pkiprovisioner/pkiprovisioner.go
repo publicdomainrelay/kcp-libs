@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/publicdomainrelay/kcp-libs/abc/pki"
+	"github.com/publicdomainrelay/kcp-libs/common/expiring"
 )
 
 const DefaultAuthorityTTL = 5 * time.Minute
@@ -46,13 +47,7 @@ type Provisioner struct {
 
 	root *pki.RootCA
 
-	namespaces map[string]cachedAuthority
-}
-
-type cachedAuthority struct {
-	authority pki.Authority
-
-	at time.Time
+	namespaces *expiring.Map[string, pki.Authority]
 }
 
 var _ pki.Provisioner = (*Provisioner)(nil)
@@ -85,7 +80,7 @@ func New(opts Options) (*Provisioner, error) {
 	if opts.Now == nil {
 		opts.Now = time.Now
 	}
-	return &Provisioner{opts: opts, namespaces: map[string]cachedAuthority{}}, nil
+	return &Provisioner{opts: opts, namespaces: expiring.NewMap[string, pki.Authority](opts.AuthorityTTL)}, nil
 }
 
 func (p *Provisioner) EnsureRoot(ctx context.Context) (pki.RootCA, error) {
@@ -128,16 +123,19 @@ func (p *Provisioner) EnsureAuthority(ctx context.Context, path string) (pki.Aut
 	if path == "" {
 		return pki.Authority{}, errors.New("pkiprovisioner: a namespace path is required")
 	}
+	if cached, ok := p.namespaces.Get(path, p.opts.Now()); ok {
+		return cached, nil
+	}
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	if cached, ok := p.namespaces[path]; ok && p.opts.Now().Sub(cached.at) < p.opts.AuthorityTTL {
-		return cached.authority, nil
+	if cached, ok := p.namespaces.Get(path, p.opts.Now()); ok {
+		return cached, nil
 	}
 	authority, err := p.ensureAuthority(ctx, path)
 	if err != nil {
 		return pki.Authority{}, err
 	}
-	p.namespaces[path] = cachedAuthority{authority: authority, at: p.opts.Now()}
+	p.namespaces.Set(path, authority, p.opts.Now())
 	return authority, nil
 }
 
@@ -229,9 +227,7 @@ func (p *Provisioner) Delete(ctx context.Context, path string) error {
 	if path == "" {
 		return errors.New("pkiprovisioner: a namespace path is required")
 	}
-	p.mu.Lock()
-	delete(p.namespaces, path)
-	p.mu.Unlock()
+	p.namespaces.Delete(path)
 	if err := p.opts.Client.DeleteNamespace(ctx, path); err != nil {
 		return fmt.Errorf("pkiprovisioner: deleting the namespace %q: %w", path, err)
 	}

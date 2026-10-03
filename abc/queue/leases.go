@@ -1,10 +1,10 @@
 package queue
 
 import (
-	"sync"
 	"time"
 
 	"github.com/publicdomainrelay/kcp-libs/common/deno"
+	"github.com/publicdomainrelay/kcp-libs/common/expiring"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 )
 
@@ -17,56 +17,45 @@ type Lease struct {
 }
 
 type Leases struct {
-	TTL time.Duration
-
-	mu sync.Mutex
-
-	entries map[ref.Ref]Lease
+	entries *expiring.Map[ref.Ref, Lease]
 }
 
 func NewLeases(ttl time.Duration) *Leases {
-	if ttl <= 0 {
-		ttl = DefaultLeaseTTL
-	}
-	return &Leases{TTL: ttl, entries: map[ref.Ref]Lease{}}
+	return &Leases{entries: expiring.NewMap[ref.Ref, Lease](ttl)}
+}
+
+func (l *Leases) TTL() time.Duration {
+	return l.entries.TTL
 }
 
 func (l *Leases) Grant(run, parent ref.Ref, now time.Time) {
-	l.mu.Lock()
-	defer l.mu.Unlock()
-	l.entries[run] = Lease{Parent: parent, Admitted: now}
+	l.entries.Set(run, Lease{Parent: parent, Admitted: now}, now)
 }
 
 func (l *Leases) Forget(run ref.Ref) {
-	l.mu.Lock()
-	defer l.mu.Unlock()
-	delete(l.entries, run)
+	l.entries.Delete(run)
 }
 
 func (l *Leases) Count(parent ref.Ref, observed map[ref.Ref]string, now time.Time, isTerminal func(phase string) bool) int32 {
 	terminal := Terminal(isTerminal)
-	l.mu.Lock()
-	defer l.mu.Unlock()
-	var held int32
-	for run, lease := range l.entries {
+	l.entries.Expire(now)
+	l.entries.DeleteIf(func(run ref.Ref, lease Lease) bool {
 		if lease.Parent != parent {
-			continue
+			return false
 		}
-		if now.Sub(lease.Admitted) > l.TTL {
-			delete(l.entries, run)
-			continue
+		phase, seen := observed[run]
+		return seen && (phase == string(deno.PhaseRunning) || terminal(phase))
+	})
+	var held int32
+	l.entries.Range(func(_ ref.Ref, lease Lease) bool {
+		if lease.Parent == parent {
+			held++
 		}
-		if phase, seen := observed[run]; seen && (phase == string(deno.PhaseRunning) || terminal(phase)) {
-			delete(l.entries, run)
-			continue
-		}
-		held++
-	}
+		return true
+	})
 	return held
 }
 
 func (l *Leases) Len() int {
-	l.mu.Lock()
-	defer l.mu.Unlock()
-	return len(l.entries)
+	return l.entries.Len()
 }

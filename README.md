@@ -121,9 +121,9 @@ pure: the queue, the requeue policy, the cache indexers, the status patches,
 the runners, the PKI orchestration, the transports against `httptest`.
 
 **Live** — anything that has to talk to kcp. `internal/livekcp` starts a real
-kcp on kine in a temp directory, applies an `APIResourceSchema` and an
-`APIExport`, creates two consumer workspaces with `APIBinding`s, and waits for
-them to bind. Directly against it:
+kcp in a temp directory, applies an `APIResourceSchema` and an `APIExport`,
+creates two consumer workspaces with `APIBinding`s, and waits for them to
+bind. Directly against it:
 
 - `impl/kcpstore` — create, get, list, a status merge patch, a finalizer JSON
   patch, the cluster path annotation, delete, and a 404, all through the typed
@@ -133,17 +133,38 @@ them to bind. Directly against it:
   workqueue delivers keys, and a decider drives two widgets to `Succeeded`.
 
 and the three examples that need a cluster: `examples/controller`,
-`examples/admission`, `examples/dns`. Each is about thirteen seconds, and each
-starts its own kcp unless one is already running:
+`examples/admission`, `examples/dns`.
+
+Everything that needs a cluster starts at most one, because kcp's own startup
+dominates and it is the same every time:
+
+| | |
+|---|---|
+| kcp ready to serve (`/readyz` returns 200) | ~10s |
+| provision: three workspaces, an export, two bindings | ~0.9s |
+| one live test, cluster already up | ~1s |
+
+`make test-live` and `make examples` run the whole tier against a single
+cluster through `scripts/live.sh`, so those ten seconds are paid once: the
+six examples take about 17s and the live tests about 13s in total, against
+about 43s and 28s if each started its own.
+
+Run one on its own with `go run ./examples/controller`, or point several at a
+cluster that is already up:
 
 ```bash
-KCP_LIBS_KUBECONFIG=/path/to/admin.kubeconfig go run ./examples/controller
+KCP_LIBS_KUBECONFIG=/path/to/admin.kubeconfig KCP_LIBS_SERVER=https://127.0.0.1:6443 \
+  go run ./examples/controller
 ```
 
-Set that to reuse a cluster across examples (it also takes `KCP_LIBS_SERVER`).
+kcp runs its own embedded etcd by default, so the only binaries needed are
+`kcp` and `kubectl` (override with `KCP_BIN`, `KUBECTL`). That embedded etcd
+binds the fixed ports 2379 and 2380, so two of these clusters cannot run at
+once; set `KCP_LIBS_ETCD_SERVERS` to a store that is already running (a real
+etcd, or a kine on its own port) when you want instances in parallel.
+
 The live tests are opt-in: with `KCP_LIBS_REQUIRE_LIVE=1` they fail instead of
-skipping when `kcp`, `kine` or `kubectl` is missing, which is what CI should
-set. `KCP_BIN`, `KINE_BIN` and `KUBECTL` override the binaries.
+skipping when a binary is missing, which is what CI should set.
 
 ## Commands
 

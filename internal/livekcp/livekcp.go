@@ -32,6 +32,8 @@ const (
 
 	EnvServer = "KCP_LIBS_SERVER"
 
+	EnvEtcdServers = "KCP_LIBS_ETCD_SERVERS"
+
 	ProviderWorkspace = "provider"
 
 	ConsumerWorkspace = "consumer"
@@ -57,10 +59,6 @@ func Resolve(name string) string {
 		if value := os.Getenv("KCP_BIN"); value != "" {
 			return value
 		}
-	case "kine":
-		if value := os.Getenv("KINE_BIN"); value != "" {
-			return value
-		}
 	case "kubectl":
 		if value := os.Getenv("KUBECTL"); value != "" {
 			return value
@@ -71,7 +69,7 @@ func Resolve(name string) string {
 
 func Missing() []string {
 	var missing []string
-	for _, name := range []string{"kcp", "kine", "kubectl"} {
+	for _, name := range []string{"kcp", "kubectl"} {
 		if _, err := exec.LookPath(Resolve(name)); err != nil {
 			missing = append(missing, name)
 		}
@@ -94,6 +92,33 @@ func Require(t *testing.T) {
 	t.Skipf("skipping the live tier: set %s=1 to run it", EnvRequire)
 }
 
+type Phase struct {
+	Name string
+
+	Duration time.Duration
+}
+
+func (c *Cluster) Phases() []Phase {
+	return append([]Phase(nil), c.phases...)
+}
+
+func (c *Cluster) Trace() string {
+	var builder strings.Builder
+	var total time.Duration
+	for _, phase := range c.phases {
+		total += phase.Duration
+		fmt.Fprintf(&builder, "%8.2fs  %s\n", phase.Duration.Seconds(), phase.Name)
+	}
+	fmt.Fprintf(&builder, "%8.2fs  total\n", total.Seconds())
+	return builder.String()
+}
+
+func (c *Cluster) mark(name string, start time.Time) time.Time {
+	now := time.Now()
+	c.phases = append(c.phases, Phase{Name: name, Duration: now.Sub(start)})
+	return now
+}
+
 type Cluster struct {
 	Root string
 
@@ -114,6 +139,8 @@ type Cluster struct {
 	logs []string
 
 	borrowed bool
+
+	phases []Phase
 }
 
 func (c *Cluster) StoreOptions() (string, *rest.Config) {
@@ -176,10 +203,6 @@ func start(ctx context.Context) (*Cluster, error) {
 	if err != nil {
 		return nil, err
 	}
-	kinePort, err := freePort()
-	if err != nil {
-		return nil, err
-	}
 	kcpPort, err := freePort()
 	if err != nil {
 		return nil, err
@@ -199,37 +222,31 @@ func start(ctx context.Context) (*Cluster, error) {
 		}
 	}()
 
-	kineLog := filepath.Join(root, "kine.log")
-	cluster.logs = append(cluster.logs, kineLog)
-	kine, err := spawn(kineLog, Resolve("kine"),
-		"--endpoint", "sqlite://"+filepath.Join(root, "kine.db"),
-		"--listen-address", fmt.Sprintf("127.0.0.1:%d", kinePort),
-		"--metrics-bind-address=0",
-	)
-	if err != nil {
-		return nil, err
-	}
-	cluster.processes = append(cluster.processes, kine)
-	if err := waitTCP(ctx, fmt.Sprintf("127.0.0.1:%d", kinePort), 60*time.Second); err != nil {
-		return nil, fmt.Errorf("kine did not listen: %w\n%s", err, cluster.Logs())
-	}
-
+	phase := time.Now()
 	kcpLog := filepath.Join(root, "kcp.log")
 	cluster.logs = append(cluster.logs, kcpLog)
-	kcp, err := spawn(kcpLog, Resolve("kcp"), "start",
-		"--root-directory="+root,
-		"--etcd-servers="+fmt.Sprintf("http://127.0.0.1:%d", kinePort),
+	args := []string{"start",
+		"--root-directory=" + root,
 		"--bind-address=127.0.0.1",
-		"--secure-port="+fmt.Sprint(kcpPort),
+		"--secure-port=" + fmt.Sprint(kcpPort),
 		"--feature-gates=WorkspaceMounts=true",
-	)
+	}
+	if servers := os.Getenv(EnvEtcdServers); servers != "" {
+		args = append(args, "--etcd-servers="+servers)
+	}
+	kcp, err := spawn(kcpLog, Resolve("kcp"), args...)
 	if err != nil {
 		return nil, err
 	}
 	cluster.processes = append(cluster.processes, kcp)
-	if err := waitReady(ctx, cluster.Server, cluster.Kubeconfig, 180*time.Second); err != nil {
+	if err := waitReady(ctx, cluster.Server, 180*time.Second); err != nil {
 		return nil, fmt.Errorf("kcp did not become ready: %w\n%s", err, cluster.Logs())
 	}
+	phase = cluster.mark("kcp /readyz", phase)
+	if err := waitFile(ctx, cluster.Kubeconfig, 180*time.Second); err != nil {
+		return nil, fmt.Errorf("%w\n%s", err, cluster.Logs())
+	}
+	phase = cluster.mark("admin kubeconfig written", phase)
 
 	config, err := clientcmd.BuildConfigFromFlags("", cluster.Kubeconfig)
 	if err != nil {
@@ -240,9 +257,11 @@ func start(ctx context.Context) (*Cluster, error) {
 	if err := cluster.awaitAdmin(ctx); err != nil {
 		return nil, fmt.Errorf("%w\n%s", err, cluster.Logs())
 	}
-	if err := cluster.provision(ctx); err != nil {
+	phase = cluster.mark("admin API accepting", phase)
+	if err := cluster.provision(ctx, &phase); err != nil {
 		return nil, fmt.Errorf("%w\n%s", err, cluster.Logs())
 	}
+	cluster.mark("provisioned", phase)
 	ok = true
 	return cluster, nil
 }
@@ -276,21 +295,26 @@ func borrow(ctx context.Context, kubeconfig string) (*Cluster, error) {
 	if err := cluster.awaitAdmin(ctx); err != nil {
 		return nil, err
 	}
-	if err := cluster.provision(ctx); err != nil {
+	phase := cluster.mark("admin API accepting", time.Now())
+	if err := cluster.provision(ctx, &phase); err != nil {
 		return nil, err
 	}
+	cluster.mark("provisioned", phase)
 	return cluster, nil
 }
 
-func (c *Cluster) provision(ctx context.Context) error {
-	for _, workspace := range []string{ProviderWorkspace, ConsumerWorkspace, SecondWorkspace} {
+func (c *Cluster) provision(ctx context.Context, phase *time.Time) error {
+	workspaces := []string{ProviderWorkspace, ConsumerWorkspace, SecondWorkspace}
+	for _, workspace := range workspaces {
 		if _, err := c.Kubectl(ctx, "", workspaceYAML(workspace)); err != nil {
 			return err
 		}
-		if err := c.waitWorkspace(ctx, workspace); err != nil {
-			return err
-		}
 	}
+	if err := c.waitAll(ctx, workspaces, c.waitWorkspace, "workspaces to reach Ready"); err != nil {
+		return err
+	}
+	*phase = c.mark("workspaces ready", *phase)
+
 	for _, manifest := range []string{SchemaYAML, ExportYAML} {
 		if _, err := c.Kubectl(ctx, c.Provider, manifest); err != nil {
 			return err
@@ -299,12 +323,34 @@ func (c *Cluster) provision(ctx context.Context) error {
 	if err := c.waitExport(ctx); err != nil {
 		return err
 	}
-	for _, consumer := range []string{c.Consumer, c.ConsumerTwo} {
+	*phase = c.mark("export identity valid", *phase)
+
+	consumers := []string{c.Consumer, c.ConsumerTwo}
+	for _, consumer := range consumers {
 		if _, err := c.Kubectl(ctx, consumer, BindingYAML); err != nil {
 			return err
 		}
 	}
-	return c.waitBinding(ctx)
+	if err := c.waitAll(ctx, consumers, c.waitBindingIn, "the api bindings to bind"); err != nil {
+		return err
+	}
+	*phase = c.mark("bindings bound", *phase)
+	return nil
+}
+
+func (c *Cluster) waitAll(ctx context.Context, subjects []string, wait func(context.Context, string) error, what string) error {
+	failures := make(chan error, len(subjects))
+	for _, subject := range subjects {
+		go func(subject string) {
+			failures <- wait(ctx, subject)
+		}(subject)
+	}
+	for range subjects {
+		if err := <-failures; err != nil {
+			return fmt.Errorf("livekcp: waiting for %s: %w", what, err)
+		}
+	}
+	return nil
 }
 
 func (c *Cluster) Kubectl(ctx context.Context, logicalCluster, manifest string) (string, error) {
@@ -338,17 +384,11 @@ func (c *Cluster) waitExport(ctx context.Context) error {
 	}, "apiexport "+Export+" to report IdentityValid")
 }
 
-func (c *Cluster) waitBinding(ctx context.Context) error {
-	for _, consumer := range []string{c.Consumer, c.ConsumerTwo} {
-		err := waitFor(ctx, 120*time.Second, func() bool {
-			out, err := c.Get(ctx, consumer, "apibinding", Export, "-o", "jsonpath={.status.phase}")
-			return err == nil && strings.TrimSpace(out) == "Bound"
-		}, "the apibinding in "+consumer+" to bind")
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+func (c *Cluster) waitBindingIn(ctx context.Context, consumer string) error {
+	return waitFor(ctx, 120*time.Second, func() bool {
+		out, err := c.Get(ctx, consumer, "apibinding", Export, "-o", "jsonpath={.status.phase}")
+		return err == nil && strings.TrimSpace(out) == "Bound"
+	}, "the apibinding in "+consumer+" to bind")
 }
 
 func spawn(logPath string, name string, args ...string) (*exec.Cmd, error) {
@@ -389,26 +429,12 @@ func freePort() (int, error) {
 	return listener.Addr().(*net.TCPAddr).Port, nil
 }
 
-func waitTCP(ctx context.Context, address string, timeout time.Duration) error {
-	return waitFor(ctx, timeout, func() bool {
-		conn, err := net.DialTimeout("tcp", address, time.Second)
-		if err != nil {
-			return false
-		}
-		_ = conn.Close()
-		return true
-	}, "a listener on "+address)
-}
-
-func waitReady(ctx context.Context, server, kubeconfig string, timeout time.Duration) error {
+func waitReady(ctx context.Context, server string, timeout time.Duration) error {
 	client := &http.Client{
 		Timeout:   2 * time.Second,
 		Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}},
 	}
 	return waitFor(ctx, timeout, func() bool {
-		if _, err := os.Stat(kubeconfig); err != nil {
-			return false
-		}
 		resp, err := client.Get(server + "/readyz")
 		if err != nil {
 			return false
@@ -416,6 +442,13 @@ func waitReady(ctx context.Context, server, kubeconfig string, timeout time.Dura
 		defer resp.Body.Close()
 		return resp.StatusCode == http.StatusOK
 	}, "kcp to answer /readyz")
+}
+
+func waitFile(ctx context.Context, path string, timeout time.Duration) error {
+	return waitFor(ctx, timeout, func() bool {
+		_, err := os.Stat(path)
+		return err == nil
+	}, path+" to be written")
 }
 
 func waitFor(ctx context.Context, timeout time.Duration, condition func() bool, what string) error {

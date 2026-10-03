@@ -1,9 +1,9 @@
 package runref
 
 import (
-	"sync"
 	"time"
 
+	"github.com/publicdomainrelay/kcp-libs/common/expiring"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 )
 
@@ -30,18 +30,11 @@ type Current struct {
 }
 
 type Index struct {
-	TTL time.Duration
-
-	mu sync.Mutex
-
-	entries map[string]Record
+	entries *expiring.Map[string, Record]
 }
 
 func New(ttl time.Duration) *Index {
-	if ttl <= 0 {
-		ttl = DefaultTTL
-	}
-	return &Index{TTL: ttl, entries: map[string]Record{}}
+	return &Index{entries: expiring.NewMap[string, Record](ttl)}
 }
 
 func (i *Index) Record(r ref.Ref, runID, uid string, now time.Time) {
@@ -49,25 +42,18 @@ func (i *Index) Record(r ref.Ref, runID, uid string, now time.Time) {
 		return
 	}
 	key := ref.New(r.LogicalCluster, r.Namespace, r.Name)
-	i.mu.Lock()
-	defer i.mu.Unlock()
-	for id, entry := range i.entries {
-		if now.Sub(entry.At) >= i.TTL || (id != runID && entry.Ref == key) {
-			delete(i.entries, id)
-		}
-	}
-	i.entries[runID] = Record{Ref: key, RunID: runID, UID: uid, At: now}
+	i.entries.Expire(now)
+	i.entries.DeleteIf(func(id string, entry Record) bool {
+		return id != runID && entry.Ref == key
+	})
+	i.entries.Set(runID, Record{Ref: key, RunID: runID, UID: uid, At: now}, now)
 }
 
 func (i *Index) Forget(r ref.Ref) {
 	key := ref.New(r.LogicalCluster, r.Namespace, r.Name)
-	i.mu.Lock()
-	defer i.mu.Unlock()
-	for id, entry := range i.entries {
-		if entry.Ref == key {
-			delete(i.entries, id)
-		}
-	}
+	i.entries.DeleteIf(func(_ string, entry Record) bool {
+		return entry.Ref == key
+	})
 }
 
 func (i *Index) Keep(r ref.Ref, runID, uid string, terminal bool, now time.Time) {
@@ -80,20 +66,21 @@ func (i *Index) Keep(r ref.Ref, runID, uid string, terminal bool, now time.Time)
 
 func (i *Index) Lookup(r ref.Ref) (Record, bool) {
 	key := ref.New(r.LogicalCluster, r.Namespace, r.Name)
-	i.mu.Lock()
-	defer i.mu.Unlock()
-	for _, entry := range i.entries {
+	var found Record
+	ok := false
+	i.entries.Range(func(_ string, entry Record) bool {
 		if entry.Ref == key {
-			return entry, true
+			found = entry
+			ok = true
+			return false
 		}
-	}
-	return Record{}, false
+		return true
+	})
+	return found, ok
 }
 
 func (i *Index) Len() int {
-	i.mu.Lock()
-	defer i.mu.Unlock()
-	return len(i.entries)
+	return i.entries.Len()
 }
 
 func AlreadyStarted(known Record, found bool, current Current) bool {
