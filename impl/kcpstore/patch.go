@@ -22,10 +22,6 @@ func IsConflict(err error) bool {
 	return apierrors.IsConflict(err)
 }
 
-func IsAlreadyExists(err error) bool {
-	return apierrors.IsAlreadyExists(err)
-}
-
 func StatusPatch(status map[string]any) ([]byte, error) {
 	body, err := json.Marshal(map[string]any{"status": status})
 	if err != nil {

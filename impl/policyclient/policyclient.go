@@ -56,8 +56,6 @@ type statusResponse struct {
 
 type cacheFile struct {
 	Data string `json:"data"`
-
-	Encoding string `json:"encoding"`
 }
 
 type verdict struct {
@@ -85,10 +83,16 @@ func (c *Client) Submit(ctx context.Context, endpoint string, workflow []byte, i
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := c.http.Do(req)
 	if err != nil {
+		if ctx.Err() != nil {
+			return "", ctx.Err()
+		}
 		return "", fmt.Errorf("policyclient: submitting the policy run: %w", err)
 	}
 	defer resp.Body.Close()
-	raw, _ := io.ReadAll(resp.Body)
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("policyclient: read the submit response: %w", err)
+	}
 	if resp.StatusCode >= 400 {
 		return "", fmt.Errorf("policyclient: the policy engine returned %d: %s", resp.StatusCode, strings.TrimSpace(string(raw)))
 	}
@@ -110,10 +114,16 @@ func (c *Client) Status(ctx context.Context, endpoint, taskID string) (policy.Ta
 	}
 	resp, err := c.http.Do(req)
 	if err != nil {
+		if ctx.Err() != nil {
+			return policy.Task{}, ctx.Err()
+		}
 		return policy.Task{State: policy.StateRunning}, nil
 	}
 	defer resp.Body.Close()
-	raw, _ := io.ReadAll(resp.Body)
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return policy.Task{}, fmt.Errorf("policyclient: read the status response: %w", err)
+	}
 	if resp.StatusCode >= 400 {
 		return policy.Task{}, fmt.Errorf("policyclient: the policy engine returned %d for task %s", resp.StatusCode, taskID)
 	}

@@ -2,7 +2,7 @@ package controller
 
 import "time"
 
-func (c *Controller) RecordEvent() {
+func (c *Controller) recordEvent() {
 	c.lastEventNanos.Store(time.Now().UnixNano())
 }
 

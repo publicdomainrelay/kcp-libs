@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"testing"
 	"time"
 
@@ -38,7 +39,7 @@ const (
 
 	ConsumerWorkspace = "consumer"
 
-	SecondWorkspace = "consumer-two"
+	secondWorkspace = "consumer-two"
 
 	Export = "widgets"
 
@@ -98,10 +99,6 @@ type Phase struct {
 	Duration time.Duration
 }
 
-func (c *Cluster) Phases() []Phase {
-	return append([]Phase(nil), c.phases...)
-}
-
 func (c *Cluster) Trace() string {
 	var builder strings.Builder
 	var total time.Duration
@@ -128,13 +125,15 @@ type Cluster struct {
 
 	Config *rest.Config
 
-	Provider string
+	ProviderCluster string
 
-	Consumer string
+	ConsumerCluster string
 
-	ConsumerTwo string
+	SecondConsumerCluster string
 
 	processes []*exec.Cmd
+
+	logFiles []*os.File
 
 	logs []string
 
@@ -143,25 +142,25 @@ type Cluster struct {
 	phases []Phase
 }
 
-func (c *Cluster) StoreOptions() (string, *rest.Config) {
-	return c.Server, c.Config
-}
-
-func (c *Cluster) Workspaces() []string {
-	return []string{c.Provider, c.Consumer, c.ConsumerTwo}
-}
-
 func (c *Cluster) Stop() {
 	if c.borrowed {
 		return
 	}
 	for _, process := range c.processes {
-		if process.Process != nil {
-			_ = process.Process.Kill()
+		if process.Process == nil {
+			continue
 		}
+		_ = syscall.Kill(-process.Process.Pid, syscall.SIGKILL)
+		_ = process.Process.Kill()
 	}
 	for _, process := range c.processes {
 		_, _ = process.Process.Wait()
+	}
+	for _, log := range c.logFiles {
+		_ = log.Close()
+	}
+	if c.Root != "" {
+		_ = os.RemoveAll(c.Root)
 	}
 }
 
@@ -208,12 +207,12 @@ func start(ctx context.Context) (*Cluster, error) {
 		return nil, err
 	}
 	cluster := &Cluster{
-		Root:        root,
-		Kubeconfig:  filepath.Join(root, "admin.kubeconfig"),
-		Server:      fmt.Sprintf("https://127.0.0.1:%d", kcpPort),
-		Provider:    kcp.RootWorkspace + ":" + ProviderWorkspace,
-		Consumer:    kcp.RootWorkspace + ":" + ConsumerWorkspace,
-		ConsumerTwo: kcp.RootWorkspace + ":" + SecondWorkspace,
+		Root:                  root,
+		Kubeconfig:            filepath.Join(root, "admin.kubeconfig"),
+		Server:                fmt.Sprintf("https://127.0.0.1:%d", kcpPort),
+		ProviderCluster:       kcp.RootWorkspace + ":" + ProviderWorkspace,
+		ConsumerCluster:       kcp.RootWorkspace + ":" + ConsumerWorkspace,
+		SecondConsumerCluster: kcp.RootWorkspace + ":" + secondWorkspace,
 	}
 	ok := false
 	defer func() {
@@ -234,10 +233,11 @@ func start(ctx context.Context) (*Cluster, error) {
 	if servers := os.Getenv(EnvEtcdServers); servers != "" {
 		args = append(args, "--etcd-servers="+servers)
 	}
-	kcp, err := spawn(kcpLog, Resolve("kcp"), args...)
+	kcp, log, err := cluster.spawn(kcpLog, Resolve("kcp"), args...)
 	if err != nil {
 		return nil, err
 	}
+	_ = log
 	cluster.processes = append(cluster.processes, kcp)
 	if err := waitReady(ctx, cluster.Server, 180*time.Second); err != nil {
 		return nil, fmt.Errorf("kcp did not become ready: %w\n%s", err, cluster.Logs())
@@ -283,14 +283,14 @@ func borrow(ctx context.Context, kubeconfig string) (*Cluster, error) {
 		server = ref.BaseHost(config.Host)
 	}
 	cluster := &Cluster{
-		Root:        filepath.Dir(kubeconfig),
-		Kubeconfig:  kubeconfig,
-		Server:      server,
-		Config:      config,
-		Provider:    kcp.RootWorkspace + ":" + ProviderWorkspace,
-		Consumer:    kcp.RootWorkspace + ":" + ConsumerWorkspace,
-		ConsumerTwo: kcp.RootWorkspace + ":" + SecondWorkspace,
-		borrowed:    true,
+		Root:                  filepath.Dir(kubeconfig),
+		Kubeconfig:            kubeconfig,
+		Server:                server,
+		Config:                config,
+		ProviderCluster:       kcp.RootWorkspace + ":" + ProviderWorkspace,
+		ConsumerCluster:       kcp.RootWorkspace + ":" + ConsumerWorkspace,
+		SecondConsumerCluster: kcp.RootWorkspace + ":" + secondWorkspace,
+		borrowed:              true,
 	}
 	if err := cluster.awaitAdmin(ctx); err != nil {
 		return nil, err
@@ -304,7 +304,7 @@ func borrow(ctx context.Context, kubeconfig string) (*Cluster, error) {
 }
 
 func (c *Cluster) provision(ctx context.Context, phase *time.Time) error {
-	workspaces := []string{ProviderWorkspace, ConsumerWorkspace, SecondWorkspace}
+	workspaces := []string{ProviderWorkspace, ConsumerWorkspace, secondWorkspace}
 	for _, workspace := range workspaces {
 		if _, err := c.Kubectl(ctx, "", workspaceYAML(workspace)); err != nil {
 			return err
@@ -316,7 +316,7 @@ func (c *Cluster) provision(ctx context.Context, phase *time.Time) error {
 	*phase = c.mark("workspaces ready", *phase)
 
 	for _, manifest := range []string{SchemaYAML, ExportYAML} {
-		if _, err := c.Kubectl(ctx, c.Provider, manifest); err != nil {
+		if _, err := c.Kubectl(ctx, c.ProviderCluster, manifest); err != nil {
 			return err
 		}
 	}
@@ -325,7 +325,7 @@ func (c *Cluster) provision(ctx context.Context, phase *time.Time) error {
 	}
 	*phase = c.mark("export identity valid", *phase)
 
-	consumers := []string{c.Consumer, c.ConsumerTwo}
+	consumers := []string{c.ConsumerCluster, c.SecondConsumerCluster}
 	for _, consumer := range consumers {
 		if _, err := c.Kubectl(ctx, consumer, BindingYAML); err != nil {
 			return err
@@ -339,16 +339,23 @@ func (c *Cluster) provision(ctx context.Context, phase *time.Time) error {
 }
 
 func (c *Cluster) waitAll(ctx context.Context, subjects []string, wait func(context.Context, string) error, what string) error {
+	group, cancel := context.WithCancel(ctx)
+	defer cancel()
 	failures := make(chan error, len(subjects))
 	for _, subject := range subjects {
 		go func(subject string) {
-			failures <- wait(ctx, subject)
+			failures <- wait(group, subject)
 		}(subject)
 	}
+	var first error
 	for range subjects {
-		if err := <-failures; err != nil {
-			return fmt.Errorf("livekcp: waiting for %s: %w", what, err)
+		if err := <-failures; err != nil && first == nil {
+			first = err
+			cancel()
 		}
+	}
+	if first != nil {
+		return fmt.Errorf("livekcp: waiting for %s: %w", what, first)
 	}
 	return nil
 }
@@ -378,7 +385,7 @@ func (c *Cluster) waitWorkspace(ctx context.Context, name string) error {
 
 func (c *Cluster) waitExport(ctx context.Context) error {
 	return waitFor(ctx, 120*time.Second, func() bool {
-		out, err := c.Get(ctx, c.Provider, "apiexport", Export, "-o",
+		out, err := c.Get(ctx, c.ProviderCluster, "apiexport", Export, "-o",
 			`jsonpath={.status.conditions[?(@.type=="IdentityValid")].status}`)
 		return err == nil && strings.TrimSpace(out) == "True"
 	}, "apiexport "+Export+" to report IdentityValid")
@@ -391,19 +398,21 @@ func (c *Cluster) waitBindingIn(ctx context.Context, consumer string) error {
 	}, "the apibinding in "+consumer+" to bind")
 }
 
-func spawn(logPath string, name string, args ...string) (*exec.Cmd, error) {
+func (c *Cluster) spawn(logPath string, name string, args ...string) (*exec.Cmd, *os.File, error) {
 	log, err := os.Create(logPath)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	cmd := exec.Command(name, args...)
 	cmd.Stdout = log
 	cmd.Stderr = log
-	cmd.SysProcAttr = procAttr()
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	if err := cmd.Start(); err != nil {
-		return nil, fmt.Errorf("livekcp: start %s: %w", name, err)
+		_ = log.Close()
+		return nil, nil, fmt.Errorf("livekcp: start %s: %w", name, err)
 	}
-	return cmd, nil
+	c.logFiles = append(c.logFiles, log)
+	return cmd, log, nil
 }
 
 func run(ctx context.Context, stdin string, name string, args ...string) (string, error) {

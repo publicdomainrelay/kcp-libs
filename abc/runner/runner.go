@@ -86,7 +86,3 @@ type EngineRunner interface {
 
 	Probe(ctx context.Context, runID string, command []string, timeout time.Duration) (bool, error)
 }
-
-type CompletionSource interface {
-	OnCompletion(runID string, fn func(PodStatus))
-}

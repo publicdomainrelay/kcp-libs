@@ -1,6 +1,11 @@
 package pki
 
-import "context"
+import (
+	"context"
+	"errors"
+)
+
+var ErrNoAuthority = errors.New("pki: the namespace holds no authority yet")
 
 const (
 	DefaultMount = "pki"
@@ -120,14 +125,4 @@ type Provisioner interface {
 	Delete(ctx context.Context, path string) error
 
 	CachedRootPEM() []byte
-}
-
-type LeafChain struct {
-	Leaf string
-
-	Intermediate string
-
-	Root string
-
-	Bundle string
 }

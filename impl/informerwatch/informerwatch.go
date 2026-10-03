@@ -3,6 +3,7 @@ package informerwatch
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -50,6 +51,8 @@ type Options struct {
 	Enqueue Enqueue
 
 	OnEvent func()
+
+	OnRegistrationError func(kind string, err error)
 }
 
 func Run(ctx context.Context, opts Options) error {
@@ -74,7 +77,11 @@ func Run(ctx context.Context, opts Options) error {
 		factories = append(factories, factory)
 	}
 	for _, factory := range factories {
-		factory.WaitForCacheSync(stop)
+		for resource, synced := range factory.WaitForCacheSync(stop) {
+			if !synced {
+				return fmt.Errorf("informerwatch: the cache for %s did not sync", resource.Resource)
+			}
+		}
 	}
 	<-stop
 	return nil
@@ -82,14 +89,28 @@ func Run(ctx context.Context, opts Options) error {
 
 func factoryClient(config *rest.Config, base string) (dynamic.Interface, error) {
 	cfg := rest.CopyConfig(config)
+	if cfg.QPS <= 0 {
+		cfg.QPS = 50
+	}
+	if cfg.Burst <= 0 {
+		cfg.Burst = 100
+	}
 	cfg.Host = strings.TrimSuffix(base, "/") + ref.APIPathPrefix + "*"
-	return dynamic.NewForConfig(cfg)
+	client, err := dynamic.NewForConfig(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("informerwatch: build a client for %s: %w", base, err)
+	}
+	return client, nil
 }
 
 func register(factory dynamicinformer.DynamicSharedInformerFactory, resource Resource, opts Options) {
 	informer := factory.ForResource(resource.GVR).Informer()
 	if opts.Indexers != nil {
-		_ = informer.GetIndexer().AddIndexers(toK8sIndexers(opts.Indexers))
+		indexers := toK8sIndexers(opts.Indexers)
+		if err := informer.GetIndexer().AddIndexers(indexers); err != nil {
+			opts.OnRegistrationError(resource.Kind, err)
+			return
+		}
 	}
 	if opts.Set != nil {
 		opts.Set.Add(resource.Kind, informer.GetIndexer())

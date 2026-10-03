@@ -113,20 +113,6 @@ func Decode[T any](obj any) (*T, error) {
 	return &out, nil
 }
 
-func DecodeList[T any](objs []any) ([]T, error) {
-	out := make([]T, 0, len(objs))
-	for _, obj := range objs {
-		decoded, err := Decode[T](obj)
-		if err != nil {
-			return nil, err
-		}
-		if decoded != nil {
-			out = append(out, *decoded)
-		}
-	}
-	return out, nil
-}
-
 func ClusterOf(obj any) string {
 	u, ok := obj.(*unstructured.Unstructured)
 	if !ok {

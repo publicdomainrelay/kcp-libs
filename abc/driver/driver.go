@@ -27,24 +27,6 @@ func (f HandlerFunc) Process(ctx context.Context, key Key) (time.Duration, bool,
 	return f(ctx, key)
 }
 
-type Queue interface {
-	Add(key Key)
-
-	AddAfter(key Key, after time.Duration)
-
-	AddRateLimited(key Key)
-
-	Forget(key Key)
-
-	Done(key Key)
-
-	Get() (Key, bool)
-
-	Len() int
-
-	ShutDown()
-}
-
 type Policy struct {
 	Interval time.Duration
 
@@ -90,5 +72,3 @@ func (p Policy) ConflictAfter(key Key) time.Duration {
 const DefaultRequeueAfter = 2 * time.Second
 
 const DefaultMinTransitionPoll = 25 * time.Millisecond
-
-const DefaultBackstop = time.Minute

@@ -45,6 +45,7 @@ func Run(ctx context.Context, out io.Writer) error {
 	if err != nil {
 		return err
 	}
+	var _ runner.PodRunner = pod
 	permissions := &denospec.Permissions{
 		Net: &denospec.Permission{AllowList: []string{"deno.land"}},
 		Env: &denospec.Permission{Deny: true},
@@ -114,7 +115,8 @@ func Run(ctx context.Context, out io.Writer) error {
 	allocator := joballoc.New(time.Minute)
 	job := ref.New("root:alice", "default", "batch-1")
 	allocator.Allocate(job, []string{"batch-1-1", "batch-1-2", "batch-1-3"}, time.Now())
-	fmt.Fprintf(out, "the job allocated %v and still owes %v\n", allocator.Names(job), allocator.Pending(job, []string{"batch-1-1"}, time.Now()))
+	now := time.Now()
+	fmt.Fprintf(out, "the job allocated %v and still owes %v\n", allocator.Names(job, now), allocator.Pending(job, []string{"batch-1-1"}, now))
 
 	simulated := memoryrunner.NewPod(memoryrunner.PodOptions{PollsBeforeDone: 1, Outcome: runner.PodStatus{State: runner.StateSucceeded, Outputs: map[string]string{"answer": "42"}}})
 	sid, err := simulated.Start(ctx, runner.PodRequest{Name: "greeter", Script: greetingScript})

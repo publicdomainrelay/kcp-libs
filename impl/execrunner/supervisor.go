@@ -9,6 +9,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"sort"
+	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"syscall"
@@ -19,6 +21,10 @@ type runState struct {
 	PID int `json:"pid"`
 
 	Started string `json:"started"`
+
+	Ticks uint64 `json:"ticks"`
+
+	Stopped bool `json:"stopped"`
 }
 
 type process struct {
@@ -32,13 +38,33 @@ type process struct {
 
 	pid int
 
+	ticks uint64
+
 	started time.Time
 
-	stopped bool
+	stopped atomic.Bool
 
 	exitCode int32
 
 	env map[string]string
+}
+
+type processSpec struct {
+	binary string
+
+	args []string
+
+	dir string
+
+	files map[string][]byte
+
+	env []string
+
+	envMap map[string]string
+
+	envForDir func(dir string) []string
+
+	resultFile string
 }
 
 type supervisor struct {
@@ -106,6 +132,7 @@ func (s *supervisor) start(entry processSpec) (string, error) {
 		cmd:     cmd,
 		done:    make(chan struct{}),
 		pid:     cmd.Process.Pid,
+		ticks:   startTicks(cmd.Process.Pid),
 		started: time.Now(),
 		env:     entry.envMap,
 	}
@@ -114,10 +141,11 @@ func (s *supervisor) start(entry processSpec) (string, error) {
 		if cmd.ProcessState != nil {
 			run.exitCode = int32(cmd.ProcessState.ExitCode())
 		}
-		s.writeDone(run, entry.resultFile)
+		writeDone(run, entry.resultFile)
 		close(run.done)
+		s.forget(id)
 	}()
-	s.writeState(run)
+	writeState(run)
 
 	s.mu.Lock()
 	s.runs[id] = run
@@ -125,25 +153,19 @@ func (s *supervisor) start(entry processSpec) (string, error) {
 	return id, nil
 }
 
-type processSpec struct {
-	binary string
-
-	args []string
-
-	dir string
-
-	files map[string][]byte
-
-	env []string
-
-	envMap map[string]string
-
-	envForDir func(dir string) []string
-
-	resultFile string
+func (s *supervisor) held() int {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return len(s.runs)
 }
 
-func (s *supervisor) writeDone(run *process, resultFile string) {
+func (s *supervisor) forget(id string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	delete(s.runs, id)
+}
+
+func writeDone(run *process, resultFile string) {
 	if resultFile == "" {
 		return
 	}
@@ -154,8 +176,8 @@ func (s *supervisor) writeDone(run *process, resultFile string) {
 	_ = os.WriteFile(filepath.Join(run.dir, resultFile), body, 0o644)
 }
 
-func (s *supervisor) writeState(run *process) {
-	body, err := json.Marshal(runState{PID: run.pid, Started: run.started.Format(time.RFC3339Nano)})
+func writeState(run *process) {
+	body, err := json.Marshal(runState{PID: run.pid, Started: run.started.Format(time.RFC3339Nano), Ticks: run.ticks, Stopped: run.stopped.Load()})
 	if err != nil {
 		return
 	}
@@ -196,7 +218,16 @@ func (s *supervisor) recover(id string) (*process, error) {
 			started = parsed
 		}
 	}
-	return &process{dir: dir, pid: state.PID, started: started}, nil
+	recovered := &process{dir: dir, pid: state.PID, ticks: state.Ticks, started: started, env: s.envOf(id)}
+	recovered.stopped.Store(state.Stopped)
+	return recovered, nil
+}
+
+func (s *supervisor) envOf(id string) map[string]string {
+	if run, ok := s.lookup(id); ok {
+		return run.env
+	}
+	return nil
 }
 
 func (s *supervisor) resolve(id string) (*process, error) {
@@ -218,6 +249,8 @@ func (s *supervisor) finished(run *process) bool {
 	return !processAlive(run.pid)
 }
 
+const stopGrace = 2 * time.Second
+
 func (s *supervisor) stop(id string) error {
 	run, err := s.resolve(id)
 	if err != nil {
@@ -226,7 +259,11 @@ func (s *supervisor) stop(id string) error {
 	if s.finished(run) {
 		return nil
 	}
-	run.stopped = true
+	if run.cmd == nil && !ownedByUs(run.pid, run.ticks) {
+		return nil
+	}
+	run.stopped.Store(true)
+	writeState(run)
 	if run.pid > 0 {
 		_ = syscall.Kill(-run.pid, syscall.SIGKILL)
 	}
@@ -238,8 +275,6 @@ func (s *supervisor) stop(id string) error {
 	}
 	return nil
 }
-
-const stopGrace = 2 * time.Second
 
 func (s *supervisor) probe(ctx context.Context, id string, command []string, timeout time.Duration, withEnv bool) (bool, error) {
 	if len(command) == 0 {
@@ -257,9 +292,7 @@ func (s *supervisor) probe(ctx context.Context, id string, command []string, tim
 	cmd := exec.CommandContext(probeCtx, command[0], command[1:]...)
 	cmd.Dir = dir
 	if withEnv {
-		if run, ok := s.lookup(id); ok {
-			cmd.Env = append(os.Environ(), envPairs(run.env)...)
-		}
+		cmd.Env = append(os.Environ(), envPairs(s.envOf(id))...)
 	}
 	if err := cmd.Run(); err != nil {
 		return false, nil
@@ -294,4 +327,45 @@ func processAlive(pid int) bool {
 	}
 	err := syscall.Kill(pid, 0)
 	return err == nil || errors.Is(err, syscall.EPERM)
+}
+
+func startTicks(pid int) uint64 {
+	_, ticks, err := readProcessStat(pid)
+	if err != nil {
+		return 0
+	}
+	return ticks
+}
+
+func ownedByUs(pid int, ticks uint64) bool {
+	if pid <= 0 || ticks == 0 {
+		return false
+	}
+	_, current, err := readProcessStat(pid)
+	if err != nil {
+		return false
+	}
+	return current == ticks
+}
+
+func readProcessStat(pid int) (string, uint64, error) {
+	body, err := os.ReadFile(fmt.Sprintf("/proc/%d/stat", pid))
+	if err != nil {
+		return "", 0, err
+	}
+	line := string(body)
+	end := strings.LastIndex(line, ")")
+	if end < 0 || end+2 > len(line) {
+		return "", 0, errors.New("execrunner: unreadable process stat")
+	}
+	comm := line[strings.Index(line, "(")+1 : end]
+	fields := strings.Fields(line[end+2:])
+	if len(fields) < 20 {
+		return "", 0, errors.New("execrunner: short process stat")
+	}
+	ticks, err := strconv.ParseUint(fields[19], 10, 64)
+	if err != nil {
+		return "", 0, err
+	}
+	return comm, ticks, nil
 }

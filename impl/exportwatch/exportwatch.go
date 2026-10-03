@@ -3,6 +3,7 @@ package exportwatch
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"time"
 
@@ -49,9 +50,13 @@ func Client(opts Options) (dynamic.Interface, error) {
 	if opts.Config == nil {
 		return nil, errors.New("exportwatch: a rest config is required")
 	}
-	cfg := rest.CopyConfig(opts.Config)
+	cfg := tuned(rest.CopyConfig(opts.Config))
 	cfg.Host = opts.host() + ref.APIPathPrefix + opts.ProviderWorkspace
-	return dynamic.NewForConfig(cfg)
+	client, err := dynamic.NewForConfig(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("exportwatch: build a client for %s: %w", opts.ProviderWorkspace, err)
+	}
+	return client, nil
 }
 
 func Factory(opts Options, virtualWorkspaceURL string) (dynamic.Interface, error) {
@@ -70,7 +75,7 @@ func Discover(ctx context.Context, opts Options) (Endpoints, error) {
 	}
 	list, err := client.Resource(EndpointSliceGVR).List(ctx, metav1.ListOptions{})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("exportwatch: list the endpoint slices: %w", err)
 	}
 	return FromList(list), nil
 }
@@ -136,7 +141,7 @@ func Await(ctx context.Context, opts Options) (Endpoints, error) {
 		select {
 		case <-ctx.Done():
 			return nil, ctx.Err()
-		case <-time.After(time.Second):
+		case <-time.After(poll):
 		}
 	}
 }
@@ -185,6 +190,16 @@ func logEndpointWait(opts Options, endpoints Endpoints, err error) {
 		fields = append(fields, export, len(endpoints[export]))
 	}
 	opts.Log.Info("exportwatch: waiting for the APIExport virtual workspace endpoints", fields...)
+}
+
+func tuned(cfg *rest.Config) *rest.Config {
+	if cfg.QPS <= 0 {
+		cfg.QPS = 50
+	}
+	if cfg.Burst <= 0 {
+		cfg.Burst = 100
+	}
+	return cfg
 }
 
 func Paths(endpoints Endpoints, export string) []string {

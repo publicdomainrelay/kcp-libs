@@ -77,21 +77,17 @@ func New(opts Options) *DNS {
 	return &DNS{opts: opts}
 }
 
-func (d *DNS) Domain() string {
-	return d.opts.Domain
-}
-
-func (d *DNS) Name(name, namespace, logicalCluster string) string {
+func (d *DNS) Name(ctx context.Context, name, namespace, logicalCluster string) string {
 	cluster := logicalCluster
 	if d.opts.Paths != nil {
-		if path := d.opts.Paths.Lookup(context.Background(), logicalCluster); path != "" {
+		if path := d.opts.Paths.Lookup(ctx, logicalCluster); path != "" {
 			cluster = path
 		}
 	}
 	return kcp.ServiceFQDN(name, namespace, cluster, d.opts.Domain)
 }
 
-func (d *DNS) Table() (map[string]string, []string) {
+func (d *DNS) Table(ctx context.Context) (map[string]string, []string) {
 	table := map[string]string{}
 	seen := map[string]bool{}
 	var workspaces []string
@@ -111,12 +107,12 @@ func (d *DNS) Table() (map[string]string, []string) {
 		if address == "" {
 			continue
 		}
-		table[d.Name(pod.GetName(), pod.GetNamespace(), cluster)] = address
+		table[d.Name(ctx, pod.GetName(), pod.GetNamespace(), cluster)] = address
 	}
 	return table, workspaces
 }
 
-func (d *DNS) Tokens(workspaces []string, account *denospec.ServiceAccountRef) string {
+func (d *DNS) Tokens(ctx context.Context, workspaces []string, account *denospec.ServiceAccountRef) string {
 	out := map[string]string{}
 	if account != nil && d.opts.Minter != nil {
 		namespace := account.Namespace
@@ -124,7 +120,7 @@ func (d *DNS) Tokens(workspaces []string, account *denospec.ServiceAccountRef) s
 			namespace = d.opts.ServiceAccountNamespace
 		}
 		for _, cluster := range workspaces {
-			token, err := d.opts.Minter.MintServiceAccountToken(context.Background(), cluster, namespace, account.Name, d.opts.TokenTTL)
+			token, err := d.opts.Minter.MintServiceAccountToken(ctx, cluster, namespace, account.Name, d.opts.TokenTTL)
 			if err != nil {
 				continue
 			}
@@ -138,17 +134,17 @@ func (d *DNS) Tokens(workspaces []string, account *denospec.ServiceAccountRef) s
 	return string(body)
 }
 
-func (d *DNS) Env(target ref.Ref, selfArgs, selfEnv string, account *denospec.ServiceAccountRef) map[string]string {
+func (d *DNS) Env(ctx context.Context, target ref.Ref, selfArgs, selfEnv string, account *denospec.ServiceAccountRef) map[string]string {
 	env := map[string]string{
 		DomainKey:    d.opts.Domain,
 		NamespaceKey: target.Namespace,
 	}
-	table, workspaces := d.Table()
+	table, workspaces := d.Table(ctx)
 	if self := AdvertisedAddress(selfArgs, selfEnv); self != "" {
 		if !contains(workspaces, target.LogicalCluster) {
 			workspaces = append(workspaces, target.LogicalCluster)
 		}
-		table[d.Name(target.Name, target.Namespace, target.LogicalCluster)] = self
+		table[d.Name(ctx, target.Name, target.Namespace, target.LogicalCluster)] = self
 	}
 	if len(table) > 0 {
 		if body, err := json.Marshal(table); err == nil {
@@ -156,7 +152,7 @@ func (d *DNS) Env(target ref.Ref, selfArgs, selfEnv string, account *denospec.Se
 		}
 	}
 	if account != nil {
-		env[TokensKey] = d.Tokens(workspaces, account)
+		env[TokensKey] = d.Tokens(ctx, workspaces, account)
 	}
 	return env
 }

@@ -130,6 +130,9 @@ func (r *Registry) Counter(name, help string) *Counter {
 		if counter, ok := existing.metric.(*Counter); ok {
 			return counter
 		}
+		counter := &Counter{}
+		r.entries[name] = entry{name: name, help: help, metric: counter}
+		return counter
 	}
 	counter := &Counter{}
 	r.entries[name] = entry{name: name, help: help, metric: counter}
@@ -144,6 +147,9 @@ func (r *Registry) Gauge(name, help string) *Gauge {
 		if gauge, ok := existing.metric.(*Gauge); ok {
 			return gauge
 		}
+		gauge := &Gauge{}
+		r.entries[name] = entry{name: name, help: help, metric: gauge}
+		return gauge
 	}
 	gauge := &Gauge{}
 	r.entries[name] = entry{name: name, help: help, metric: gauge}
@@ -158,6 +164,9 @@ func (r *Registry) Summary(name, help string) *Summary {
 		if summary, ok := existing.metric.(*Summary); ok {
 			return summary
 		}
+		summary := &Summary{}
+		r.entries[name] = entry{name: name, help: help, metric: summary}
+		return summary
 	}
 	summary := &Summary{}
 	r.entries[name] = entry{name: name, help: help, metric: summary}

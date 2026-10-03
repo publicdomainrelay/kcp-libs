@@ -83,12 +83,27 @@ func (m *Map[K, V]) Expire(at time.Time) int {
 
 func (m *Map[K, V]) Range(visit func(K, V) bool) {
 	m.mu.Lock()
-	defer m.mu.Unlock()
+	snapshot := make(map[K]V, len(m.entries))
 	for key, entry := range m.entries {
-		if !visit(key, entry.Value) {
+		snapshot[key] = entry.Value
+	}
+	m.mu.Unlock()
+	for key, value := range snapshot {
+		if !visit(key, value) {
 			return
 		}
 	}
+}
+
+func (m *Map[K, V]) SetPruning(key K, value V, at time.Time, prune func(K, V) bool) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	for candidate, entry := range m.entries {
+		if m.expired(entry, at) || (prune != nil && prune(candidate, entry.Value)) {
+			delete(m.entries, candidate)
+		}
+	}
+	m.entries[key] = Entry[V]{Value: value, At: at}
 }
 
 func (m *Map[K, V]) Len() int {

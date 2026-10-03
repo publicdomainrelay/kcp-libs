@@ -86,10 +86,14 @@ func (e *Engine) Observe(_ context.Context, runID string) (runner.EngineStatus, 
 		if run.waitErr != nil {
 			message = run.waitErr.Error()
 		}
-		if run.stopped {
+		if run.stopped.Load() {
 			message = "the policy engine process was stopped"
 		}
 		return runner.EngineStatus{State: runner.StateFailed, Message: message}, nil
+	}
+	if timeout := e.opts.Timeout; timeout > 0 && time.Since(run.started) > timeout {
+		_ = e.sup.stop(runID)
+		return runner.EngineStatus{State: runner.StateFailed, Message: "the policy engine exceeded the runner timeout"}, nil
 	}
 	return runner.EngineStatus{State: runner.StateRunning}, nil
 }

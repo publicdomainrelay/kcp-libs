@@ -37,7 +37,7 @@ func Expired(completion *metav1.Time, seconds *int64, now time.Time) (delete boo
 }
 
 func Deadline(start *metav1.Time, seconds *int64, now time.Time) bool {
-	if start == nil || seconds == nil {
+	if start == nil || seconds == nil || *seconds < 0 {
 		return false
 	}
 	return !now.Before(start.Add(time.Duration(*seconds) * time.Second))

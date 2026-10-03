@@ -164,34 +164,6 @@ func PlanIndex(runs []Run, capacity Capacity, blocker *Blocker, reserved int32, 
 	return out
 }
 
-func PlanByParent(runs []Run, parent func(Run) string, capacity func(parent string) Capacity, blocker func(parent string) *Blocker, reserved map[string]int32, isTerminal func(phase string) bool) map[ref.Ref]Admission {
-	groups := GroupByParent(runs, parent)
-	out := make(map[ref.Ref]Admission, len(runs))
-	for name, group := range groups {
-		planned := Plan(group, capacity(name), blocker(name), reserved[name], isTerminal)
-		for i := range group {
-			out[group[i].Ref] = planned[i]
-		}
-	}
-	return out
-}
-
-func GroupByParent(runs []Run, parent func(Run) string) map[string][]Run {
-	groups := map[string][]Run{}
-	order := []string{}
-	for _, run := range runs {
-		name := parent(run)
-		if name == "" {
-			continue
-		}
-		if _, seen := groups[name]; !seen {
-			order = append(order, name)
-		}
-		groups[name] = append(groups[name], run)
-	}
-	return groups
-}
-
 func WakeList(runs []Run, isTerminal func(phase string) bool, limit int32, unlimited bool) []ref.Ref {
 	terminal := Terminal(isTerminal)
 	var pending []Run

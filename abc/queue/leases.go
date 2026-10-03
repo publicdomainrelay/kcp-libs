@@ -8,12 +8,10 @@ import (
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 )
 
-const DefaultLeaseTTL = 2 * time.Minute
+const DefaultLeaseTTL = expiring.DefaultTTL
 
 type Lease struct {
 	Parent ref.Ref
-
-	Admitted time.Time
 }
 
 type Leases struct {
@@ -29,7 +27,7 @@ func (l *Leases) TTL() time.Duration {
 }
 
 func (l *Leases) Grant(run, parent ref.Ref, now time.Time) {
-	l.entries.Set(run, Lease{Parent: parent, Admitted: now}, now)
+	l.entries.Set(run, Lease{Parent: parent}, now)
 }
 
 func (l *Leases) Forget(run ref.Ref) {

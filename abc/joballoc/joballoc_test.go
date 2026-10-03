@@ -12,14 +12,14 @@ func TestAllocateAndNames(t *testing.T) {
 	job := ref.New("root:alice", "default", "job-1")
 	now := time.Unix(1000, 0)
 	allocator.Allocate(job, []string{"job-1-1", "job-1-2"}, now)
-	if names := allocator.Names(job); len(names) != 2 {
+	if names := allocator.Names(job, now); len(names) != 2 {
 		t.Fatalf("names = %v", names)
 	}
 	allocator.Allocate(job, []string{"job-1-3"}, now)
-	if names := allocator.Names(job); len(names) != 3 {
+	if names := allocator.Names(job, now); len(names) != 3 {
 		t.Fatalf("names = %v", names)
 	}
-	if allocator.Names(ref.New("root:alice", "default", "other")) != nil {
+	if allocator.Names(ref.New("root:alice", "default", "other"), now) != nil {
 		t.Fatal("another job has no allocations")
 	}
 }
@@ -35,6 +35,16 @@ func TestPendingDropsObservedAndExpired(t *testing.T) {
 	}
 	if pending := allocator.Pending(job, nil, time.Unix(1000+61, 0)); pending != nil {
 		t.Fatalf("expired allocations = %v", pending)
+	}
+}
+
+func TestNamesDropsExpiredAllocations(t *testing.T) {
+	allocator := New(time.Minute)
+	job := ref.New("root:alice", "default", "job-1")
+	now := time.Unix(1000, 0)
+	allocator.Allocate(job, []string{"job-1-1"}, now)
+	if names := allocator.Names(job, time.Unix(1000+61, 0)); names != nil {
+		t.Fatalf("expired names = %v, want none", names)
 	}
 }
 

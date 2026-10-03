@@ -21,6 +21,10 @@ cluster for all six, because kcp's own startup is about ten seconds and is the
 same every time; point `KCP_LIBS_KUBECONFIG` at an existing cluster to do the
 same by hand.
 
+Every example declares the same permissive `Widget` and then gives it its own
+spec and status: `livekcp.Object[Spec, Status]` is the envelope, so an example
+only writes the fields its story needs.
+
 The other three need no cluster: `workloads` runs real processes, and `pki` and
 `policy` talk to a fake vault and a fake policy engine -- separate products
 with nothing to install here. Both clients are real: `openbaoclient` wraps the
@@ -29,7 +33,8 @@ same wire protocol that client speaks.
 
 `go test ./examples/...` runs all six and asserts the lines they print. The
 three that need kcp skip unless one is running or `KCP_LIBS_REQUIRE_LIVE=1` is
-set.
+set. `make examples` starts one cluster for all six and takes about 17s; the
+three that need it take 1 - 2s each once it is up.
 
 ## The shape every example has
 
@@ -66,11 +71,11 @@ fails the build if anything outside `examples/` and tests reaches into
 | `abc/driver` | you need the requeue rules: interval, clamp, conflict, terminal | `controller` `Policy` |
 | `abc/cache` | you want the informer's objects by index instead of a list, and you own the set | `controller` `cache.NewSet`, `IndexersFor`, `ByIndex` |
 | `factory/controller` | you want informers plus a workqueue plus a worker pool, wired | `controller` `controller.New` |
-| `impl/kcpstore` | you need to read or write a CRD on kcp, typed or raw | every example |
+| `impl/kcpstore` | you need to read or write a CRD on kcp, typed or raw | `controller`, `admission`, `dns` |
 | `impl/exportwatch` | you need the APIExport virtual workspace URL at startup | `controller` `exportwatch.Await` |
 | `impl/informerwatch` | you want the informers without the controller around them | `controller` (inside `factory/controller`) |
-| `impl/metrics` | you want the queue depth, cache age and reconcile timings | `controller` `registry.Render` |
-| `abc/queue` | a parent caps how many children run at once | `admission` `Plan`/`Admit` |
+| `impl/metrics` | you want the queue depth, cache age and reconcile timings | `controller` `metrics.New` |
+| `abc/queue` | a parent caps how many children run at once | `admission` `Admit` |
 | `factory/admission` | the same, composed with your store and your wake function | `admission` `admission.New` |
 | `abc/runref` | a stateless decider could start the same workload twice | `admission` `runref.AlreadyStarted` |
 | `abc/runner` | you are starting processes and probing them | `workloads` |
@@ -89,14 +94,13 @@ fails the build if anything outside `examples/` and tests reaches into
 | `common/outputs` | a JSON output map has to become flat strings | `impl/policyclient` (see `policy`) |
 | `factory/dns` | a workload resolves a peer by name, and tokens are per workspace | `dns` |
 | `common/kcp` | a workspace path has to become DNS labels, or back | `dns` `ServiceLabels` |
-| `common/ref` | you need the identity of an object: cluster, namespace, name | every example |
+| `common/ref` | you need the identity of an object: cluster, namespace, name | `controller`, `admission`, `dns`, `workloads` |
 | `common/statuspatch` | the status write is a merge patch, or a finalizer patch | `controller`, `admission` |
 | `common/condition` | a status carries `metav1.Condition` and you edit one | `controller` `decide` |
 | `common/deno` | you are working in the `deno.computer` vocabulary | `controller` phases and condition |
 | `common/logging` | a JSON slog logger, or one that throws output away | `controller` `logging.New` |
-| `common/env` | a flag's environment fallback | `controller` `env.OrDuration` |
 | `abc/store` | the interfaces `impl/kcpstore` implements, and `Same` | `controller` |
-| `internal/livekcp` | you want the examples and live tests to have a real kcp | every example that needs a cluster |
+| `internal/livekcp` | you want the examples and live tests to have a real kcp | `controller`, `admission`, `dns` |
 
 ## What each example is about
 
@@ -107,12 +111,13 @@ between the list path (two widgets seeded before the controller starts) and the
 watch path (a third created after), and reads the informer cache by index to
 count the widgets in a group.
 
-**`admission`** — the queue. A batch widget allows two items at once and five
-are created, so three wait. It prints the `AtCapacity` message one of them
-carries, proves the peak never exceeded two, shows the lease the admission
-takes so two passes cannot both see a free slot, and shows the guard that
-refuses a start when the object a pass is holding predates that pass's own
-write.
+**`admission`** — the queue. A batch allows two items at once and five are
+created, so three wait. It prints the `AtCapacity` message one of them
+carries, reports the peak number of items observed running against the cap of
+two, and shows the lease the admission takes so two passes cannot both see a
+free slot. The duplicate-start guard is exercised both ways: five copies that
+predate their own write are refused, and ten legitimate starts -- retries and
+recreated objects -- are allowed through.
 
 **`workloads`** — processes. Permissions become argv, a stand-in runtime is
 materialised, the process runs, its `result.json` becomes outputs, a probe

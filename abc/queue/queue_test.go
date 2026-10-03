@@ -177,16 +177,3 @@ func TestWakeListTakesCapacityManyOldestFirst(t *testing.T) {
 		t.Fatalf("unlimited woken = %d, want 3", len(all))
 	}
 }
-
-func TestGroupByParentSkipsUnparented(t *testing.T) {
-	runs := []Run{run("a", string(deno.PhasePending), 1), run("b", string(deno.PhasePending), 2)}
-	groups := GroupByParent(runs, func(r Run) string {
-		if r.Ref.Name == "b" {
-			return ""
-		}
-		return "parent"
-	})
-	if len(groups) != 1 || len(groups["parent"]) != 1 {
-		t.Fatalf("groups = %v", groups)
-	}
-}

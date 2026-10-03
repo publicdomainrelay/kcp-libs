@@ -41,15 +41,6 @@ func (r *Result[Status]) Add(op Operation) {
 	}
 }
 
-func (r Result[Status]) Has(op Operation) bool {
-	for _, candidate := range r.Ops {
-		if candidate == op {
-			return true
-		}
-	}
-	return false
-}
-
 type Reconciler[Observed, Status any] interface {
 	Reconcile(ctx context.Context, observed Observed) (Result[Status], error)
 }

@@ -27,9 +27,12 @@ func (c *PathCache) Lookup(ctx context.Context, logicalCluster string) string {
 
 	path := ""
 	if c.store != nil {
-		if resolved, err := ClusterPath(ctx, c.store, logicalCluster); err == nil {
+		if resolved, err := c.store.ClusterPath(ctx, logicalCluster); err == nil {
 			path = resolved
 		}
+	}
+	if path == "" {
+		return ""
 	}
 	c.mu.Lock()
 	c.byID[logicalCluster] = path

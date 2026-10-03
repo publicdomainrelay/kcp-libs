@@ -5,43 +5,21 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 	"github.com/publicdomainrelay/kcp-libs/internal/livekcp"
 )
 
-var liveProbes = schema.GroupVersionResource{Group: livekcp.Group, Version: livekcp.Version, Resource: livekcp.Resource}
-
-type liveProbe struct {
-	APIVersion string `json:"apiVersion"`
-
-	Kind string `json:"kind"`
-
-	Metadata struct {
-		Name string `json:"name"`
-
-		Namespace string `json:"namespace"`
-
-		UID string `json:"uid"`
-
-		ResourceVersion string `json:"resourceVersion"`
-
-		Finalizers []string `json:"finalizers"`
-
-		Generation int64 `json:"generation"`
-	} `json:"metadata"`
-
-	Spec struct {
-		Steps int32 `json:"steps"`
-	} `json:"spec"`
-
-	Status struct {
-		Phase string `json:"phase,omitempty"`
-
-		Observed int32 `json:"observed,omitempty"`
-	} `json:"status"`
+type probeSpec struct {
+	Steps int32 `json:"steps,omitempty"`
 }
+
+type probeStatus struct {
+	Phase string `json:"phase,omitempty"`
+
+	Observed int32 `json:"observed,omitempty"`
+}
+
+type probe = livekcp.Object[probeSpec, probeStatus]
 
 func TestLiveKcpstoreAgainstRealKCP(t *testing.T) {
 	livekcp.Require(t)
@@ -58,27 +36,12 @@ func TestLiveKcpstoreAgainstRealKCP(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	probes := Of[liveProbe](store, liveProbes)
-	target := ref.New(cluster.Consumer, "default", "alpha")
+	probes := Of[probe](store, livekcp.WidgetGVR)
+	target := ref.New(cluster.ConsumerCluster, "default", "storage-probe")
 
-	err = probes.Create(ctx, cluster.Consumer, &liveProbe{
-		APIVersion: livekcp.Group + "/" + livekcp.Version,
-		Kind:       livekcp.Kind,
-		Metadata: struct {
-			Name string `json:"name"`
-
-			Namespace string `json:"namespace"`
-
-			UID string `json:"uid"`
-
-			ResourceVersion string `json:"resourceVersion"`
-
-			Finalizers []string `json:"finalizers"`
-
-			Generation int64 `json:"generation"`
-		}{Name: "alpha", Namespace: "default"},
-	})
-	if err != nil {
+	obj := livekcp.NewObject[probeSpec, probeStatus]("default", "storage-probe")
+	obj.Spec.Steps = 3
+	if err := livekcp.Seed(ctx, cluster.ConsumerCluster, probes, "default", "storage-probe", obj); err != nil {
 		t.Fatalf("create: %v", err)
 	}
 
@@ -89,12 +52,15 @@ func TestLiveKcpstoreAgainstRealKCP(t *testing.T) {
 	if created.Metadata.UID == "" || created.Metadata.ResourceVersion == "" {
 		t.Fatalf("the server must stamp identity and a resource version: %+v", created.Metadata)
 	}
+	if created.Spec.Steps != 3 {
+		t.Fatalf("the spec must round trip: %+v", created.Spec)
+	}
 
-	listed, err := probes.List(ctx, cluster.Consumer)
+	listed, err := probes.List(ctx, cluster.ConsumerCluster)
 	if err != nil {
 		t.Fatalf("list: %v", err)
 	}
-	if len(listed) != 1 || listed[0].Metadata.Name != "alpha" {
+	if len(listed) != 1 || listed[0].Metadata.Name != "storage-probe" {
 		t.Fatalf("listed = %+v", listed)
 	}
 
@@ -112,7 +78,7 @@ func TestLiveKcpstoreAgainstRealKCP(t *testing.T) {
 	if patched.Status.Phase != "Running" || patched.Status.Observed != 2 {
 		t.Fatalf("status = %+v", patched.Status)
 	}
-	if patched.Spec.Steps != created.Spec.Steps {
+	if patched.Spec.Steps != 3 {
 		t.Fatal("a status patch must not touch the spec")
 	}
 
@@ -137,12 +103,12 @@ func TestLiveKcpstoreAgainstRealKCP(t *testing.T) {
 		t.Fatalf("finalizers = %v, want none", remaining)
 	}
 
-	id, err := store.ClusterPath(ctx, cluster.Consumer)
+	path, err := store.ClusterPath(ctx, cluster.ConsumerCluster)
 	if err != nil {
 		t.Fatalf("cluster path: %v", err)
 	}
-	if id != cluster.Consumer {
-		t.Fatalf("path = %q, want %q", id, cluster.Consumer)
+	if path != cluster.ConsumerCluster {
+		t.Fatalf("path = %q, want %q", path, cluster.ConsumerCluster)
 	}
 
 	if err := probes.Delete(ctx, target); err != nil {

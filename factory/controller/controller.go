@@ -46,8 +46,6 @@ type Options struct {
 	Now func() time.Time
 
 	IsConflict func(error) bool
-
-	OnEvent func()
 }
 
 type Controller struct {
@@ -135,10 +133,6 @@ func (c *Controller) Enqueue(kind string, r ref.Ref) {
 	c.queue.Add(driver.Key{Kind: kind, Ref: ref.New(r.LogicalCluster, r.Namespace, r.Name)})
 }
 
-func (c *Controller) EnqueueAfter(kind string, r ref.Ref, after time.Duration) {
-	c.queue.AddAfter(driver.Key{Kind: kind, Ref: ref.New(r.LogicalCluster, r.Namespace, r.Name)}, after)
-}
-
 func (c *Controller) QueueDepth() int {
 	return c.queue.Len()
 }
@@ -163,12 +157,12 @@ func (c *Controller) Run(ctx context.Context) error {
 	c.started.Store(true)
 	defer c.started.Store(false)
 
-	watchCtx, cancelWatch := context.WithCancel(ctx)
-	defer cancelWatch()
+	runCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
 
 	watchErr := make(chan error, 1)
 	go func() {
-		watchErr <- informerwatch.Run(watchCtx, informerwatch.Options{
+		watchErr <- informerwatch.Run(runCtx, informerwatch.Options{
 			Config:    c.opts.Config,
 			Bases:     c.opts.Bases,
 			Resources: c.opts.Resources,
@@ -185,7 +179,7 @@ func (c *Controller) Run(ctx context.Context) error {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			c.worker(ctx)
+			c.worker(runCtx)
 		}()
 	}
 
@@ -193,7 +187,7 @@ func (c *Controller) Run(ctx context.Context) error {
 	select {
 	case <-ctx.Done():
 	case err = <-watchErr:
-		cancelWatch()
+		cancel()
 	}
 	c.queue.ShutDown()
 	wg.Wait()
@@ -204,11 +198,8 @@ func (c *Controller) Run(ctx context.Context) error {
 }
 
 func (c *Controller) onEvent() {
-	c.RecordEvent()
+	c.recordEvent()
 	c.cacheAge.Set(0)
-	if c.opts.OnEvent != nil {
-		c.opts.OnEvent()
-	}
 }
 
 func (c *Controller) worker(ctx context.Context) {
@@ -228,6 +219,9 @@ func (c *Controller) worker(ctx context.Context) {
 				c.cacheAge.Set(age.Seconds())
 			}
 			if err != nil {
+				if ctx.Err() != nil {
+					return
+				}
 				if c.opts.IsConflict(err) {
 					c.conflicts.Add(1)
 					c.queue.Forget(key)
@@ -240,6 +234,7 @@ func (c *Controller) worker(ctx context.Context) {
 				c.queue.AddRateLimited(key)
 				return
 			}
+			c.recordEvent()
 			c.queue.Forget(key)
 			delay, requeue := c.opts.Policy.Next(key, after, terminal)
 			if !requeue {

@@ -41,16 +41,3 @@ func TestClusterFromLabelsInvertsServiceLabels(t *testing.T) {
 		}
 	}
 }
-
-func TestSplitServiceFQDN(t *testing.T) {
-	name, namespace, cluster, ok := SplitServiceFQDN("pds.default.alice.svc.kcp.local", DefaultServiceDomain)
-	if !ok || name != "pds" || namespace != "default" || cluster != "root:alice" {
-		t.Fatalf("split = (%q, %q, %q, %v)", name, namespace, cluster, ok)
-	}
-	if _, _, _, ok := SplitServiceFQDN("pds.default.other.example", DefaultServiceDomain); ok {
-		t.Fatal("a host outside the suffix must not split")
-	}
-	if _, _, _, ok := SplitServiceFQDN("pds.svc.kcp.local", DefaultServiceDomain); ok {
-		t.Fatal("a host without a namespace must not split")
-	}
-}

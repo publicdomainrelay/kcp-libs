@@ -40,17 +40,8 @@ func (r Ref) WithNamespace(namespace string) Ref {
 	return r
 }
 
-func (r Ref) WithName(name string) Ref {
-	r.Name = name
-	return r
-}
-
 func (r Ref) IsZero() bool {
 	return r.LogicalCluster == "" && r.Namespace == "" && r.Name == ""
-}
-
-func (r Ref) Empty() bool {
-	return r.IsZero()
 }
 
 func BaseHost(host string) string {
@@ -63,25 +54,4 @@ func BaseHost(host string) string {
 
 func ClusterURL(host, logicalCluster string) string {
 	return BaseHost(host) + APIPathPrefix + logicalCluster
-}
-
-func ClusterInURL(host string) string {
-	rest := host
-	if i := strings.Index(rest, APIPathPrefix); i >= 0 {
-		rest = rest[i+len(APIPathPrefix):]
-	} else {
-		return ""
-	}
-	if i := strings.Index(rest, "/"); i >= 0 {
-		return rest[:i]
-	}
-	return rest
-}
-
-func ReplaceClusterInURL(host, logicalCluster string) string {
-	current := ClusterInURL(host)
-	if current == "" {
-		return host
-	}
-	return strings.Replace(host, APIPathPrefix+current, APIPathPrefix+logicalCluster, 1)
 }

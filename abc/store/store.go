@@ -46,7 +46,3 @@ type Resource[T any] interface {
 type TokenMinter interface {
 	MintServiceAccountToken(ctx context.Context, logicalCluster, namespace, name string, ttl time.Duration) (string, error)
 }
-
-type PathResolver interface {
-	ClusterPath(ctx context.Context, logicalCluster string) (string, error)
-}

@@ -17,6 +17,7 @@ const followTimeout = 2 * time.Second
 
 func Run(ctx context.Context, out io.Writer) error {
 	client := policyclient.New()
+	var _ policy.Client = client
 
 	engine, err := newEngine(2, "success")
 	if err != nil {

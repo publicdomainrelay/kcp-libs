@@ -7,7 +7,7 @@ import (
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 )
 
-const DefaultTTL = 2 * time.Minute
+const DefaultTTL = expiring.DefaultTTL
 
 type Record struct {
 	Ref ref.Ref
@@ -42,11 +42,10 @@ func (i *Index) Record(r ref.Ref, runID, uid string, now time.Time) {
 		return
 	}
 	key := ref.New(r.LogicalCluster, r.Namespace, r.Name)
-	i.entries.Expire(now)
-	i.entries.DeleteIf(func(id string, entry Record) bool {
+	record := Record{Ref: key, RunID: runID, UID: uid, At: now}
+	i.entries.SetPruning(runID, record, now, func(id string, entry Record) bool {
 		return id != runID && entry.Ref == key
 	})
-	i.entries.Set(runID, Record{Ref: key, RunID: runID, UID: uid, At: now}, now)
 }
 
 func (i *Index) Forget(r ref.Ref) {

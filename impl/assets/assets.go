@@ -29,7 +29,11 @@ func (s *Set) Materialise() (map[string]string, error) {
 	s.once.Do(func() {
 		s.err = s.write()
 	})
-	return s.paths, s.err
+	out := make(map[string]string, len(s.paths))
+	for name, path := range s.paths {
+		out[name] = path
+	}
+	return out, s.err
 }
 
 func (s *Set) Path(name string) (string, error) {

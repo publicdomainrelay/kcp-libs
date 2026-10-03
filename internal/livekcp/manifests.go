@@ -1,11 +1,5 @@
 package livekcp
 
-import "syscall"
-
-func procAttr() *syscall.SysProcAttr {
-	return &syscall.SysProcAttr{Setpgid: true}
-}
-
 func workspaceYAML(name string) string {
 	return `apiVersion: tenancy.kcp.io/v1alpha1
 kind: Workspace

@@ -25,7 +25,7 @@ func TestRunDrivesWidgetsToCompletion(t *testing.T) {
 		"alpha reached Succeeded after 1 passes",
 		"beta reached Succeeded after 1 passes",
 		"gamma reached Succeeded from the watch, having seen 3 of the group in the cache",
-		"queue depth 0",
+		"reconciles ",
 	} {
 		if !strings.Contains(printed, want) {
 			t.Fatalf("output must contain %q, got:\n%s", want, printed)

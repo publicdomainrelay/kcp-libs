@@ -43,7 +43,7 @@ type Options struct {
 type Provisioner struct {
 	opts Options
 
-	mu sync.Mutex
+	rootMu sync.Mutex
 
 	root *pki.RootCA
 
@@ -84,8 +84,8 @@ func New(opts Options) (*Provisioner, error) {
 }
 
 func (p *Provisioner) EnsureRoot(ctx context.Context) (pki.RootCA, error) {
-	p.mu.Lock()
-	defer p.mu.Unlock()
+	p.rootMu.Lock()
+	defer p.rootMu.Unlock()
 	return p.ensureRootLocked(ctx)
 }
 
@@ -105,7 +105,11 @@ func (p *Provisioner) ensureRoot(ctx context.Context) (pki.RootCA, error) {
 	if err := p.opts.Client.EnsureMount(ctx, p.opts.RootNamespace, p.opts.Mount, "pki"); err != nil {
 		return pki.RootCA{}, err
 	}
-	if serial, err := p.opts.Client.CASerial(ctx, p.opts.RootNamespace, p.opts.Mount); err == nil && serial != "" {
+	serial, err := p.opts.Client.CASerial(ctx, p.opts.RootNamespace, p.opts.Mount)
+	if err != nil && !errors.Is(err, pki.ErrNoAuthority) {
+		return pki.RootCA{}, err
+	}
+	if serial != "" {
 		chain, err := p.opts.Client.CAChain(ctx, p.opts.RootNamespace, p.opts.Mount)
 		if err != nil {
 			return pki.RootCA{}, err
@@ -123,11 +127,6 @@ func (p *Provisioner) EnsureAuthority(ctx context.Context, path string) (pki.Aut
 	if path == "" {
 		return pki.Authority{}, errors.New("pkiprovisioner: a namespace path is required")
 	}
-	if cached, ok := p.namespaces.Get(path, p.opts.Now()); ok {
-		return cached, nil
-	}
-	p.mu.Lock()
-	defer p.mu.Unlock()
 	if cached, ok := p.namespaces.Get(path, p.opts.Now()); ok {
 		return cached, nil
 	}
@@ -151,7 +150,10 @@ func (p *Provisioner) ensureAuthority(ctx context.Context, path string) (pki.Aut
 	}
 	commonName := path + ".intermediate"
 	serial, err := p.opts.Client.CASerial(ctx, path, p.opts.Mount)
-	if err != nil || serial == "" {
+	if err != nil && !errors.Is(err, pki.ErrNoAuthority) {
+		return pki.Authority{}, fmt.Errorf("pkiprovisioner: reading the authority of namespace %q: %w", path, err)
+	}
+	if serial == "" {
 		serial, err = p.signIntermediate(ctx, path, commonName)
 		if err != nil {
 			return pki.Authority{}, err
@@ -235,8 +237,8 @@ func (p *Provisioner) Delete(ctx context.Context, path string) error {
 }
 
 func (p *Provisioner) CachedRootPEM() []byte {
-	p.mu.Lock()
-	defer p.mu.Unlock()
+	p.rootMu.Lock()
+	defer p.rootMu.Unlock()
 	if p.root == nil {
 		return nil
 	}
@@ -244,8 +246,8 @@ func (p *Provisioner) CachedRootPEM() []byte {
 }
 
 func (p *Provisioner) Root() *pki.RootCA {
-	p.mu.Lock()
-	defer p.mu.Unlock()
+	p.rootMu.Lock()
+	defer p.rootMu.Unlock()
 	if p.root == nil {
 		return nil
 	}

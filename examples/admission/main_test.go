@@ -21,9 +21,11 @@ func TestRunKeepsTheCapAndDrainsTheQueue(t *testing.T) {
 	}
 	printed := out.String()
 	for _, want := range []string{
-		"waits: waiting for a free slot (concurrencyPolicy=Forbid, maxConcurrent=1)",
-		"started 5 of 5 items, peak running 2",
-		"the duplicate-start guard refused 5 stale starts, leases held 0, succeeded 5",
+		"item-2 waits: waiting for a free slot (concurrencyPolicy=Allow, maxConcurrent=2)",
+		"the batch allows 2 at once and 5 items were created",
+		"started 5 of 5 items, peak observed running 2",
+		"succeeded 5",
+		"the duplicate-start guard refused 5 stale copies and allowed 10 legitimate starts",
 	} {
 		if !strings.Contains(printed, want) {
 			t.Fatalf("output must contain %q, got:\n%s", want, printed)

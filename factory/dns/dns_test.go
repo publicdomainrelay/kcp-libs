@@ -64,7 +64,7 @@ func TestTableUsesTheWorkspacePath(t *testing.T) {
 	})
 	dns := New(Options{Source: source, Paths: paths, Domain: "kcp.local"})
 
-	table, workspaces := dns.Table()
+	table, workspaces := dns.Table(context.Background())
 	if len(table) != 1 {
 		t.Fatalf("table = %v", table)
 	}
@@ -82,7 +82,7 @@ func TestEnvCarriesTheSelfNameBeforeThePodIsObserved(t *testing.T) {
 		Domain: "kcp.local",
 	})
 	target := ref.New("root:alice", "default", "pds")
-	env := dns.Env(target, `["--port","8080"]`, "", nil)
+	env := dns.Env(context.Background(), target, `["--port","8080"]`, "", nil)
 	var table map[string]string
 	if err := json.Unmarshal([]byte(env[TableKey]), &table); err != nil {
 		t.Fatal(err)
@@ -117,7 +117,7 @@ func TestTokensAreMintedPerWorkspace(t *testing.T) {
 		Domain: "kcp.local",
 	})
 	target := ref.New("root:bob", "default", "web")
-	env := dns.Env(target, `["--port","80"]`, "", &denospec.ServiceAccountRef{Name: "reader"})
+	env := dns.Env(context.Background(), target, `["--port","80"]`, "", &denospec.ServiceAccountRef{Name: "reader"})
 	if env[TokensKey] == "" {
 		t.Fatal("a named service account must produce a token table")
 	}

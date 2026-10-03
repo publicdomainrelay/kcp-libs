@@ -33,8 +33,6 @@ type PodOptions struct {
 	CAData []byte
 
 	TrustBundle func() []byte
-
-	Now func() time.Time
 }
 
 type Pod struct {
@@ -107,7 +105,7 @@ func (p *Pod) Observe(_ context.Context, runID string) (runner.PodStatus, error)
 		}
 		return runner.PodStatus{State: runner.StateRunning}, nil
 	}
-	if run.stopped {
+	if run.stopped.Load() {
 		return runner.PodStatus{State: runner.StateFailed, Message: "the deno process was stopped"}, nil
 	}
 	return p.result(run)
@@ -121,13 +119,15 @@ func (p *Pod) Probe(ctx context.Context, runID string, command []string, timeout
 	return p.sup.probe(ctx, runID, command, timeout, true)
 }
 
+func (p *Pod) Running() int {
+	return p.sup.held()
+}
+
 func (p *Pod) result(run *process) (runner.PodStatus, error) {
 	exit, err := p.exitCode(run)
 	if err != nil {
-		if found, oerr := p.readOutputs(run); oerr == nil && len(found) > 0 {
-			return runner.PodStatus{State: runner.StateSucceeded, Outputs: found}, nil
-		}
-		return runner.PodStatus{State: runner.StateFailed, Message: err.Error()}, nil
+		found, _ := p.readOutputs(run)
+		return runner.PodStatus{State: runner.StateFailed, Outputs: found, Message: err.Error()}, nil
 	}
 	status := runner.PodStatus{ExitCode: exit}
 	if run.waitErr != nil {
@@ -155,11 +155,6 @@ func (p *Pod) exitCode(run *process) (int32, error) {
 		var done podDone
 		if err := json.Unmarshal(body, &done); err == nil {
 			return done.ExitCode, nil
-		}
-	}
-	if run.cmd != nil {
-		if run.cmd.ProcessState != nil {
-			return int32(run.cmd.ProcessState.ExitCode()), nil
 		}
 	}
 	return 0, errors.New("the deno process did not report an exit code")

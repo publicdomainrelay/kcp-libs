@@ -72,8 +72,7 @@ func New(opts Options) (*Client, error) {
 		return nil, errors.New("openbao: an address is required")
 	}
 	if len(opts.CACert) > 0 {
-		pool := x509.NewCertPool()
-		if !pool.AppendCertsFromPEM(opts.CACert) {
+		if !x509.NewCertPool().AppendCertsFromPEM(opts.CACert) {
 			return nil, ErrNoCA
 		}
 	}
@@ -128,7 +127,7 @@ func (c *Client) EnsureNamespace(ctx context.Context, path string) error {
 }
 
 func (c *Client) NamespaceExists(ctx context.Context, path string) (bool, error) {
-	response, err := c.raw(ctx, "", http.MethodGet, "sys/namespaces/"+path)
+	response, err := c.readRaw(ctx, "", "sys/namespaces/"+path)
 	if err == nil {
 		if response != nil {
 			_ = response.Body.Close()
@@ -190,13 +189,13 @@ func (c *Client) CASerial(ctx context.Context, namespace, mount string) (string,
 		return "", err
 	}
 	if data == nil {
-		return "", fmt.Errorf("%w: no CA at %s", ErrNotFound, mount)
+		return "", fmt.Errorf("%w: no CA at %s", pki.ErrNoAuthority, mount)
 	}
 	return serialOfPEM(stringField(data, "certificate")), nil
 }
 
 func (c *Client) CAChain(ctx context.Context, namespace, mount string) (string, error) {
-	response, err := c.raw(ctx, namespace, http.MethodGet, strings.Trim(mount, "/")+"/ca_chain")
+	response, err := c.readRaw(ctx, namespace, strings.Trim(mount, "/")+"/ca_chain")
 	if err != nil {
 		return "", err
 	}
@@ -244,11 +243,13 @@ func (c *Client) SetSignedIntermediate(ctx context.Context, namespace, mount, ch
 
 func (c *Client) WriteRole(ctx context.Context, namespace, mount, name string, role pki.Role) error {
 	body := map[string]any{
-		"allowed_domains":    role.AllowedDomains,
 		"allow_subdomains":   role.AllowSubdomains,
 		"allow_bare_domains": role.AllowBareDomains,
 		"enforce_hostnames":  role.EnforceHostnames,
 		"allow_ip_sans":      true,
+	}
+	if len(role.AllowedDomains) > 0 {
+		body["allowed_domains"] = role.AllowedDomains
 	}
 	if role.KeyType != "" {
 		body["key_type"] = role.KeyType
@@ -320,11 +321,10 @@ func (c *Client) data(ctx context.Context, namespace, path string, body map[stri
 	return secret.Data, nil
 }
 
-func (c *Client) raw(ctx context.Context, namespace, method, path string) (*openbao.Response, error) {
-	client := c.scoped(namespace)
-	response, err := client.RawRequestWithContext(ctx, client.NewRequest(method, "/v1/"+strings.TrimPrefix(path, "/")))
+func (c *Client) readRaw(ctx context.Context, namespace, path string) (*openbao.Response, error) {
+	response, err := c.scoped(namespace).Logical().ReadRawWithContext(ctx, strings.TrimPrefix(path, "/"))
 	if err != nil {
-		return nil, translate(err, method, path)
+		return nil, translate(err, http.MethodGet, path)
 	}
 	return response, nil
 }

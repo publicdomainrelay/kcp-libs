@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -14,6 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/rest"
 
+	"github.com/publicdomainrelay/kcp-libs/common/kcp"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 )
 
@@ -23,6 +25,31 @@ type Options struct {
 	RestConfig *rest.Config
 
 	Transport http.RoundTripper
+
+	QPS float32
+
+	Burst int
+}
+
+const DefaultQPS float32 = 50
+
+const DefaultBurst = 100
+
+func Tuned(cfg *rest.Config, qps float32, burst int) *rest.Config {
+	out := rest.CopyConfig(cfg)
+	if qps <= 0 {
+		qps = DefaultQPS
+	}
+	if burst <= 0 {
+		burst = DefaultBurst
+	}
+	if out.QPS <= 0 {
+		out.QPS = qps
+	}
+	if out.Burst <= 0 {
+		out.Burst = burst
+	}
+	return out
 }
 
 type Store struct {
@@ -31,15 +58,19 @@ type Store struct {
 	http *http.Client
 
 	codecs runtime.NegotiatedSerializer
+
+	mu sync.Mutex
+
+	clients map[string]rest.Interface
 }
 
 func New(opts Options) (*Store, error) {
 	if opts.Host == "" {
 		return nil, errors.New("kcpstore: Host is required")
 	}
-	cfg := &rest.Config{}
+	cfg := Tuned(&rest.Config{}, opts.QPS, opts.Burst)
 	if opts.RestConfig != nil {
-		cfg = rest.CopyConfig(opts.RestConfig)
+		cfg = Tuned(opts.RestConfig, opts.QPS, opts.Burst)
 	}
 	cfg.Host = ref.BaseHost(opts.Host)
 	cfg.ContentType = "application/json"
@@ -52,9 +83,10 @@ func New(opts Options) (*Store, error) {
 		return nil, fmt.Errorf("kcpstore: %w", err)
 	}
 	return &Store{
-		cfg:    cfg,
-		http:   httpClient,
-		codecs: serializer.NewCodecFactory(runtime.NewScheme()).WithoutConversion(),
+		cfg:     cfg,
+		http:    httpClient,
+		codecs:  serializer.NewCodecFactory(runtime.NewScheme()).WithoutConversion(),
+		clients: map[string]rest.Interface{},
 	}, nil
 }
 
@@ -66,11 +98,15 @@ func (s *Store) HTTPClient() *http.Client {
 	return s.http
 }
 
-func (s *Store) Host() string {
-	return ref.BaseHost(s.cfg.Host)
-}
-
 func (s *Store) For(logicalCluster string, gv schema.GroupVersion) (rest.Interface, error) {
+	key := logicalCluster + "|" + gv.String()
+	s.mu.Lock()
+	if client, ok := s.clients[key]; ok {
+		s.mu.Unlock()
+		return client, nil
+	}
+	s.mu.Unlock()
+
 	cfg := rest.CopyConfig(s.cfg)
 	cfg.GroupVersion = &gv
 	apiPath := ref.APIPathPrefix + logicalCluster + "/apis"
@@ -83,11 +119,10 @@ func (s *Store) For(logicalCluster string, gv schema.GroupVersion) (rest.Interfa
 	if err != nil {
 		return nil, fmt.Errorf("kcpstore: %s: %w", logicalCluster, err)
 	}
+	s.mu.Lock()
+	s.clients[key] = client
+	s.mu.Unlock()
 	return client, nil
-}
-
-func (s *Store) ForGroupVersionResource(logicalCluster string, gv schema.GroupVersion) (rest.Interface, error) {
-	return s.For(logicalCluster, gv)
 }
 
 type Resource[T any] struct {
@@ -260,14 +295,6 @@ func (r *Resource[T]) AddFinalizer(ctx context.Context, target ref.Ref, finalize
 	return r.Patch(ctx, target, patch)
 }
 
-func Order[T any](items []T, name func(T) string) {
-	for i := 1; i < len(items); i++ {
-		for j := i; j > 0 && name(items[j]) < name(items[j-1]); j-- {
-			items[j], items[j-1] = items[j-1], items[j]
-		}
-	}
-}
-
 func decode[T any](raw []byte) (*T, error) {
 	var out T
 	if err := json.Unmarshal(raw, &out); err != nil {
@@ -306,15 +333,7 @@ func nameOf(raw []byte) string {
 	return obj.Metadata.Name
 }
 
-func (s *Store) MintServiceAccountToken(ctx context.Context, logicalCluster, namespace, name string, ttl time.Duration) (string, error) {
-	return MintServiceAccountToken(ctx, s, logicalCluster, namespace, name, ttl)
-}
-
 func (s *Store) ClusterPath(ctx context.Context, logicalCluster string) (string, error) {
-	return ClusterPath(ctx, s, logicalCluster)
-}
-
-func ClusterPath(ctx context.Context, s *Store, logicalCluster string) (string, error) {
 	c, err := s.For(logicalCluster, schema.GroupVersion{Group: "core.kcp.io", Version: "v1alpha1"})
 	if err != nil {
 		return "", err
@@ -331,14 +350,14 @@ func ClusterPath(ctx context.Context, s *Store, logicalCluster string) (string, 
 	if err := json.Unmarshal(raw, &obj); err != nil {
 		return "", fmt.Errorf("kcpstore: parse logical cluster %s: %w", logicalCluster, err)
 	}
-	path := obj.Metadata.Annotations["kcp.io/path"]
+	path := obj.Metadata.Annotations[kcp.PathAnnotation]
 	if path == "" {
 		return "", fmt.Errorf("kcpstore: logical cluster %s carries no kcp.io/path annotation", logicalCluster)
 	}
 	return path, nil
 }
 
-func MintServiceAccountToken(ctx context.Context, s *Store, logicalCluster, namespace, name string, ttl time.Duration) (string, error) {
+func (s *Store) MintServiceAccountToken(ctx context.Context, logicalCluster, namespace, name string, ttl time.Duration) (string, error) {
 	if namespace == "" {
 		namespace = "default"
 	}
@@ -375,8 +394,4 @@ func MintServiceAccountToken(ctx context.Context, s *Store, logicalCluster, name
 		return "", fmt.Errorf("kcpstore: the TokenRequest for %s/%s in %s returned no token", namespace, name, logicalCluster)
 	}
 	return out.Status.Token, nil
-}
-
-func TrimCluster(host string) string {
-	return strings.TrimSuffix(ref.BaseHost(host), "/")
 }

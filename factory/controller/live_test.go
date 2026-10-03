@@ -6,11 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
 	"github.com/publicdomainrelay/kcp-libs/abc/driver"
 	"github.com/publicdomainrelay/kcp-libs/common/logging"
-	"github.com/publicdomainrelay/kcp-libs/common/ref"
 	"github.com/publicdomainrelay/kcp-libs/common/statuspatch"
 	"github.com/publicdomainrelay/kcp-libs/factory/controller"
 	"github.com/publicdomainrelay/kcp-libs/impl/exportwatch"
@@ -19,31 +16,17 @@ import (
 	"github.com/publicdomainrelay/kcp-libs/internal/livekcp"
 )
 
-var liveProbes = schema.GroupVersionResource{Group: livekcp.Group, Version: livekcp.Version, Resource: livekcp.Resource}
-
-type liveProbe struct {
-	APIVersion string `json:"apiVersion,omitempty"`
-
-	Kind string `json:"kind,omitempty"`
-
-	Metadata struct {
-		Name string `json:"name"`
-
-		Namespace string `json:"namespace"`
-
-		ResourceVersion string `json:"resourceVersion"`
-	} `json:"metadata"`
-
-	Spec struct {
-		Steps int32 `json:"steps"`
-	} `json:"spec"`
-
-	Status struct {
-		Phase string `json:"phase,omitempty"`
-
-		Observed int32 `json:"observed,omitempty"`
-	} `json:"status"`
+type probeSpec struct {
+	Steps int32 `json:"steps,omitempty"`
 }
+
+type probeStatus struct {
+	Phase string `json:"phase,omitempty"`
+
+	Observed int32 `json:"observed,omitempty"`
+}
+
+type probe = livekcp.Object[probeSpec, probeStatus]
 
 func TestLiveControllerAgainstRealKCP(t *testing.T) {
 	livekcp.Require(t)
@@ -60,12 +43,12 @@ func TestLiveControllerAgainstRealKCP(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	probes := kcpstore.Of[liveProbe](store, liveProbes)
+	probes := kcpstore.Of[probe](store, livekcp.WidgetGVR)
 
 	endpoints, err := exportwatch.Await(ctx, exportwatch.Options{
 		Config:            store.Config(),
 		Host:              cluster.Server,
-		ProviderWorkspace: cluster.Provider,
+		ProviderWorkspace: cluster.ProviderCluster,
 		Exports:           []string{livekcp.Export},
 		Log:               logging.Discard(),
 	})
@@ -114,7 +97,7 @@ func TestLiveControllerAgainstRealKCP(t *testing.T) {
 	ctl, err := controller.New(controller.Options{
 		Config:    store.Config(),
 		Bases:     bases,
-		Resources: []informerwatch.Resource{{Kind: "probe", GVR: liveProbes}},
+		Resources: []informerwatch.Resource{{Kind: "probe", GVR: livekcp.WidgetGVR}},
 		Handler:   handler,
 		Policy: driver.Policy{
 			Interval:          200 * time.Millisecond,
@@ -126,14 +109,21 @@ func TestLiveControllerAgainstRealKCP(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	runCtx, stop := context.WithCancel(ctx)
+	done := make(chan struct{})
 	go func() {
-		_ = ctl.Run(ctx)
+		defer close(done)
+		_ = ctl.Run(runCtx)
+	}()
+	defer func() {
+		stop()
+		<-done
 	}()
 
-	seed(ctx, t, probes, cluster.Consumer, "alpha", 2)
-	waitPhase(ctx, t, probes, cluster.Consumer, "alpha", "Succeeded")
-	seed(ctx, t, probes, cluster.Consumer, "beta", 1)
-	waitPhase(ctx, t, probes, cluster.Consumer, "beta", "Succeeded")
+	seed(ctx, t, probes, cluster.ConsumerCluster, "alpha", 2)
+	waitPhase(ctx, t, probes, cluster.ConsumerCluster, "alpha", "Succeeded")
+	seed(ctx, t, probes, cluster.ConsumerCluster, "beta", 1)
+	waitPhase(ctx, t, probes, cluster.ConsumerCluster, "beta", "Succeeded")
 
 	if ctl.Reconciles() == 0 {
 		t.Fatal("the controller reconciled nothing")
@@ -141,29 +131,22 @@ func TestLiveControllerAgainstRealKCP(t *testing.T) {
 	t.Logf("reconciles %d, queue depth %d, cache age %s", ctl.Reconciles(), ctl.QueueDepth(), ctl.CacheAge().Round(time.Millisecond))
 }
 
-func seed(ctx context.Context, t *testing.T, probes *kcpstore.Resource[liveProbe], cluster, name string, steps int32) {
+func seed(ctx context.Context, t *testing.T, probes *kcpstore.Resource[probe], cluster, name string, steps int32) {
 	t.Helper()
-	obj := &liveProbe{APIVersion: livekcp.Group + "/" + livekcp.Version, Kind: livekcp.Kind}
-	obj.Metadata.Name = name
-	obj.Metadata.Namespace = "default"
+	obj := livekcp.NewObject[probeSpec, probeStatus]("default", name)
 	obj.Spec.Steps = steps
-	if err := probes.Create(ctx, cluster, obj); err != nil {
+	if err := livekcp.Seed(ctx, cluster, probes, "default", name, obj); err != nil {
 		t.Fatalf("create %s: %v", name, err)
 	}
 }
 
-func waitPhase(ctx context.Context, t *testing.T, probes *kcpstore.Resource[liveProbe], cluster, name, want string) {
+func waitPhase(ctx context.Context, t *testing.T, probes *kcpstore.Resource[probe], cluster, name, want string) {
 	t.Helper()
-	deadline := time.Now().Add(2 * time.Minute)
-	for time.Now().Before(deadline) {
-		obj, err := probes.Get(ctx, ref.New(cluster, "default", name))
-		if err == nil && obj.Status.Phase == want {
-			return
-		}
-		time.Sleep(100 * time.Millisecond)
+	if _, err := livekcp.WaitFor(ctx, cluster, probes, "default", name, func(obj probe) bool {
+		return obj.Status.Phase == want
+	}); err != nil {
+		t.Fatalf("%v", err)
 	}
-	obj, err := probes.Get(ctx, ref.New(cluster, "default", name))
-	t.Fatalf("%s never reached %s: phase %q err %v", name, want, obj.Status.Phase, err)
 }
 
 type testWriter struct {

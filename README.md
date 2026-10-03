@@ -17,16 +17,15 @@ impl/      concrete bindings: client-go, os/exec, net/http abc + common
 factory/   composition: driver, admission, wiring          impl + abc + common
    ^
 examples/  runnable programs, one per use case             anything
-cmd/       thin entrypoints                                anything
 
 internal/  test support: a live kcp, and the import rules   not for production
 ```
 
-**Start at [`examples/`](examples/README.md).** Six runnable programs create
-real objects on a real kcp and drive them with the library, with a table
-mapping every package to the situation it is for. `go run
-./examples/controller` is the whole reconcile loop in one file, and it needs
-`kcp`, `kine` and `kubectl` on PATH, which is also what the live tests need.
+**Start at [`examples/`](examples/README.md).** Six runnable programs drive the
+library, with a table mapping every package to the situation it is for. Three
+of them talk to a real kcp and need `kcp` and `kubectl` on PATH, which is also
+what the live tests need; the other three need nothing but Go. `go run
+./examples/controller` is the whole reconcile loop in one file.
 
 `internal/boundaries` is a test, not a package: it reads `go list -json ./...`
 and fails the build if any package imports against the arrow, if a `common`
@@ -66,12 +65,12 @@ package imports anything project-local, or if an `abc` package imports past
 | impl | `impl/pkiprovisioner` | one intermediate CA per namespace, root in the root namespace, cached |
 | impl | `impl/policyclient` | the gha-lite policy engine HTTP client, including verdict extraction |
 | impl | `impl/metrics` | dependency-free Prometheus text registry |
-| impl | `impl/assets` | writes embedded assets next to a runs directory, once |
+| impl | `impl/assets` | writes a caller's asset set next to a runs directory, once |
 | factory | `controller` | informers + workqueue + worker pool + requeue policy + metrics |
 | factory | `admission` | per-parent admission: leases, planning, and the wake of queued runs |
 | factory | `dns` | the FQDN table, a pod's own name, and one token per workspace |
 | examples | `examples/*` | one runnable program per use case, each asserted by its own test |
-| support | `internal/livekcp` | starts a real kcp and kine, applies a schema and an export, binds consumer workspaces |
+| support | `internal/livekcp` | starts a real kcp, applies a schema and an export, binds consumer workspaces |
 
 ## The two pieces worth reading first
 
@@ -141,13 +140,20 @@ dominates and it is the same every time:
 | | |
 |---|---|
 | kcp ready to serve (`/readyz` returns 200) | ~10s |
-| provision: three workspaces, an export, two bindings | ~0.9s |
-| one live test, cluster already up | ~1s |
+| provision: three workspaces, an export, two bindings | ~0.6s |
+| one live test, cluster already up | 0.8 - 2.9s |
 
 `make test-live` and `make examples` run the whole tier against a single
-cluster through `scripts/live.sh`, so those ten seconds are paid once: the
-six examples take about 17s and the live tests about 13s in total, against
-about 43s and 28s if each started its own.
+cluster through `scripts/live.sh`, so those ten seconds are paid once. Both
+take about 17s in total, against about 43s and 28s if each started its own.
+
+The other thing that made those numbers what they are: `impl/kcpstore` sets
+`QPS` and `Burst` on the config it builds, defaulting to 50 and 100. client-go
+defaults every REST client to 5 requests a second with a burst of 10, and a
+controller that inherits that spends most of its time waiting on its own rate
+limiter -- the admission example went from 21.7s to 1.6s when it stopped.
+`kcpstore.Options` overrides both, and `kcpstore.Tuned` applies the same
+defaults to a config you built yourself.
 
 Run one on its own with `go run ./examples/controller`, or point several at a
 cluster that is already up:
@@ -169,10 +175,11 @@ skipping when a binary is missing, which is what CI should set.
 ## Commands
 
 ```bash
-make check                    # gofmt, go vet, go mod tidy -diff, go test
+make check                    # gofmt -l, go vet, go mod tidy -diff, go test; read-only
+make format                   # rewrite what gofmt would change
 make test                     # the unit tier
 make race
-make test-live                # the live tier: a real kcp and kine
+make test-live                # the live tier: a real kcp
 make examples                 # run all six examples
 go run ./examples/controller  # or just one
 ```

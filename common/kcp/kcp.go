@@ -52,15 +52,3 @@ func ClusterFromLabels(labels string) string {
 	}
 	return strings.Join(out, ":")
 }
-
-func SplitServiceFQDN(host, domain string) (name, namespace, logicalCluster string, ok bool) {
-	suffix := ServiceSuffix(domain)
-	if !strings.HasSuffix(host, suffix) {
-		return "", "", "", false
-	}
-	bits := strings.Split(strings.TrimSuffix(host, suffix), ".")
-	if len(bits) < 2 {
-		return "", "", "", false
-	}
-	return bits[0], bits[1], ClusterFromLabels(strings.Join(bits[2:], ".")), true
-}

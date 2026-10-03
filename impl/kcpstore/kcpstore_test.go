@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/rest"
 
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 )
@@ -217,7 +218,7 @@ func TestMintServiceAccountToken(t *testing.T) {
 	}, func(w http.ResponseWriter, _ *http.Request, _ int) {
 		writeJSON(w, 201, map[string]any{"status": map[string]any{"token": "jwt-token"}})
 	})
-	token, err := MintServiceAccountToken(context.Background(), store, "root:alice", "default", "reader", 3600*1e9)
+	token, err := store.MintServiceAccountToken(context.Background(), "root:alice", "default", "reader", 3600*1e9)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -237,7 +238,7 @@ func TestClusterPathReadsTheAnnotation(t *testing.T) {
 			"metadata": map[string]any{"annotations": map[string]any{"kcp.io/path": "root:alice"}},
 		})
 	})
-	path, err := ClusterPath(context.Background(), store, "2j35")
+	path, err := store.ClusterPath(context.Background(), "2j35")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -273,5 +274,30 @@ func TestPathCacheResolvesOnce(t *testing.T) {
 func TestNewRequiresAHost(t *testing.T) {
 	if _, err := New(Options{}); err == nil {
 		t.Fatal("a host is required")
+	}
+}
+
+func TestTunedRaisesTheClientRateLimit(t *testing.T) {
+	configured := Tuned(&rest.Config{}, 0, 0)
+	if configured.QPS != DefaultQPS || configured.Burst != DefaultBurst {
+		t.Fatalf("tuned = (%v, %d), want (%v, %d)", configured.QPS, configured.Burst, DefaultQPS, DefaultBurst)
+	}
+	if configured.QPS <= 5 {
+		t.Fatal("the default client-go limiters are 5 qps and a burst of 10, which starves a controller")
+	}
+}
+
+func TestTunedKeepsWhatTheCallerSet(t *testing.T) {
+	source := &rest.Config{QPS: 7, Burst: 9}
+	tuned := Tuned(source, 0, 0)
+	if tuned.QPS != 7 || tuned.Burst != 9 {
+		t.Fatalf("tuned = (%v, %d), want the caller's (7, 9)", tuned.QPS, tuned.Burst)
+	}
+	if source.QPS != 7 {
+		t.Fatal("Tuned must not mutate the config it was given")
+	}
+	overridden := Tuned(&rest.Config{}, 11, 12)
+	if overridden.QPS != 11 || overridden.Burst != 12 {
+		t.Fatalf("tuned = (%v, %d), want the options (11, 12)", overridden.QPS, overridden.Burst)
 	}
 }

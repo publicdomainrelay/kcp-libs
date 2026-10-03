@@ -19,7 +19,7 @@ func TestRunProvisionsAndIssues(t *testing.T) {
 		"issued pds.default.alice.svc.kcp.local serial EE:01",
 		"the workload serves 3 certificates: its leaf, the namespace intermediate, and the root",
 		"a second leaf cost 1 calls, the authority was cached",
-		"provisioning again after a delete cost",
+		"provisioning again after a delete cost 6 calls, the namespace was gone",
 	} {
 		if !strings.Contains(printed, want) {
 			t.Fatalf("output must contain %q, got:\n%s", want, printed)

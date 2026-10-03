@@ -8,9 +8,6 @@ import (
 	"os"
 	"time"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
 	"github.com/publicdomainrelay/kcp-libs/abc/cache"
 	"github.com/publicdomainrelay/kcp-libs/abc/driver"
 	"github.com/publicdomainrelay/kcp-libs/abc/reconcile"
@@ -26,6 +23,7 @@ import (
 	"github.com/publicdomainrelay/kcp-libs/impl/kcpstore"
 	"github.com/publicdomainrelay/kcp-libs/impl/metrics"
 	"github.com/publicdomainrelay/kcp-libs/internal/livekcp"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
@@ -35,20 +33,6 @@ const (
 
 	groupName = "group-a"
 )
-
-var widgets = schema.GroupVersionResource{Group: livekcp.Group, Version: livekcp.Version, Resource: livekcp.Resource}
-
-type metadata struct {
-	Name string `json:"name"`
-
-	Namespace string `json:"namespace"`
-
-	UID string `json:"uid"`
-
-	ResourceVersion string `json:"resourceVersion"`
-
-	Labels map[string]string `json:"labels,omitempty"`
-}
 
 type spec struct {
 	Steps int32 `json:"steps"`
@@ -64,17 +48,7 @@ type status struct {
 	Conditions []metav1.Condition `json:"conditions,omitempty"`
 }
 
-type widget struct {
-	APIVersion string `json:"apiVersion,omitempty"`
-
-	Kind string `json:"kind,omitempty"`
-
-	Metadata metadata `json:"metadata"`
-
-	Spec spec `json:"spec"`
-
-	Status status `json:"status"`
-}
+type widget = livekcp.Object[spec, status]
 
 type observed struct {
 	Widget widget
@@ -167,7 +141,7 @@ func Run(ctx context.Context, out io.Writer) error {
 	endpoints, err := exportwatch.Await(ctx, exportwatch.Options{
 		Config:            store.Config(),
 		Host:              cluster.Server,
-		ProviderWorkspace: cluster.Provider,
+		ProviderWorkspace: cluster.ProviderCluster,
 		Exports:           []string{livekcp.Export},
 		Log:               logger,
 	})
@@ -180,13 +154,15 @@ func Run(ctx context.Context, out io.Writer) error {
 	}
 	fmt.Fprintf(out, "kcp published %s at %s\n", livekcp.Export, bases[0])
 
-	resource := kcpstore.Of[widget](store, widgets)
+	resource := kcpstore.Of[widget](store, livekcp.WidgetGVR)
 	var _ abcstore.Resource[widget] = resource
 	registry := metrics.New("example")
 	watched := cache.NewSet()
+	handler := handlerFor(watched, resource)
+	var _ driver.Handler = handler
 
 	for _, name := range []string{"alpha", "beta"} {
-		if err := seed(ctx, resource, cluster.Consumer, name, 1); err != nil {
+		if err := seed(ctx, cluster.ConsumerCluster, resource, name, 1); err != nil {
 			return err
 		}
 	}
@@ -194,10 +170,10 @@ func Run(ctx context.Context, out io.Writer) error {
 	ctl, err := controller.New(controller.Options{
 		Config:    store.Config(),
 		Bases:     bases,
-		Resources: []informerwatch.Resource{{Kind: "widget", GVR: widgets}},
+		Resources: []informerwatch.Resource{{Kind: "widget", GVR: livekcp.WidgetGVR}},
 		Indexers:  cache.IndexersFor(parentLabel, "", ""),
 		Set:       watched,
-		Handler:   handlerFor(watched, resource),
+		Handler:   handler,
 		Policy: driver.Policy{
 			Interval:          time.Second,
 			MinTransitionPoll: 10 * time.Millisecond,
@@ -216,17 +192,17 @@ func Run(ctx context.Context, out io.Writer) error {
 	}()
 
 	for _, name := range []string{"alpha", "beta"} {
-		obj, err := waitFor(ctx, resource, cluster.Consumer, name, string(deno.PhaseSucceeded))
+		obj, err := livekcp.WaitFor(ctx, cluster.ConsumerCluster, resource, namespace, name, succeeded)
 		if err != nil {
 			return err
 		}
 		fmt.Fprintf(out, "%s reached %s after %d passes\n", name, obj.Status.Phase, obj.Status.Observed)
 	}
 
-	if err := seed(ctx, resource, cluster.Consumer, "gamma", 1); err != nil {
+	if err := seed(ctx, cluster.ConsumerCluster, resource, "gamma", 1); err != nil {
 		return err
 	}
-	gamma, err := waitFor(ctx, resource, cluster.Consumer, "gamma", string(deno.PhaseSucceeded))
+	gamma, err := livekcp.WaitFor(ctx, cluster.ConsumerCluster, resource, namespace, "gamma", succeeded)
 	if err != nil {
 		return err
 	}
@@ -237,29 +213,15 @@ func Run(ctx context.Context, out io.Writer) error {
 	return nil
 }
 
-func seed(ctx context.Context, resource *kcpstore.Resource[widget], cluster, name string, steps int32) error {
-	_ = resource.Delete(ctx, ref.New(cluster, namespace, name))
-	obj := &widget{APIVersion: livekcp.APIVersion, Kind: livekcp.Kind}
-	obj.Metadata.Name = name
-	obj.Metadata.Namespace = namespace
-	obj.Metadata.Labels = map[string]string{parentLabel: groupName}
-	obj.Spec.Steps = steps
-	return resource.Create(ctx, cluster, obj)
+func succeeded(obj widget) bool {
+	return obj.Status.Phase == string(deno.PhaseSucceeded)
 }
 
-func waitFor(ctx context.Context, resource *kcpstore.Resource[widget], cluster, name, want string) (*widget, error) {
-	deadline := time.Now().Add(2 * time.Minute)
-	for time.Now().Before(deadline) {
-		obj, err := resource.Get(ctx, ref.New(cluster, namespace, name))
-		if err == nil && obj.Status.Phase == want {
-			return obj, nil
-		}
-		if ctx.Err() != nil {
-			return nil, ctx.Err()
-		}
-		time.Sleep(50 * time.Millisecond)
-	}
-	return nil, fmt.Errorf("example: %s never reached %s", name, want)
+func seed(ctx context.Context, cluster string, resource *kcpstore.Resource[widget], name string, steps int32) error {
+	obj := livekcp.NewObject[spec, status](namespace, name)
+	obj.Metadata.Labels = map[string]string{parentLabel: groupName}
+	obj.Spec.Steps = steps
+	return livekcp.Seed(ctx, cluster, resource, namespace, name, obj)
 }
 
 func main() {
