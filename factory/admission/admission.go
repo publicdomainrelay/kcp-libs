@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/publicdomainrelay/kcp-libs/abc/queue"
-	"github.com/publicdomainrelay/kcp-libs/common/deno"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 )
 
@@ -46,9 +45,6 @@ func New(opts Options) *Admission {
 	if opts.Now == nil {
 		opts.Now = time.Now
 	}
-	if opts.Terminal == nil {
-		opts.Terminal = deno.TerminalPolicyWorkflow
-	}
 	return &Admission{opts: opts}
 }
 
@@ -77,11 +73,11 @@ func (a *Admission) Admit(ctx context.Context, run queue.Run) (queue.Admission, 
 	for _, candidate := range runs {
 		observed[candidate.Ref] = candidate.Phase
 	}
-	reserved := a.opts.Leases.Count(parent, observed, now)
+	reserved := a.opts.Leases.Count(parent, observed, now, a.opts.Terminal)
 	if _, present := observed[run.Ref]; !present {
 		runs = append(append([]queue.Run(nil), runs...), run)
 	}
-	admission := queue.PlanIndex(runs, capacity, blocker, reserved)[run.Ref]
+	admission := queue.PlanIndex(runs, capacity, blocker, reserved, a.opts.Terminal)[run.Ref]
 	if admission.Gated && admission.Allowed {
 		a.opts.Leases.Grant(run.Ref, parent, now)
 	}

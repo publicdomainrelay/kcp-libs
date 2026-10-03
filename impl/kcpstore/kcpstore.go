@@ -296,6 +296,14 @@ func nameOf(raw []byte) string {
 	return obj.Metadata.Name
 }
 
+func (s *Store) MintServiceAccountToken(ctx context.Context, logicalCluster, namespace, name string, ttl time.Duration) (string, error) {
+	return MintServiceAccountToken(ctx, s, logicalCluster, namespace, name, ttl)
+}
+
+func (s *Store) ClusterPath(ctx context.Context, logicalCluster string) (string, error) {
+	return ClusterPath(ctx, s, logicalCluster)
+}
+
 func ClusterPath(ctx context.Context, s *Store, logicalCluster string) (string, error) {
 	c, err := s.For(logicalCluster, schema.GroupVersion{Group: "core.kcp.io", Version: "v1alpha1"})
 	if err != nil {

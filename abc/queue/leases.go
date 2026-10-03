@@ -43,7 +43,8 @@ func (l *Leases) Forget(run ref.Ref) {
 	delete(l.entries, run)
 }
 
-func (l *Leases) Count(parent ref.Ref, observed map[ref.Ref]string, now time.Time) int32 {
+func (l *Leases) Count(parent ref.Ref, observed map[ref.Ref]string, now time.Time, isTerminal func(phase string) bool) int32 {
+	terminal := Terminal(isTerminal)
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	var held int32

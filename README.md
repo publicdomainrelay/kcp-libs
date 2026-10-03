@@ -11,13 +11,20 @@ No comments in the code; a package's path and names carry the meaning.
 common/    leaf: types, constants, pure helpers            external deps only
    ^
 abc/       interfaces and pure state, no I/O               common only
+fakekcp/   a fake kcp API server, for examples and tests   common + apimachinery
    ^
 impl/      concrete bindings: client-go, os/exec, net/http abc + common
    ^
 factory/   composition: driver, admission, wiring          impl + abc + common
    ^
+examples/  runnable programs, one per use case             anything
 cmd/       thin entrypoints                                anything
 ```
+
+**Start at [`examples/`](examples/README.md).** Six runnable programs create
+real objects on a fake kcp API server and drive them with the library, with a
+table mapping every package to the situation it is for. `go run
+./examples/controller` is the whole reconcile loop in one file.
 
 `internal/boundaries` is a test, not a package: it reads `go list -json ./...`
 and fails the build if any package imports against the arrow, if a `common`
@@ -60,6 +67,9 @@ package imports anything project-local, or if an `abc` package imports past
 | impl | `impl/assets` | writes embedded assets next to a runs directory, once |
 | factory | `controller` | informers + workqueue + worker pool + requeue policy + metrics |
 | factory | `admission` | per-parent admission: leases, planning, and the wake of queued runs |
+| factory | `dns` | the FQDN table, a pod's own name, and one token per workspace |
+| fakekcp | `fakekcp` | a fake kcp API server: list, watch, patch, tokens, endpoint slices |
+| examples | `examples/*` | one runnable program per use case, each asserted by its own test |
 
 ## The two pieces worth reading first
 
@@ -105,9 +115,10 @@ Where the code in `../deno-kcp` moves.
 ## Commands
 
 ```bash
-make check   # gofmt, go vet, go mod tidy -diff, go test
+make check                    # gofmt, go vet, go mod tidy -diff, go test
 make test
-make tidy
+make race
+go run ./examples/controller  # and the other five
 ```
 
 ## License

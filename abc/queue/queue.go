@@ -91,7 +91,8 @@ func Order(runs []Run) {
 	})
 }
 
-func Plan(runs []Run, capacity Capacity, blocker *Blocker, reserved int32) []Admission {
+func Plan(runs []Run, capacity Capacity, blocker *Blocker, reserved int32, isTerminal func(phase string) bool) []Admission {
+	terminal := Terminal(isTerminal)
 	ordered := append([]Run(nil), runs...)
 	Order(ordered)
 
@@ -152,10 +153,10 @@ func Plan(runs []Run, capacity Capacity, blocker *Blocker, reserved int32) []Adm
 	return out
 }
 
-func PlanIndex(runs []Run, capacity Capacity, blocker *Blocker, reserved int32) map[ref.Ref]Admission {
+func PlanIndex(runs []Run, capacity Capacity, blocker *Blocker, reserved int32, isTerminal func(phase string) bool) map[ref.Ref]Admission {
 	ordered := append([]Run(nil), runs...)
 	Order(ordered)
-	planned := Plan(ordered, capacity, blocker, reserved)
+	planned := Plan(ordered, capacity, blocker, reserved, isTerminal)
 	out := make(map[ref.Ref]Admission, len(ordered))
 	for i := range ordered {
 		out[ordered[i].Ref] = planned[i]
@@ -163,11 +164,11 @@ func PlanIndex(runs []Run, capacity Capacity, blocker *Blocker, reserved int32) 
 	return out
 }
 
-func PlanByParent(runs []Run, parent func(Run) string, capacity func(parent string) Capacity, blocker func(parent string) *Blocker, reserved map[string]int32) map[ref.Ref]Admission {
+func PlanByParent(runs []Run, parent func(Run) string, capacity func(parent string) Capacity, blocker func(parent string) *Blocker, reserved map[string]int32, isTerminal func(phase string) bool) map[ref.Ref]Admission {
 	groups := GroupByParent(runs, parent)
 	out := make(map[ref.Ref]Admission, len(runs))
 	for name, group := range groups {
-		planned := Plan(group, capacity(name), blocker(name), reserved[name])
+		planned := Plan(group, capacity(name), blocker(name), reserved[name], isTerminal)
 		for i := range group {
 			out[group[i].Ref] = planned[i]
 		}
@@ -191,7 +192,8 @@ func GroupByParent(runs []Run, parent func(Run) string) map[string][]Run {
 	return groups
 }
 
-func WakeList(runs []Run, terminal func(phase string) bool, limit int32, unlimited bool) []ref.Ref {
+func WakeList(runs []Run, isTerminal func(phase string) bool, limit int32, unlimited bool) []ref.Ref {
+	terminal := Terminal(isTerminal)
 	var pending []Run
 	for _, run := range runs {
 		if run.Phase == string(deno.PhaseRunning) || terminal(run.Phase) {
@@ -211,6 +213,9 @@ func WakeList(runs []Run, terminal func(phase string) bool, limit int32, unlimit
 	return out
 }
 
-func terminal(phase string) bool {
-	return deno.TerminalPolicyWorkflow(phase)
+func Terminal(isTerminal func(phase string) bool) func(phase string) bool {
+	if isTerminal != nil {
+		return isTerminal
+	}
+	return deno.TerminalPolicyWorkflow
 }
