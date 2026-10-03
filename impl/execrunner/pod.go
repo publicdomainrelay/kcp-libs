@@ -66,7 +66,7 @@ func NewPod(opts PodOptions) (*Pod, error) {
 		return nil, fmt.Errorf("execrunner: resolve RunsDir: %w", err)
 	}
 	opts.RunsDir = abs
-	return &Pod{opts: opts, sup: newSupervisor("pod", abs)}, nil
+	return &Pod{opts: opts, sup: newSupervisor("pod", abs, "done.json")}, nil
 }
 
 func (p *Pod) Start(_ context.Context, req runner.PodRequest) (string, error) {
@@ -83,13 +83,12 @@ func (p *Pod) Start(_ context.Context, req runner.PodRequest) (string, error) {
 	args := append([]string{"run"}, req.PermissionArgs...)
 	args = append(args, "main.ts")
 	return p.sup.start(processSpec{
-		binary:     p.opts.DenoBin,
-		args:       args,
-		files:      files,
-		env:        p.env(req),
-		envMap:     req.Env,
-		envForDir:  p.dirEnv,
-		resultFile: "done.json",
+		binary:    p.opts.DenoBin,
+		args:      args,
+		files:     files,
+		env:       p.env(req),
+		envMap:    req.Env,
+		envForDir: p.dirEnv,
 	})
 }
 

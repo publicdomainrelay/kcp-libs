@@ -10,6 +10,8 @@ import (
 	"github.com/publicdomainrelay/kcp-libs/abc/runner"
 )
 
+var engineNow = time.Now
+
 type EngineOptions struct {
 	DenoBin string
 
@@ -55,7 +57,7 @@ func NewEngine(opts EngineOptions) (*Engine, error) {
 	}
 	opts.ServerDir = serverDir
 	opts.RunsDir = runsDir
-	return &Engine{opts: opts, sup: newSupervisor("engine", runsDir)}, nil
+	return &Engine{opts: opts, sup: newSupervisor("engine", runsDir, "")}, nil
 }
 
 func (e *Engine) Start(_ context.Context, req runner.EngineRequest) (string, error) {
@@ -94,7 +96,7 @@ func (e *Engine) Observe(_ context.Context, runID string) (runner.EngineStatus, 
 		}
 		return runner.EngineStatus{State: runner.StateFailed, Message: message}, nil
 	}
-	if timeout := e.opts.Timeout; timeout > 0 && time.Since(run.started) > timeout {
+	if timeout := e.opts.Timeout; timeout > 0 && engineNow().Sub(run.started) > timeout {
 		_ = e.sup.stop(runID)
 		return runner.EngineStatus{State: runner.StateFailed, Message: "the policy engine exceeded the runner timeout"}, nil
 	}

@@ -305,6 +305,37 @@ func TestPodStopIsReportedAsFailure(t *testing.T) {
 	}
 }
 
+func TestARecoveredRunThatLeftItsMarkerHasFinished(t *testing.T) {
+	dir := t.TempDir()
+	runsDir := filepath.Join(dir, "runs")
+	id := "pod-recycled"
+	runDir := filepath.Join(runsDir, id)
+	if err := os.MkdirAll(runDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(runDir, "done.json"), []byte(`{"exitCode":0}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(runDir, "result.json"), []byte(`{"answer":"42"}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	state := fmt.Sprintf(`{"pid":%d,"started":%q,"ticks":1}`, os.Getpid(), time.Now().UTC().Format(time.RFC3339Nano))
+	if err := os.WriteFile(filepath.Join(runDir, "state.json"), []byte(state), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	pod, err := NewPod(PodOptions{DenoBin: "true", RunsDir: runsDir})
+	if err != nil {
+		t.Fatal(err)
+	}
+	status, err := pod.Observe(context.Background(), id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if status.State != runner.StateSucceeded {
+		t.Fatalf("a run that wrote its exit marker has finished, whatever the pid belongs to now: %+v", status)
+	}
+}
+
 func TestPodRecoversARunFromItsDirectory(t *testing.T) {
 	dir := t.TempDir()
 	runsDir := filepath.Join(dir, "runs")
@@ -545,6 +576,34 @@ func TestPodDoesNotKillARecycledPID(t *testing.T) {
 		t.Fatal("a recovered run whose pid no longer matches must not be killed")
 	}
 	_ = pod.Stop(context.Background(), id)
+}
+
+func TestEngineWithoutADeadlineIsNeverReaped(t *testing.T) {
+	dir := t.TempDir()
+	stub := writeStub(t, dir, `sleep 30`)
+	engine, err := NewEngine(EngineOptions{
+		DenoBin:    stub,
+		ServerDir:  dir,
+		ServerFile: filepath.Join(dir, "server.ts"),
+		RunsDir:    filepath.Join(dir, "runs"),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	id, err := engine.Start(context.Background(), runner.EngineRequest{Name: "gha-lite", Port: 8787})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func(restore func() time.Time) { engineNow = restore }(engineNow)
+	engineNow = func() time.Time { return time.Now().Add(1000 * time.Hour) }
+	status, err := engine.Observe(context.Background(), id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if status.State != runner.StateRunning {
+		t.Fatalf("an engine with no deadline set must run until something else stops it: %+v", status)
+	}
+	_ = engine.Stop(context.Background(), id)
 }
 
 func TestEngineEnforcesItsTimeout(t *testing.T) {

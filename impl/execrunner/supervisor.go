@@ -63,14 +63,14 @@ type processSpec struct {
 	envMap map[string]string
 
 	envForDir func(dir string, caller []string) []string
-
-	resultFile string
 }
 
 type supervisor struct {
 	prefix string
 
 	runsDir string
+
+	doneFile string
 
 	mu sync.Mutex
 
@@ -79,8 +79,8 @@ type supervisor struct {
 	seq atomic.Int64
 }
 
-func newSupervisor(prefix, runsDir string) *supervisor {
-	return &supervisor{prefix: prefix, runsDir: runsDir, runs: map[string]*process{}}
+func newSupervisor(prefix, runsDir, doneFile string) *supervisor {
+	return &supervisor{prefix: prefix, runsDir: runsDir, doneFile: doneFile, runs: map[string]*process{}}
 }
 
 func (s *supervisor) nextID() string {
@@ -157,7 +157,7 @@ func (s *supervisor) start(entry processSpec) (string, error) {
 		if cmd.ProcessState != nil {
 			run.exitCode = int32(cmd.ProcessState.ExitCode())
 		}
-		writeDone(run, entry.resultFile)
+		writeDone(run, s.doneFile)
 		close(run.done)
 		s.forget(id)
 	}()
@@ -176,15 +176,15 @@ func (s *supervisor) forget(id string) {
 	delete(s.runs, id)
 }
 
-func writeDone(run *process, resultFile string) {
-	if resultFile == "" {
+func writeDone(run *process, doneFile string) {
+	if doneFile == "" {
 		return
 	}
 	body, err := json.Marshal(podDone{ExitCode: run.exitCode})
 	if err != nil {
 		return
 	}
-	_ = os.WriteFile(filepath.Join(run.dir, resultFile), body, 0o644)
+	_ = os.WriteFile(filepath.Join(run.dir, doneFile), body, 0o644)
 }
 
 func writeState(run *process) error {
@@ -258,6 +258,11 @@ func (s *supervisor) finished(run *process) bool {
 			return true
 		default:
 			return false
+		}
+	}
+	if s.doneFile != "" {
+		if _, err := os.Stat(filepath.Join(run.dir, s.doneFile)); err == nil {
+			return true
 		}
 	}
 	return !processAlive(run.pid)
