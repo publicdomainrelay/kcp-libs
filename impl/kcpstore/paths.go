@@ -4,24 +4,22 @@ import (
 	"context"
 	"errors"
 	"sync"
-
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 )
 
-// definitive is the store answering, as opposed to the store failing. Only an
-// answer belongs in the cache: there is no such workspace, it carries no path,
-// the caller may not read it. Everything else -- a gateway that was down, a
-// body that did not parse, a call someone cancelled -- is asked again, because
-// one bad response must not freeze a workspace's name for the life of the
-// process. The list is an allowlist rather than a list of failures to retry, so
-// an error nobody thought of is retried rather than cached.
+// definitive is the store's answer, as opposed to the store failing. Only an
+// answer that cannot change by asking again belongs in the cache: there is no
+// such workspace, or it exists and carries no path. Everything else is asked
+// again -- a gateway that was down, a body that did not parse, a call someone
+// cancelled, and a refusal, because a token mid-refresh and a grant not yet
+// visible are refusals that heal. The list is an allowlist, so an error nobody
+// thought of is retried rather than frozen into a workspace's name.
 func definitive(err error) bool {
 	switch {
 	case err == nil:
 		return true
 	case errors.Is(err, ErrNoPath):
 		return true
-	case IsNotFound(err), apierrors.IsForbidden(err), apierrors.IsUnauthorized(err):
+	case IsNotFound(err):
 		return true
 	}
 	return false
