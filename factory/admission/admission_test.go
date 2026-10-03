@@ -34,6 +34,10 @@ func (f *fakeSource) Capacity(context.Context, ref.Ref) (queue.Capacity, *queue.
 	return f.capacity, f.blocker, nil
 }
 
+func terminal(phase string) bool {
+	return phase == "Succeeded" || phase == "Failed"
+}
+
 func run(name, phase string, seconds int) queue.Run {
 	return queue.Run{
 		Ref:     ref.New("root:alice", "default", name),
@@ -49,6 +53,7 @@ func newTestAdmission(source *fakeSource) (*Admission, *[]ref.Ref) {
 		Now:        func() time.Time { return time.Unix(1000, 0) },
 		RunKind:    "policyworkflowrun",
 		ParentKind: "policyworkflowpod",
+		Lifecycle:  queue.Lifecycle{Running: func(phase string) bool { return phase == string(deno.PhaseRunning) }, Terminal: terminal},
 		Wake: func(_ string, r ref.Ref) {
 			*woken = append(*woken, r)
 		},
@@ -104,6 +109,9 @@ func TestAdmitReportsABlocker(t *testing.T) {
 	}
 	if !result.Gated || result.Allowed || result.Reason != deno.ReasonEngineNotReady {
 		t.Fatalf("blocked admission = %+v", result)
+	}
+	if admission.Leases().Len() != 0 {
+		t.Fatal("a blocked parent must not be handed a lease: the slot it would hold is not free to give")
 	}
 }
 

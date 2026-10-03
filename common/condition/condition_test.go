@@ -2,7 +2,6 @@ package condition
 
 import (
 	"testing"
-	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -44,16 +43,18 @@ func TestCopyIsIndependent(t *testing.T) {
 	}
 }
 
-func TestTransitionPreservesLastTransitionTime(t *testing.T) {
-	first := metav1.NewTime(time.Unix(1000, 0))
-	later := metav1.NewTime(time.Unix(2000, 0))
-	previous := &metav1.Condition{Type: "Ready", Status: metav1.ConditionTrue, LastTransitionTime: first}
-	kept := Transition(metav1.Condition{Type: "Ready", Status: metav1.ConditionTrue}, previous, later)
-	if !kept.LastTransitionTime.Equal(&first) {
-		t.Fatalf("transition time = %v, want %v", kept.LastTransitionTime, first)
+func TestSetPreservesTheTransitionTimeOfAnUnchangedCondition(t *testing.T) {
+	var list []metav1.Condition
+	SetTrue(&list, 1, "Ready", "Ready", "ok")
+	first := list[0].LastTransitionTime
+	SetTrue(&list, 2, "Ready", "Ready", "still ok")
+	if len(list) != 1 {
+		t.Fatalf("list = %v", list)
 	}
-	changed := Transition(metav1.Condition{Type: "Ready", Status: metav1.ConditionFalse}, previous, later)
-	if !changed.LastTransitionTime.Equal(&later) {
-		t.Fatalf("a status change must restamp, got %v", changed.LastTransitionTime)
+	if !list[0].LastTransitionTime.Equal(&first) {
+		t.Fatalf("transition time = %v, want the original %v", list[0].LastTransitionTime, first)
+	}
+	if list[0].ObservedGeneration != 2 {
+		t.Fatal("the generation must still move")
 	}
 }

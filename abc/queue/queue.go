@@ -5,18 +5,29 @@ import (
 	"sort"
 	"time"
 
-	"github.com/publicdomainrelay/kcp-libs/common/deno"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 )
+
+const (
+	ReasonAtCapacity = "AtCapacity"
+
+	ReasonSuperseded = "Superseded"
+)
+
+type Lifecycle struct {
+	Running func(phase string) bool
+
+	Terminal func(phase string) bool
+}
 
 type Policy string
 
 const (
-	PolicyAllow Policy = Policy(deno.ConcurrencyAllow)
+	PolicyAllow Policy = "Allow"
 
-	PolicyForbid Policy = Policy(deno.ConcurrencyForbid)
+	PolicyForbid Policy = "Forbid"
 
-	PolicyReplace Policy = Policy(deno.ConcurrencyReplace)
+	PolicyReplace Policy = "Replace"
 )
 
 type Run struct {
@@ -78,7 +89,7 @@ func Decision(policy Policy, maxConcurrent *int32, active, ahead int32) (bool, s
 	if display == "" {
 		display = PolicyForbid
 	}
-	return false, deno.ReasonAtCapacity,
+	return false, ReasonAtCapacity,
 		fmt.Sprintf("waiting for a free slot (concurrencyPolicy=%s, maxConcurrent=%d)", display, limit)
 }
 
@@ -91,8 +102,7 @@ func Order(runs []Run) {
 	})
 }
 
-func Plan(runs []Run, capacity Capacity, blocker *Blocker, reserved int32, isTerminal func(phase string) bool) []Admission {
-	terminal := Terminal(isTerminal)
+func Plan(runs []Run, capacity Capacity, blocker *Blocker, reserved int32, lifecycle Lifecycle) []Admission {
 	ordered := append([]Run(nil), runs...)
 	Order(ordered)
 
@@ -100,8 +110,8 @@ func Plan(runs []Run, capacity Capacity, blocker *Blocker, reserved int32, isTer
 	var pending []int
 	for i := range ordered {
 		switch {
-		case terminal(ordered[i].Phase):
-		case ordered[i].Phase == string(deno.PhaseRunning):
+		case lifecycle.Terminal(ordered[i].Phase):
+		case lifecycle.Running(ordered[i].Phase):
 			active++
 		default:
 			pending = append(pending, i)
@@ -136,13 +146,13 @@ func Plan(runs []Run, capacity Capacity, blocker *Blocker, reserved int32, isTer
 			if i == newestPending {
 				admission.Allowed = true
 				for j := range ordered {
-					if j == i || terminal(ordered[j].Phase) {
+					if j == i || lifecycle.Terminal(ordered[j].Phase) {
 						continue
 					}
 					admission.Preempt = append(admission.Preempt, ordered[j].Ref)
 				}
 			} else {
-				admission.Reason = deno.ReasonSuperseded
+				admission.Reason = ReasonSuperseded
 				admission.Message = "a newer run supersedes this one under concurrencyPolicy=Replace"
 			}
 		default:
@@ -153,10 +163,10 @@ func Plan(runs []Run, capacity Capacity, blocker *Blocker, reserved int32, isTer
 	return out
 }
 
-func PlanIndex(runs []Run, capacity Capacity, blocker *Blocker, reserved int32, isTerminal func(phase string) bool) map[ref.Ref]Admission {
+func PlanIndex(runs []Run, capacity Capacity, blocker *Blocker, reserved int32, lifecycle Lifecycle) map[ref.Ref]Admission {
 	ordered := append([]Run(nil), runs...)
 	Order(ordered)
-	planned := Plan(ordered, capacity, blocker, reserved, isTerminal)
+	planned := Plan(ordered, capacity, blocker, reserved, lifecycle)
 	out := make(map[ref.Ref]Admission, len(ordered))
 	for i := range ordered {
 		out[ordered[i].Ref] = planned[i]
@@ -164,11 +174,10 @@ func PlanIndex(runs []Run, capacity Capacity, blocker *Blocker, reserved int32, 
 	return out
 }
 
-func WakeList(runs []Run, isTerminal func(phase string) bool, limit int32, unlimited bool) []ref.Ref {
-	terminal := Terminal(isTerminal)
+func WakeList(runs []Run, lifecycle Lifecycle, limit int32, unlimited bool) []ref.Ref {
 	var pending []Run
 	for _, run := range runs {
-		if run.Phase == string(deno.PhaseRunning) || terminal(run.Phase) {
+		if lifecycle.Running(run.Phase) || lifecycle.Terminal(run.Phase) {
 			continue
 		}
 		pending = append(pending, run)
@@ -183,11 +192,4 @@ func WakeList(runs []Run, isTerminal func(phase string) bool, limit int32, unlim
 		out = append(out, pending[i].Ref)
 	}
 	return out
-}
-
-func Terminal(isTerminal func(phase string) bool) func(phase string) bool {
-	if isTerminal != nil {
-		return isTerminal
-	}
-	return deno.TerminalPolicyWorkflow
 }

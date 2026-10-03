@@ -9,7 +9,7 @@ import (
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 )
 
-func Same(a, b any) bool {
+func Unchanged(a, b any) bool {
 	left, err := json.Marshal(a)
 	if err != nil {
 		return false

@@ -43,11 +43,17 @@ const (
 
 	Export = "widgets"
 
+	SecondExport = "gadgets"
+
 	Group = "example.computer"
 
 	Version = "v1alpha1"
 
 	Resource = "widgets"
+
+	SecondResource = "gadgets"
+
+	SecondKind = "Gadget"
 
 	Kind = "Widget"
 
@@ -315,7 +321,7 @@ func (c *Cluster) provision(ctx context.Context, phase *time.Time) error {
 	}
 	*phase = c.mark("workspaces ready", *phase)
 
-	for _, manifest := range []string{SchemaYAML, ExportYAML} {
+	for _, manifest := range []string{SchemaYAML, ExportYAML, GadgetSchemaYAML, GadgetExportYAML} {
 		if _, err := c.Kubectl(ctx, c.ProviderCluster, manifest); err != nil {
 			return err
 		}
@@ -327,8 +333,10 @@ func (c *Cluster) provision(ctx context.Context, phase *time.Time) error {
 
 	consumers := []string{c.ConsumerCluster, c.SecondConsumerCluster}
 	for _, consumer := range consumers {
-		if _, err := c.Kubectl(ctx, consumer, BindingYAML); err != nil {
-			return err
+		for _, binding := range []string{BindingYAML, GadgetBindingYAML} {
+			if _, err := c.Kubectl(ctx, consumer, binding); err != nil {
+				return err
+			}
 		}
 	}
 	if err := c.waitAll(ctx, consumers, c.waitBindingIn, "the api bindings to bind"); err != nil {
@@ -384,18 +392,30 @@ func (c *Cluster) waitWorkspace(ctx context.Context, name string) error {
 }
 
 func (c *Cluster) waitExport(ctx context.Context) error {
-	return waitFor(ctx, 120*time.Second, func() bool {
-		out, err := c.Get(ctx, c.ProviderCluster, "apiexport", Export, "-o",
-			`jsonpath={.status.conditions[?(@.type=="IdentityValid")].status}`)
-		return err == nil && strings.TrimSpace(out) == "True"
-	}, "apiexport "+Export+" to report IdentityValid")
+	for _, name := range []string{Export, SecondExport} {
+		err := waitFor(ctx, 120*time.Second, func() bool {
+			out, err := c.Get(ctx, c.ProviderCluster, "apiexport", name, "-o",
+				`jsonpath={.status.conditions[?(@.type=="IdentityValid")].status}`)
+			return err == nil && strings.TrimSpace(out) == "True"
+		}, "apiexport "+name+" to report IdentityValid")
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (c *Cluster) waitBindingIn(ctx context.Context, consumer string) error {
-	return waitFor(ctx, 120*time.Second, func() bool {
-		out, err := c.Get(ctx, consumer, "apibinding", Export, "-o", "jsonpath={.status.phase}")
-		return err == nil && strings.TrimSpace(out) == "Bound"
-	}, "the apibinding in "+consumer+" to bind")
+	for _, name := range []string{Export, SecondExport} {
+		err := waitFor(ctx, 120*time.Second, func() bool {
+			out, err := c.Get(ctx, consumer, "apibinding", name, "-o", "jsonpath={.status.phase}")
+			return err == nil && strings.TrimSpace(out) == "Bound"
+		}, "the "+name+" apibinding in "+consumer+" to bind")
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (c *Cluster) spawn(logPath string, name string, args ...string) (*exec.Cmd, *os.File, error) {

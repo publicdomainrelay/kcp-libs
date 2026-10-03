@@ -159,7 +159,7 @@ func Run(ctx context.Context, out io.Writer) error {
 		Source:     source{items: resource, batches: batches},
 		RunKind:    "item",
 		ParentKind: "batch",
-		Terminal:   deno.TerminalPolicyWorkflow,
+		Lifecycle:  queue.Lifecycle{Running: deno.RunningPhase, Terminal: deno.TerminalPolicyWorkflow},
 		Wake:       tally.wake,
 	})
 	started := runref.New(time.Minute)

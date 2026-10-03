@@ -44,10 +44,10 @@ package imports anything project-local, or if an `abc` package imports past
 | common | `common/denospec` | the shared wire shape: pod template, exec probe, service account ref, permissions, deno argv |
 | common | `common/ttl` | retention and active-deadline decisions |
 | common | `common/outputs` | `map[string]any` to `map[string]string` |
-| common | `common/logging`, `common/env` | JSON slog logger; env-or-default readers |
-| abc | `abc/reconcile` | the decider seam: `Result[Status]`, operations, `Reconciler[Observed, Status]` |
-| abc | `abc/queue` | **the queue semantics**: capacity, `Decision`, `Plan`, `PlanIndex`, `PlanByParent`, `WakeList`, `Leases` |
-| abc | `abc/driver` | work `Key`, `Handler`, `Queue`, and the requeue `Policy` |
+| common | `common/logging` | JSON slog logger |
+| abc | `abc/reconcile` | the decider seam: `Result[Status]` with `Ops []Operation{Kind, Target}` and `Clear []string`, plus `Reconciler[Observed, Status]` |
+| abc | `abc/queue` | **the queue semantics**: capacity, `Decision`, `Plan`, `PlanIndex`, `WakeList`, `Leases`. Takes a `Lifecycle` predicate, so it carries no vocabulary of its own |
+| abc | `abc/driver` | work `Key`, `Handler`, and the requeue `Policy` |
 | abc | `abc/cache` | `Indexer`/`Set`, index names and index functions, `Decode[T]` |
 | abc | `abc/probe` | liveness failure counters and the threshold decision |
 | abc | `abc/runref` | the in-memory runID-to-ref index, and the duplicate-start guard |
@@ -64,8 +64,8 @@ package imports anything project-local, or if an `abc` package imports past
 | impl | `impl/openbaoclient` | a typed adapter over the official `github.com/openbao/openbao/api/v2` client |
 | impl | `impl/pkiprovisioner` | one intermediate CA per namespace, root in the root namespace, cached |
 | impl | `impl/policyclient` | the gha-lite policy engine HTTP client, including verdict extraction |
-| impl | `impl/metrics` | dependency-free Prometheus text registry. `queue_depth` counts keys ready to run, not keys waiting on a backoff: the workqueue does not expose its delaying queue |
-| impl | `impl/assets` | writes a caller's asset set next to a runs directory, once |
+| impl | `impl/metrics` | a thin wrapper over `prometheus/client_golang`: `Counter`/`Gauge`/`Summary` registered on a private registry, with a renderer for tests and examples. `queue_depth` counts keys ready to run, not keys waiting on a backoff, because the workqueue does not expose its delaying queue |
+| impl | `impl/assets` | writes a caller's asset set (a shim, a probe) into a directory, once. The exec runner writes its own run directory and does not use this |
 | factory | `controller` | informers + workqueue + worker pool + requeue policy + metrics |
 | factory | `admission` | per-parent admission: leases, planning, and the wake of queued runs |
 | factory | `dns` | the FQDN table, a pod's own name, and one token per workspace |
@@ -82,6 +82,13 @@ ready; `PlanIndex` answers by run ref, which is what a reconciler has.
 `Leases` is the in-memory guard for a run that has been admitted but not yet
 observed `Running`: without it several pending runs see `active=0` in the same
 window and the cap leaks. `WakeList` is what a freed slot enqueues.
+
+**`abc/reconcile`** is the decider seam, and it is shaped by what the
+consumers need rather than by what the examples do: a result carries the
+phase, the status, an operation list whose entries name a target (so a job can
+ask for children to be created or stopped), and a list of status fields to
+write as null, because a merge patch cannot clear a field it is not told
+about.
 
 **`abc/driver`** is the requeue policy. `Policy.Next` reproduces the measured
 behaviour: a terminal key with no requeue stops, an unset requeue becomes the
@@ -109,7 +116,8 @@ Where the code in `../deno-kcp` moves.
 | `internal/provider/policy_client.go` | `impl/policyclient`, `abc/policy` |
 | `internal/runner/*.go` | `impl/execrunner`, `impl/memoryrunner`, `abc/runner` |
 | `internal/denoperm/denoperm.go` | `common/denospec` |
-| `internal/{denorun,denojob,denopod,policyengine,policyworkflowpod,policyworkflowrun,trigger}/*.go` | stay in the consumer, re-expressed as `abc/reconcile.Reconciler` deciders |
+| `internal/{denorun,denojob,denopod,policyengine,policyworkflowpod,policyworkflowrun,trigger}/*.go` | stay in the consumer, re-expressed as `abc/reconcile.Reconciler` deciders. The seam carries what they need: `denorun`'s cleared `runID` is `Result.Clear`, and `denojob`'s `CreateRuns`/`StopRuns` are `Operation`s with a `Target` |
+| `internal/provider/watch.go`'s two APIExports | `informerwatch.Source` per export, since a resource may only be listed against the export that serves it |
 | `internal/provider/kcpdns/embed.go` | `impl/assets` |
 | `api/v1alpha1/types_shared.go` | `common/denospec`, `common/deno` |
 

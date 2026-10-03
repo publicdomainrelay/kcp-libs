@@ -3,7 +3,6 @@ package queue
 import (
 	"time"
 
-	"github.com/publicdomainrelay/kcp-libs/common/deno"
 	"github.com/publicdomainrelay/kcp-libs/common/expiring"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 )
@@ -34,15 +33,14 @@ func (l *Leases) Forget(run ref.Ref) {
 	l.entries.Delete(run)
 }
 
-func (l *Leases) Count(parent ref.Ref, observed map[ref.Ref]string, now time.Time, isTerminal func(phase string) bool) int32 {
-	terminal := Terminal(isTerminal)
+func (l *Leases) Count(parent ref.Ref, observed map[ref.Ref]string, now time.Time, lifecycle Lifecycle) int32 {
 	l.entries.Expire(now)
 	l.entries.DeleteIf(func(run ref.Ref, lease Lease) bool {
 		if lease.Parent != parent {
 			return false
 		}
 		phase, seen := observed[run]
-		return seen && (phase == string(deno.PhaseRunning) || terminal(phase))
+		return seen && (lifecycle.Running(phase) || lifecycle.Terminal(phase))
 	})
 	var held int32
 	l.entries.Range(func(_ ref.Ref, lease Lease) bool {

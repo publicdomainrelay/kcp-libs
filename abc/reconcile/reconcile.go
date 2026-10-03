@@ -3,19 +3,29 @@ package reconcile
 import (
 	"context"
 	"time"
+
+	"github.com/publicdomainrelay/kcp-libs/common/ref"
 )
 
-type Operation string
+type Kind string
 
 const (
-	OpStart Operation = "start"
+	KindStart Kind = "start"
 
-	OpStop Operation = "stop"
+	KindStop Kind = "stop"
 
-	OpDelete Operation = "delete"
+	KindDelete Kind = "delete"
 
-	OpRemoveFinalizer Operation = "remove-finalizer"
+	KindRemoveFinalizer Kind = "remove-finalizer"
+
+	KindCreate Kind = "create"
 )
+
+type Operation struct {
+	Kind Kind
+
+	Target ref.Ref
+}
 
 type Result[Status any] struct {
 	Phase string
@@ -24,21 +34,43 @@ type Result[Status any] struct {
 
 	Ops []Operation
 
+	Clear []string
+
 	RequeueAfter time.Duration
-
-	Delete bool
-
-	RemoveFinalizer bool
 }
 
-func (r *Result[Status]) Add(op Operation) {
-	r.Ops = append(r.Ops, op)
-	switch op {
-	case OpDelete:
-		r.Delete = true
-	case OpRemoveFinalizer:
-		r.RemoveFinalizer = true
+func (r *Result[Status]) Add(kind Kind) {
+	r.Ops = append(r.Ops, Operation{Kind: kind})
+}
+
+func (r *Result[Status]) AddFor(kind Kind, target ref.Ref) {
+	r.Ops = append(r.Ops, Operation{Kind: kind, Target: target})
+}
+
+func (r Result[Status]) Has(kind Kind) bool {
+	for _, op := range r.Ops {
+		if op.Kind == kind {
+			return true
+		}
 	}
+	return false
+}
+
+func (r Result[Status]) Deletes() bool {
+	return r.Has(KindDelete)
+}
+
+func (r Result[Status]) ReleasesFinalizer() bool {
+	return r.Has(KindRemoveFinalizer)
+}
+
+func (r Result[Status]) Cleared(field string) bool {
+	for _, name := range r.Clear {
+		if name == field {
+			return true
+		}
+	}
+	return false
 }
 
 type Reconciler[Observed, Status any] interface {
@@ -49,8 +81,4 @@ type Func[Observed, Status any] func(ctx context.Context, observed Observed) (Re
 
 func (f Func[Observed, Status]) Reconcile(ctx context.Context, observed Observed) (Result[Status], error) {
 	return f(ctx, observed)
-}
-
-func Decider[Observed, Status any](f func(ctx context.Context, observed Observed) (Result[Status], error)) Reconciler[Observed, Status] {
-	return Func[Observed, Status](f)
 }

@@ -39,12 +39,3 @@ func Is(list []metav1.Condition, kind string, status metav1.ConditionStatus) boo
 	found := Of(list, kind)
 	return found != nil && found.Status == status
 }
-
-func Transition(c metav1.Condition, previous *metav1.Condition, now metav1.Time) metav1.Condition {
-	if previous != nil && previous.Status == c.Status {
-		c.LastTransitionTime = previous.LastTransitionTime
-		return c
-	}
-	c.LastTransitionTime = now
-	return c
-}

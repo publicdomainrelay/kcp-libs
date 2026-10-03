@@ -23,6 +23,12 @@ type Resource struct {
 	GVR schema.GroupVersionResource
 }
 
+type Source struct {
+	Base string
+
+	Resources []Resource
+}
+
 type Enqueue func(kind string, r ref.Ref)
 
 type Reactor interface {
@@ -38,9 +44,7 @@ type Lookup interface {
 type Options struct {
 	Config *rest.Config
 
-	Bases []string
-
-	Resources []Resource
+	Sources []Source
 
 	Indexers cache.Indexers
 
@@ -64,13 +68,13 @@ func Run(ctx context.Context, opts Options) error {
 	}
 	stop := ctx.Done()
 	var factories []dynamicinformer.DynamicSharedInformerFactory
-	for _, base := range opts.Bases {
-		client, err := factoryClient(opts.Config, base)
+	for _, source := range opts.Sources {
+		client, err := factoryClient(opts.Config, source.Base)
 		if err != nil {
 			return err
 		}
 		factory := dynamicinformer.NewFilteredDynamicSharedInformerFactory(client, 0, "", nil)
-		for _, resource := range opts.Resources {
+		for _, resource := range source.Resources {
 			register(factory, resource, opts)
 		}
 		factory.Start(stop)

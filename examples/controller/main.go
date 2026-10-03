@@ -62,7 +62,7 @@ func decide(_ context.Context, o observed) (reconcile.Result[status], error) {
 	switch o.Widget.Status.Phase {
 	case "":
 		result.Phase = string(deno.PhasePending)
-		result.Add(reconcile.OpStart)
+		result.Add(reconcile.KindStart)
 	case string(deno.PhasePending):
 		result.Phase = string(deno.PhaseRunning)
 		result.Status.Observed = 0
@@ -97,7 +97,7 @@ func handlerFor(set *cache.Set, resource *kcpstore.Resource[widget]) driver.Hand
 		siblings := int32(len(set.ByIndex("widget", cache.ByClusterParent,
 			ref.Key(key.Ref.LogicalCluster, key.Ref.Namespace, group))))
 
-		result, err := reconcile.Decider(decide).Reconcile(ctx, observed{Widget: *obj, Siblings: siblings})
+		result, err := reconcile.Func[observed, status](decide).Reconcile(ctx, observed{Widget: *obj, Siblings: siblings})
 		if err != nil {
 			return 0, false, err
 		}
@@ -108,7 +108,7 @@ func handlerFor(set *cache.Set, resource *kcpstore.Resource[widget]) driver.Hand
 			Siblings:   result.Status.Siblings,
 			Conditions: result.Status.Conditions,
 		}
-		if !abcstore.Same(next, obj.Status) {
+		if !abcstore.Unchanged(next, obj.Status) {
 			patch, err := statuspatch.Merge(map[string]any{
 				"phase":      next.Phase,
 				"observed":   next.Observed,
@@ -168,12 +168,11 @@ func Run(ctx context.Context, out io.Writer) error {
 	}
 
 	ctl, err := controller.New(controller.Options{
-		Config:    store.Config(),
-		Bases:     bases,
-		Resources: []informerwatch.Resource{{Kind: "widget", GVR: livekcp.WidgetGVR}},
-		Indexers:  cache.IndexersFor(parentLabel, "", ""),
-		Set:       watched,
-		Handler:   handler,
+		Config:   store.Config(),
+		Sources:  []informerwatch.Source{{Base: bases[0], Resources: []informerwatch.Resource{{Kind: "widget", GVR: livekcp.WidgetGVR}}}},
+		Indexers: cache.IndexersFor(parentLabel, "", ""),
+		Set:      watched,
+		Handler:  handler,
 		Policy: driver.Policy{
 			Interval:          time.Second,
 			MinTransitionPoll: 10 * time.Millisecond,
@@ -210,6 +209,7 @@ func Run(ctx context.Context, out io.Writer) error {
 		gamma.Status.Phase, gamma.Status.Siblings)
 	fmt.Fprintf(out, "reconciles %d, queue depth %d, cache age %s\n",
 		ctl.Reconciles(), ctl.QueueDepth(), ctl.CacheAge().Round(time.Millisecond))
+	registry.Render(out)
 	return nil
 }
 

@@ -20,10 +20,10 @@ func TestLeasesCountHeldForParent(t *testing.T) {
 	leases.Grant(second, parent, now)
 	leases.Grant(ref.New("root:alice", "default", "run-c"), other, now)
 
-	if held := leases.Count(parent, nil, now, nil); held != 2 {
+	if held := leases.Count(parent, nil, now, testLifecycle); held != 2 {
 		t.Fatalf("held = %d, want 2", held)
 	}
-	if held := leases.Count(other, nil, now, nil); held != 1 {
+	if held := leases.Count(other, nil, now, testLifecycle); held != 1 {
 		t.Fatalf("held for another parent = %d, want 1", held)
 	}
 }
@@ -41,7 +41,7 @@ func TestLeasesReleaseOnRunningOrTerminal(t *testing.T) {
 		first:  string(deno.PhaseRunning),
 		second: string(deno.PhaseSucceeded),
 	}
-	if held := leases.Count(parent, observed, now, nil); held != 0 {
+	if held := leases.Count(parent, observed, now, testLifecycle); held != 0 {
 		t.Fatalf("held = %d, want 0 once both are observed", held)
 	}
 	if leases.Len() != 0 {
@@ -54,7 +54,7 @@ func TestLeasesExpire(t *testing.T) {
 	parent := ref.New("root:alice", "default", "pod")
 	run := ref.New("root:alice", "default", "run-a")
 	leases.Grant(run, parent, time.Unix(1000, 0))
-	if held := leases.Count(parent, nil, time.Unix(1000+61, 0), nil); held != 0 {
+	if held := leases.Count(parent, nil, time.Unix(1000+61, 0), testLifecycle); held != 0 {
 		t.Fatalf("held = %d, want 0 after the ttl", held)
 	}
 }
@@ -65,7 +65,7 @@ func TestLeasesForget(t *testing.T) {
 	run := ref.New("root:alice", "default", "run-a")
 	leases.Grant(run, parent, time.Unix(1000, 0))
 	leases.Forget(run)
-	if held := leases.Count(parent, nil, time.Unix(1000, 0), nil); held != 0 {
+	if held := leases.Count(parent, nil, time.Unix(1000, 0), testLifecycle); held != 0 {
 		t.Fatalf("held = %d, want 0 after forget", held)
 	}
 }

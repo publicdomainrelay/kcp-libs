@@ -13,6 +13,8 @@ import (
 
 var WidgetGVR = schema.GroupVersionResource{Group: Group, Version: Version, Resource: Resource}
 
+var GadgetGVR = schema.GroupVersionResource{Group: Group, Version: Version, Resource: SecondResource}
+
 type Metadata struct {
 	Name string `json:"name"`
 

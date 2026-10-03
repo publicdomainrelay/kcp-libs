@@ -10,6 +10,12 @@ import (
 
 func int32Ptr(v int32) *int32 { return &v }
 
+var testLifecycle = Lifecycle{
+	Running: func(phase string) bool { return phase == string(deno.PhaseRunning) },
+
+	Terminal: deno.TerminalPolicyWorkflow,
+}
+
 func run(name string, phase string, seconds int) Run {
 	return Run{
 		Ref:     ref.New("root:alice", "default", name),
@@ -73,7 +79,7 @@ func TestPlanForbidOrdersOldestFirst(t *testing.T) {
 		run("a", string(deno.PhasePending), 1),
 		run("b", string(deno.PhasePending), 2),
 	}
-	planned := PlanIndex(runs, Capacity{Policy: PolicyForbid}, nil, 0, nil)
+	planned := PlanIndex(runs, Capacity{Policy: PolicyForbid}, nil, 0, testLifecycle)
 	if !planned[ref.New("root:alice", "default", "a")].Allowed {
 		t.Fatal("the oldest pending run must be admitted")
 	}
@@ -94,7 +100,7 @@ func TestPlanCountsRunningAndTerminal(t *testing.T) {
 		run("done", string(deno.PhaseSucceeded), 2),
 		run("pending", string(deno.PhasePending), 3),
 	}
-	planned := PlanIndex(runs, Capacity{Policy: PolicyAllow, MaxConcurrent: int32Ptr(1)}, nil, 0, nil)
+	planned := PlanIndex(runs, Capacity{Policy: PolicyAllow, MaxConcurrent: int32Ptr(1)}, nil, 0, testLifecycle)
 	if planned[ref.New("root:alice", "default", "running")].Gated {
 		t.Fatal("a running run is not gated")
 	}
@@ -112,7 +118,7 @@ func TestPlanCountsRunningAndTerminal(t *testing.T) {
 
 func TestPlanReservedCountsTowardActive(t *testing.T) {
 	runs := []Run{run("pending", string(deno.PhasePending), 1)}
-	planned := PlanIndex(runs, Capacity{Policy: PolicyAllow, MaxConcurrent: int32Ptr(1)}, nil, 1, nil)
+	planned := PlanIndex(runs, Capacity{Policy: PolicyAllow, MaxConcurrent: int32Ptr(1)}, nil, 1, testLifecycle)
 	if planned[ref.New("root:alice", "default", "pending")].Allowed {
 		t.Fatal("a reserved slot must not be handed out twice")
 	}
@@ -124,7 +130,7 @@ func TestPlanReplaceAdmitsNewestAndPreempts(t *testing.T) {
 		run("middle", string(deno.PhaseRunning), 2),
 		run("new", string(deno.PhasePending), 3),
 	}
-	planned := PlanIndex(runs, Capacity{Policy: PolicyReplace}, nil, 0, nil)
+	planned := PlanIndex(runs, Capacity{Policy: PolicyReplace}, nil, 0, testLifecycle)
 	newest := planned[ref.New("root:alice", "default", "new")]
 	if !newest.Allowed {
 		t.Fatal("replace must admit the newest pending run")
@@ -146,7 +152,7 @@ func TestPlanBlockerGatesEveryPendingRun(t *testing.T) {
 		run("b", string(deno.PhasePending), 2),
 	}
 	blocker := &Blocker{Reason: deno.ReasonEngineNotReady, Message: "no endpoint"}
-	planned := PlanIndex(runs, Capacity{Policy: PolicyForbid}, blocker, 0, nil)
+	planned := PlanIndex(runs, Capacity{Policy: PolicyForbid}, blocker, 0, testLifecycle)
 	for _, candidate := range runs {
 		admission := planned[candidate.Ref]
 		if !admission.Gated || admission.Allowed {
@@ -166,14 +172,14 @@ func TestWakeListTakesCapacityManyOldestFirst(t *testing.T) {
 		run("a", string(deno.PhasePending), 3),
 		run("b", string(deno.PhasePending), 4),
 	}
-	woken := WakeList(runs, deno.TerminalPolicyWorkflow, 2, false)
+	woken := WakeList(runs, testLifecycle, 2, false)
 	if len(woken) != 2 {
 		t.Fatalf("woken = %d, want 2", len(woken))
 	}
 	if woken[0].Name != "a" || woken[1].Name != "b" {
 		t.Fatalf("woken = %v, want the two oldest pending runs", []string{woken[0].Name, woken[1].Name})
 	}
-	if all := WakeList(runs, deno.TerminalPolicyWorkflow, 0, true); len(all) != 3 {
+	if all := WakeList(runs, testLifecycle, 0, true); len(all) != 3 {
 		t.Fatalf("unlimited woken = %d, want 3", len(all))
 	}
 }

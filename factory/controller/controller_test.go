@@ -18,11 +18,11 @@ import (
 func newTestController(t *testing.T, handler driver.Handler, policy driver.Policy) *Controller {
 	t.Helper()
 	controller, err := New(Options{
-		Config:    &rest.Config{Host: "https://kcp.invalid"},
-		Resources: []informerwatch.Resource{{Kind: "denorun", GVR: schema.GroupVersionResource{Group: "deno.computer", Version: "v1alpha1", Resource: "denoruns"}}},
-		Handler:   handler,
-		Policy:    policy,
-		Now:       time.Now,
+		Config:  &rest.Config{Host: "https://kcp.invalid"},
+		Sources: []informerwatch.Source{{Base: "https://kcp.invalid", Resources: []informerwatch.Resource{{Kind: "denorun", GVR: schema.GroupVersionResource{Group: "deno.computer", Version: "v1alpha1", Resource: "denoruns"}}}}},
+		Handler: handler,
+		Policy:  policy,
+		Now:     time.Now,
 	})
 	if err != nil {
 		t.Fatal(err)

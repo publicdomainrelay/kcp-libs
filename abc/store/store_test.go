@@ -13,41 +13,41 @@ type status struct {
 	Times []string `json:"times,omitempty"`
 }
 
-func TestSameComparesWireShape(t *testing.T) {
+func TestUnchangedComparesTheWireShape(t *testing.T) {
 	first := status{Phase: "Running", Active: 1}
 	second := status{Phase: "Running", Active: 1}
-	if !Same(first, second) {
+	if !Unchanged(first, second) {
 		t.Fatal("identical statuses must compare equal")
 	}
-	if Same(first, status{Phase: "Running", Active: 2}) {
+	if Unchanged(first, status{Phase: "Running", Active: 2}) {
 		t.Fatal("a changed count is a change")
 	}
-	if Same(first, status{Phase: "Succeeded"}) {
+	if Unchanged(first, status{Phase: "Succeeded"}) {
 		t.Fatal("a changed phase is a change")
 	}
 }
 
-func TestSameIsNotFooledByOrderingOrNilSlices(t *testing.T) {
-	if Same(status{Phase: "Running", Times: []string{"a"}}, status{Phase: "Running", Times: nil}) {
+func TestUnchangedIsNotFooledByOrderingOrNilSlices(t *testing.T) {
+	if Unchanged(status{Phase: "Running", Times: []string{"a"}}, status{Phase: "Running", Times: nil}) {
 		t.Fatal("a cleared list is a change")
 	}
-	if !Same(map[string]any{"a": 1, "b": 2}, map[string]any{"b": 2, "a": 1}) {
+	if !Unchanged(map[string]any{"a": 1, "b": 2}, map[string]any{"b": 2, "a": 1}) {
 		t.Fatal("map key order must not matter")
 	}
-	if Same(1, "1") {
+	if Unchanged(1, "1") {
 		t.Fatal("different types are different")
 	}
 }
 
-func TestSameHandlesUnencodableValues(t *testing.T) {
-	if Same(make(chan int), make(chan int)) {
+func TestUnchangedHandlesUnencodableValues(t *testing.T) {
+	if Unchanged(make(chan int), make(chan int)) {
 		t.Fatal("a value that cannot be encoded is never equal")
 	}
 }
 
 func TestTimeIsComparedByValue(t *testing.T) {
 	now := time.Unix(1000, 0).UTC()
-	if !Same(map[string]any{"t": now}, map[string]any{"t": now}) {
+	if !Unchanged(map[string]any{"t": now}, map[string]any{"t": now}) {
 		t.Fatal("the same instant must compare equal")
 	}
 }

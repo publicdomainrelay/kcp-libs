@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"strings"
 	"testing"
-	"time"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/testutil"
 )
 
 func TestRenderIncludesEveryFamily(t *testing.T) {
@@ -13,9 +15,9 @@ func TestRenderIncludesEveryFamily(t *testing.T) {
 	counter.Inc()
 	counter.Add(2)
 	gauge := registry.Gauge("queue_depth", "work keys waiting")
-	gauge.SetInt(7)
+	gauge.Set(7)
 	summary := registry.Summary("reconcile_seconds", "time inside a reconcile")
-	summary.Observe(1500 * time.Millisecond)
+	summary.Observe(1.5)
 
 	var buffer bytes.Buffer
 	registry.Render(&buffer)
@@ -26,7 +28,7 @@ func TestRenderIncludesEveryFamily(t *testing.T) {
 		"# TYPE kcp_queue_depth gauge",
 		"kcp_queue_depth 7",
 		"# TYPE kcp_reconcile_seconds summary",
-		"kcp_reconcile_seconds_sum 1.500000",
+		"kcp_reconcile_seconds_sum 1.5",
 		"kcp_reconcile_seconds_count 1",
 	} {
 		if !strings.Contains(body, want) {
@@ -35,19 +37,33 @@ func TestRenderIncludesEveryFamily(t *testing.T) {
 	}
 }
 
-func TestRegistryIsIdempotentPerName(t *testing.T) {
+func TestRegisteringANameTwiceReturnsTheSameCollector(t *testing.T) {
 	registry := New("kcp")
 	first := registry.Counter("reconciles_total", "reconciles started")
-	second := registry.Counter("reconciles_total", "a different help")
+	second := registry.Counter("reconciles_total", "reconciles started")
 	first.Inc()
-	if second.Value() != 1 {
-		t.Fatalf("a repeated name must return the same counter, got %d", second.Value())
+	if second != first {
+		t.Fatal("a repeated name must return the collector that is already registered")
+	}
+	if got := testutil.ToFloat64(second); got != 1 {
+		t.Fatalf("counter = %v, want 1", got)
 	}
 	var buffer bytes.Buffer
 	registry.Render(&buffer)
-	if strings.Count(buffer.String(), "kcp_reconciles_total 1") != 1 {
-		t.Fatalf("a repeated name must render once:\n%s", buffer.String())
+	if strings.Count(buffer.String(), "# TYPE kcp_reconciles_total") != 1 {
+		t.Fatalf("a repeated name must be described once:\n%s", buffer.String())
 	}
+}
+
+func TestRegisteringANameWithADifferentHelpPanics(t *testing.T) {
+	registry := New("kcp")
+	registry.Counter("reconciles_total", "reconciles started")
+	defer func() {
+		if recover() == nil {
+			t.Fatal("the help string is part of a metric's identity; a second one must not be swallowed")
+		}
+	}()
+	registry.Counter("reconciles_total", "a different help")
 }
 
 func TestName(t *testing.T) {
@@ -69,5 +85,13 @@ func TestListenServesMetrics(t *testing.T) {
 	defer server.Close()
 	if server.Address() == "" {
 		t.Fatal("the server must report its bound address")
+	}
+}
+
+func TestTheRegistryIsAStandardRegisterer(t *testing.T) {
+	registry := New("kcp")
+	var _ prometheus.Registerer = registry.Registry()
+	if registry.Registry() == nil {
+		t.Fatal("the underlying registry must be reachable for anything this wrapper does not cover")
 	}
 }

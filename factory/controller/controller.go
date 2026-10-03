@@ -9,6 +9,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/util/workqueue"
@@ -23,9 +24,7 @@ import (
 type Options struct {
 	Config *rest.Config
 
-	Bases []string
-
-	Resources []informerwatch.Resource
+	Sources []informerwatch.Source
 
 	Indexers cache.Indexers
 
@@ -65,11 +64,11 @@ type Controller struct {
 
 	lastEventNanos atomic.Int64
 
-	reconcileSeconds *metrics.Summary
+	reconcileSeconds prometheus.Summary
 
-	queueDepth *metrics.Gauge
+	queueDepth prometheus.Gauge
 
-	cacheAge *metrics.Gauge
+	cacheAge prometheus.Gauge
 }
 
 func New(opts Options) (*Controller, error) {
@@ -79,8 +78,8 @@ func New(opts Options) (*Controller, error) {
 	if opts.Handler == nil {
 		return nil, errors.New("controller: a handler is required")
 	}
-	if len(opts.Resources) == 0 {
-		return nil, errors.New("controller: at least one resource is required")
+	if len(opts.Sources) == 0 {
+		return nil, errors.New("controller: at least one source is required")
 	}
 	if opts.Policy.Interval <= 0 {
 		opts.Policy.Interval = driver.DefaultRequeueAfter
@@ -112,7 +111,7 @@ func New(opts Options) (*Controller, error) {
 		queue: workqueue.NewTypedRateLimitingQueue(workqueue.DefaultTypedControllerRateLimiter[driver.Key]()),
 	}
 	c.reconcileSeconds = opts.Metrics.Summary("reconcile_seconds", "time spent inside a reconcile")
-	c.queueDepth = opts.Metrics.Gauge("queue_depth", "work keys waiting in the reconcile queue")
+	c.queueDepth = opts.Metrics.Gauge("queue_depth", "work keys that are ready to reconcile")
 	c.cacheAge = opts.Metrics.Gauge("cache_age_seconds", "seconds since the last informer event")
 	return c, nil
 }
@@ -163,14 +162,13 @@ func (c *Controller) Run(ctx context.Context) error {
 	watchErr := make(chan error, 1)
 	go func() {
 		watchErr <- informerwatch.Run(runCtx, informerwatch.Options{
-			Config:    c.opts.Config,
-			Bases:     c.opts.Bases,
-			Resources: c.opts.Resources,
-			Indexers:  c.opts.Indexers,
-			Set:       c.set,
-			Reactor:   c.opts.Reactor,
-			Enqueue:   c.Enqueue,
-			OnEvent:   c.onEvent,
+			Config:   c.opts.Config,
+			Sources:  c.opts.Sources,
+			Indexers: c.opts.Indexers,
+			Set:      c.set,
+			Reactor:  c.opts.Reactor,
+			Enqueue:  c.Enqueue,
+			OnEvent:  c.onEvent,
 		})
 	}()
 
@@ -213,8 +211,8 @@ func (c *Controller) worker(ctx context.Context) {
 			c.reconciles.Add(1)
 			start := c.opts.Now()
 			after, terminal, err := c.opts.Handler.Process(ctx, key)
-			c.reconcileSeconds.Observe(c.opts.Now().Sub(start))
-			c.queueDepth.SetInt(int64(c.queue.Len()))
+			c.reconcileSeconds.Observe(c.opts.Now().Sub(start).Seconds())
+			c.queueDepth.Set(float64(c.queue.Len()))
 			if age := c.CacheAge(); age > 0 {
 				c.cacheAge.Set(age.Seconds())
 			}

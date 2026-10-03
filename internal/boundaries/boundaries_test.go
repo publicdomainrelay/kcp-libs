@@ -62,7 +62,7 @@ func TestLayerDependenciesFlowOneWay(t *testing.T) {
 		if layer == "" {
 			t.Fatalf("%s is not in a recognised layer", entry.ImportPath)
 		}
-		for _, imported := range entry.Imports {
+		for _, imported := range append(append([]string(nil), entry.Imports...), entry.TestImports...) {
 			if !strings.HasPrefix(imported, module) {
 				continue
 			}

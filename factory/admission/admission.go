@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/publicdomainrelay/kcp-libs/abc/queue"
-	"github.com/publicdomainrelay/kcp-libs/common/deno"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 )
 
@@ -26,7 +25,7 @@ type Options struct {
 
 	Now func() time.Time
 
-	Terminal func(phase string) bool
+	Lifecycle queue.Lifecycle
 
 	Wake func(kind string, r ref.Ref)
 
@@ -74,11 +73,11 @@ func (a *Admission) Admit(ctx context.Context, run queue.Run) (queue.Admission, 
 	for _, candidate := range runs {
 		observed[candidate.Ref] = candidate.Phase
 	}
-	reserved := a.opts.Leases.Count(parent, observed, now, a.opts.Terminal)
+	reserved := a.opts.Leases.Count(parent, observed, now, a.opts.Lifecycle)
 	if _, present := observed[run.Ref]; !present {
 		runs = append(append([]queue.Run(nil), runs...), run)
 	}
-	admission := queue.PlanIndex(runs, capacity, blocker, reserved, a.opts.Terminal)[run.Ref]
+	admission := queue.PlanIndex(runs, capacity, blocker, reserved, a.opts.Lifecycle)[run.Ref]
 	if admission.Gated && admission.Allowed {
 		a.opts.Leases.Grant(run.Ref, parent, now)
 	}
@@ -105,7 +104,7 @@ func (a *Admission) Wake(ctx context.Context, parent ref.Ref) error {
 	if a.opts.RunKind != "" {
 		running := int32(0)
 		for _, run := range runs {
-			if run.Phase == string(deno.PhaseRunning) {
+			if a.opts.Lifecycle.Running(run.Phase) {
 				running++
 			}
 		}
@@ -113,7 +112,7 @@ func (a *Admission) Wake(ctx context.Context, parent ref.Ref) error {
 		if free < 0 {
 			free = 0
 		}
-		for _, run := range queue.WakeList(runs, a.opts.Terminal, free, unlimited) {
+		for _, run := range queue.WakeList(runs, a.opts.Lifecycle, free, unlimited) {
 			a.opts.Wake(a.opts.RunKind, run)
 		}
 	}
