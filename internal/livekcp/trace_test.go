@@ -17,5 +17,21 @@ func TestLiveStartupBreakdown(t *testing.T) {
 		t.Fatalf("start: %v", err)
 	}
 	defer cluster.Stop()
-	t.Logf("\n%s%8.2fs  Start() wall clock\n", cluster.Trace(), time.Since(started).Seconds())
+	elapsed := time.Since(started)
+	t.Logf("\n%s%8.2fs  Start() wall clock\n", cluster.Trace(), elapsed.Seconds())
+
+	phases := cluster.Phases()
+	if len(phases) < 4 {
+		t.Fatalf("the breakdown lost its phases: %+v", phases)
+	}
+	var total time.Duration
+	for _, phase := range phases {
+		if phase.Name == "" || phase.Duration <= 0 {
+			t.Fatalf("a phase must be named and take time: %+v", phase)
+		}
+		total += phase.Duration
+	}
+	if total > elapsed {
+		t.Fatalf("the phases total %v, more than the %v the start took", total, elapsed)
+	}
 }

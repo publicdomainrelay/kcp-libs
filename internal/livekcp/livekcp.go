@@ -105,6 +105,10 @@ type Phase struct {
 	Duration time.Duration
 }
 
+func (c *Cluster) Phases() []Phase {
+	return append([]Phase(nil), c.phases...)
+}
+
 func (c *Cluster) Trace() string {
 	var builder strings.Builder
 	var total time.Duration

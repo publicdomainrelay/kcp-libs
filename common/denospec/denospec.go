@@ -152,6 +152,14 @@ func validateValues(what string, values []string) error {
 	return nil
 }
 
+func ProbeCommand(shim, probe, name, path string, allowEnv []string) []string {
+	args := []string{"run", "--allow-env=" + strings.Join(allowEnv, ","), "--allow-net", "--preload", shim, probe, name}
+	if path == "" {
+		path = "/"
+	}
+	return append(args, path)
+}
+
 func Args(p *Permissions) ([]string, error) {
 	if err := Validate(p); err != nil {
 		return nil, err

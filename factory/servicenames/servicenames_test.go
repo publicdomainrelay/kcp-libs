@@ -1,4 +1,4 @@
-package dns
+package servicenames
 
 import (
 	"context"
@@ -18,7 +18,7 @@ func pod(name, namespace, cluster string, env map[string]string) *unstructured.U
 		values[key] = value
 	}
 	return &unstructured.Unstructured{Object: map[string]any{
-		"apiVersion": "deno.computer/v1alpha1",
+		"apiVersion": "denocomputer.computer/v1alpha1",
 		"kind":       "DenoPod",
 		"metadata": map[string]any{
 			"name":        name,

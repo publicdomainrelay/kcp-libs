@@ -15,7 +15,7 @@ import (
 	"github.com/publicdomainrelay/kcp-libs/common/denospec"
 	"github.com/publicdomainrelay/kcp-libs/common/kcp"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
-	"github.com/publicdomainrelay/kcp-libs/factory/dns"
+	"github.com/publicdomainrelay/kcp-libs/factory/servicenames"
 	"github.com/publicdomainrelay/kcp-libs/impl/kcpstore"
 	"github.com/publicdomainrelay/kcp-libs/internal/livekcp"
 )
@@ -55,18 +55,18 @@ func Run(ctx context.Context, out io.Writer) error {
 	}
 	resource := kcpstore.Of[pod](store, livekcp.WidgetGVR)
 
-	if err := seed(ctx, cluster.ConsumerCluster, resource, firstPod, map[string]string{dns.ArgsKey: `["--port","8080"]`}); err != nil {
+	if err := seed(ctx, cluster.ConsumerCluster, resource, firstPod, map[string]string{servicenames.ArgsKey: `["--port","8080"]`}); err != nil {
 		return err
 	}
-	if err := seed(ctx, cluster.ConsumerCluster, resource, secondPod, map[string]string{dns.EnvKey: `{"PORT":"3000","HOSTNAME":"0.0.0.0"}`}); err != nil {
+	if err := seed(ctx, cluster.ConsumerCluster, resource, secondPod, map[string]string{servicenames.EnvKey: `{"PORT":"3000","HOSTNAME":"0.0.0.0"}`}); err != nil {
 		return err
 	}
-	if err := seed(ctx, cluster.SecondConsumerCluster, resource, thirdPod, map[string]string{dns.EnvKey: `{"PORT":"9000"}`}); err != nil {
+	if err := seed(ctx, cluster.SecondConsumerCluster, resource, thirdPod, map[string]string{servicenames.EnvKey: `{"PORT":"9000"}`}); err != nil {
 		return err
 	}
 
 	workspaces := []string{cluster.ConsumerCluster, cluster.SecondConsumerCluster}
-	source := dns.SourceFunc(func() []*unstructured.Unstructured {
+	source := servicenames.SourceFunc(func() []*unstructured.Unstructured {
 		var out []*unstructured.Unstructured
 		for _, logicalCluster := range workspaces {
 			listed, err := resource.List(ctx, logicalCluster)
@@ -81,7 +81,7 @@ func Run(ctx context.Context, out io.Writer) error {
 	})
 
 	var _ abcstore.TokenMinter = store
-	resolver := dns.New(dns.Options{
+	resolver := servicenames.New(servicenames.Options{
 		Source:   source,
 		Minter:   store,
 		Paths:    kcpstore.NewPathCache(store),
@@ -104,11 +104,11 @@ func Run(ctx context.Context, out io.Writer) error {
 	env := resolver.Env(ctx, self, `["--hostname","0.0.0.0","--port","8080"]`, "",
 		&denospec.ServiceAccountRef{Name: serviceAccount})
 	injected := map[string]string{}
-	if err := json.Unmarshal([]byte(env[dns.TableKey]), &injected); err != nil {
+	if err := json.Unmarshal([]byte(env[servicenames.TableKey]), &injected); err != nil {
 		return err
 	}
 	tokens := map[string]string{}
-	if err := json.Unmarshal([]byte(env[dns.TokensKey]), &tokens); err != nil {
+	if err := json.Unmarshal([]byte(env[servicenames.TokensKey]), &tokens); err != nil {
 		return err
 	}
 	tokenKeys := make([]string, 0, len(tokens))
@@ -121,7 +121,7 @@ func Run(ctx context.Context, out io.Writer) error {
 		injected[resolver.Name(ctx, firstPod, namespace, cluster.ConsumerCluster)])
 	fmt.Fprintf(out, "kcp minted a token for %s: %v\n", cluster.ConsumerCluster, tokens[cluster.ConsumerCluster] != "")
 	fmt.Fprintf(out, "a service that binds 0.0.0.0 advertises %s\n",
-		dns.AdvertisedAddress("", `{"PORT":"3000","HOSTNAME":"0.0.0.0"}`))
+		servicenames.AdvertisedAddress("", `{"PORT":"3000","HOSTNAME":"0.0.0.0"}`))
 	fmt.Fprintf(out, "the workspace path reads as labels: %s becomes %s\n",
 		cluster.ConsumerCluster, kcp.ServiceLabels(cluster.ConsumerCluster))
 	return nil

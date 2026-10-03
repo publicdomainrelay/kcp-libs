@@ -10,16 +10,16 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/rest"
 
-	"github.com/publicdomainrelay/kcp-libs/abc/driver"
+	"github.com/publicdomainrelay/kcp-libs/abc/reconcile"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 	"github.com/publicdomainrelay/kcp-libs/impl/informerwatch"
 )
 
-func newTestController(t *testing.T, handler driver.Handler, policy driver.Policy) *Controller {
+func newTestController(t *testing.T, handler reconcile.Handler, policy reconcile.Policy) *Controller {
 	t.Helper()
 	controller, err := New(Options{
 		Config:  &rest.Config{Host: "https://kcp.invalid"},
-		Sources: []informerwatch.Source{{Base: "https://kcp.invalid", Resources: []informerwatch.Resource{{Kind: "denorun", GVR: schema.GroupVersionResource{Group: "deno.computer", Version: "v1alpha1", Resource: "denoruns"}}}}},
+		Sources: []informerwatch.Source{{Base: "https://kcp.invalid", Resources: []informerwatch.Resource{{Kind: "denorun", GVR: schema.GroupVersionResource{Group: "denocomputer.computer", Version: "v1alpha1", Resource: "denoruns"}}}}},
 		Handler: handler,
 		Policy:  policy,
 		Now:     time.Now,
@@ -43,11 +43,11 @@ func waitFor(t *testing.T, what string, condition func() bool) {
 }
 
 func TestWorkerStopsOnATerminalKey(t *testing.T) {
-	processed := make(chan driver.Key, 4)
-	controller := newTestController(t, driver.HandlerFunc(func(_ context.Context, key driver.Key) (time.Duration, bool, error) {
+	processed := make(chan reconcile.Key, 4)
+	controller := newTestController(t, reconcile.HandlerFunc(func(_ context.Context, key reconcile.Key) (time.Duration, bool, error) {
 		processed <- key
 		return 0, true, nil
-	}), driver.Policy{Interval: time.Hour})
+	}), reconcile.Policy{Interval: time.Hour})
 
 	go controller.worker(context.Background())
 	defer controller.queue.ShutDown()
@@ -73,10 +73,10 @@ func TestWorkerStopsOnATerminalKey(t *testing.T) {
 
 func TestWorkerRequeuesANonTerminalKey(t *testing.T) {
 	processed := make(chan struct{}, 8)
-	controller := newTestController(t, driver.HandlerFunc(func(context.Context, driver.Key) (time.Duration, bool, error) {
+	controller := newTestController(t, reconcile.HandlerFunc(func(context.Context, reconcile.Key) (time.Duration, bool, error) {
 		processed <- struct{}{}
 		return time.Millisecond, false, nil
-	}), driver.Policy{Interval: time.Millisecond})
+	}), reconcile.Policy{Interval: time.Millisecond})
 
 	go controller.worker(context.Background())
 	defer controller.queue.ShutDown()
@@ -92,9 +92,9 @@ func TestWorkerRequeuesANonTerminalKey(t *testing.T) {
 }
 
 func TestWorkerRequeuesAConflictAtTheClamp(t *testing.T) {
-	controller := newTestController(t, driver.HandlerFunc(func(context.Context, driver.Key) (time.Duration, bool, error) {
+	controller := newTestController(t, reconcile.HandlerFunc(func(context.Context, reconcile.Key) (time.Duration, bool, error) {
 		return 0, false, apierrors.NewConflict(schema.GroupResource{Resource: "denoruns"}, "run-1", errors.New("stale"))
-	}), driver.Policy{
+	}), reconcile.Policy{
 		Interval:          time.Hour,
 		MinTransitionPoll: time.Millisecond,
 		ClampKinds:        map[string]bool{"denorun": true},
@@ -112,9 +112,9 @@ func TestWorkerRequeuesAConflictAtTheClamp(t *testing.T) {
 }
 
 func TestWorkerRateLimitsAnError(t *testing.T) {
-	controller := newTestController(t, driver.HandlerFunc(func(context.Context, driver.Key) (time.Duration, bool, error) {
+	controller := newTestController(t, reconcile.HandlerFunc(func(context.Context, reconcile.Key) (time.Duration, bool, error) {
 		return 0, false, errors.New("boom")
-	}), driver.Policy{Interval: time.Hour})
+	}), reconcile.Policy{Interval: time.Hour})
 
 	go controller.worker(context.Background())
 	defer controller.queue.ShutDown()
@@ -130,7 +130,7 @@ func TestNewRequiresItsWiring(t *testing.T) {
 	if _, err := New(Options{Config: &rest.Config{}}); err == nil {
 		t.Fatal("a handler is required")
 	}
-	if _, err := New(Options{Config: &rest.Config{}, Handler: driver.HandlerFunc(func(context.Context, driver.Key) (time.Duration, bool, error) {
+	if _, err := New(Options{Config: &rest.Config{}, Handler: reconcile.HandlerFunc(func(context.Context, reconcile.Key) (time.Duration, bool, error) {
 		return 0, true, nil
 	})}); err == nil {
 		t.Fatal("at least one resource is required")

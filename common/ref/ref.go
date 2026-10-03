@@ -26,10 +26,6 @@ func (r Ref) Key() string {
 	return Key(r.LogicalCluster, r.Namespace, r.Name)
 }
 
-func (r Ref) Cluster() Ref {
-	return Ref{LogicalCluster: r.LogicalCluster}
-}
-
 func (r Ref) WithResourceVersion(version string) Ref {
 	r.ResourceVersion = version
 	return r

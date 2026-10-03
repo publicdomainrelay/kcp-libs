@@ -15,6 +15,7 @@ import (
 	"k8s.io/client-go/rest"
 
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
+	"github.com/publicdomainrelay/kcp-libs/impl/kcpstore"
 )
 
 var EndpointSliceGVR = schema.GroupVersionResource{Group: "apis.kcp.io", Version: "v1alpha1", Resource: "apiexportendpointslices"}
@@ -50,22 +51,13 @@ func Client(opts Options) (dynamic.Interface, error) {
 	if opts.Config == nil {
 		return nil, errors.New("exportwatch: a rest config is required")
 	}
-	cfg := tuned(rest.CopyConfig(opts.Config))
+	cfg := kcpstore.Tuned(opts.Config, 0, 0)
 	cfg.Host = opts.host() + ref.APIPathPrefix + opts.ProviderWorkspace
 	client, err := dynamic.NewForConfig(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("exportwatch: build a client for %s: %w", opts.ProviderWorkspace, err)
 	}
 	return client, nil
-}
-
-func Factory(opts Options, virtualWorkspaceURL string) (dynamic.Interface, error) {
-	if opts.Config == nil {
-		return nil, errors.New("exportwatch: a rest config is required")
-	}
-	cfg := rest.CopyConfig(opts.Config)
-	cfg.Host = trimSlash(virtualWorkspaceURL) + ref.APIPathPrefix + "*"
-	return dynamic.NewForConfig(cfg)
 }
 
 func Discover(ctx context.Context, opts Options) (Endpoints, error) {
@@ -192,16 +184,6 @@ func logEndpointWait(opts Options, endpoints Endpoints, err error) {
 	opts.Log.Info("exportwatch: waiting for the APIExport virtual workspace endpoints", fields...)
 }
 
-func tuned(cfg *rest.Config) *rest.Config {
-	if cfg.QPS <= 0 {
-		cfg.QPS = 50
-	}
-	if cfg.Burst <= 0 {
-		cfg.Burst = 100
-	}
-	return cfg
-}
-
 func Paths(endpoints Endpoints, export string) []string {
 	return endpoints[export]
 }
@@ -212,11 +194,4 @@ func Counts(endpoints Endpoints) map[string]int {
 		out[export] = len(urls)
 	}
 	return out
-}
-
-func trimSlash(value string) string {
-	for len(value) > 0 && value[len(value)-1] == '/' {
-		value = value[:len(value)-1]
-	}
-	return value
 }

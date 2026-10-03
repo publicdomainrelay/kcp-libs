@@ -40,23 +40,23 @@ package imports anything project-local, or if an `abc` package imports past
 | common | `common/kcp` | `kcp.io/cluster`, `kcp.io/path`, service labels and FQDNs, the inverse |
 | common | `common/condition` | `metav1.Condition` set/remove/find, transition-time preservation |
 | common | `common/statuspatch` | merge-patch bodies, resource-version stamping, finalizer JSON patches, `Optional` |
-| common | `common/deno` | the `deno.computer` domain: labels, finalizers, conditions, phases, terminal predicates, concurrency policies. Kept whole, not trimmed to what this module itself calls: a consumer adopting the library needs the vocabulary, and half a vocabulary is worse than none |
+| common | `common/denocomputer` | the `deno.computer` API group vocabulary: labels, finalizers, conditions, phases, terminal predicates. Named for the group, not the runtime. Kept whole rather than trimmed to what this module calls: a consumer adopting the library needs the words, and half a vocabulary is worse than none |
 | common | `common/denospec` | the shared wire shape: pod template, exec probe, service account ref, permissions, deno argv |
+| common | `common/expiring` | a ttl map with `Set`, `Get`, `Peek`, `Delete`, `DeleteIf`, `Expire`, `Range`, `SetPruning`. Backs the leases, the start index and the job allocations |
 | common | `common/ttl` | retention and active-deadline decisions |
 | common | `common/outputs` | `map[string]any` to `map[string]string` |
 | common | `common/logging` | JSON slog logger |
-| abc | `abc/reconcile` | the decider seam: `Result[Status]` with `Ops []Operation{Kind, Target}` and `Clear []string`, plus `Reconciler[Observed, Status]` |
-| abc | `abc/queue` | **the queue semantics**: capacity, `Decision`, `Plan`, `PlanIndex`, `WakeList`, `Leases`. Takes a `Lifecycle` predicate, so it carries no vocabulary of its own |
-| abc | `abc/driver` | work `Key`, `Handler`, and the requeue `Policy` |
+| abc | `abc/reconcile` | the whole reconcile contract: `Result[Status]` with `Ops []Operation{Kind, Target}` and `Clear []string`, `Reconciler[Observed, Status]`, the work `Key`, the `Handler` the driver consumes, the requeue `Policy`, and `Bridge` which turns a decider into a handler |
+| abc | `abc/queue` | **the queue semantics**: capacity, `Decision`, `Plan`, `PlanIndex`, `WakeList`, `Leases`, and the concurrency policies they decide on. Takes a `Lifecycle` predicate, so it names no phase itself |
 | abc | `abc/cache` | `Indexer`/`Set`, index names and index functions, `Decode[T]` |
 | abc | `abc/probe` | liveness failure counters and the threshold decision |
 | abc | `abc/runref` | the in-memory runID-to-ref index, and the duplicate-start guard |
 | abc | `abc/joballoc` | created-but-unobserved run names, held until the status write lands |
 | abc | `abc/runner` | `PodRunner`/`EngineRunner` and their request/status types |
 | abc | `abc/pki` | the OpenBao PKI client port, certificate types, `Provisioner` |
-| abc | `abc/store` | generic `Reader[T]`/`Writer[T]`/`Resource[T]`, token minter, path resolver |
+| abc | `abc/store` | generic `Reader[T]`/`Writer[T]`/`Resource[T]`, the token minter, and `Unchanged`, which compares two values by the JSON a patch would carry |
 | abc | `abc/policy` | the policy engine client port |
-| impl | `impl/kcpstore` | client-go REST store: generic typed resources, status patches, finalizers, token minting, cluster paths |
+| impl | `impl/kcpstore` | client-go REST store: generic typed resources, status patches stamped with the cached resource version, finalizers, token minting, cluster paths, and the client rate-limit defaults the other transports share |
 | impl | `impl/exportwatch` | APIExportEndpointSlice discovery and the await loop for virtual workspace URLs |
 | impl | `impl/informerwatch` | shared dynamic informers over `/clusters/*`, indexers, event handlers |
 | impl | `impl/execrunner` | `os/exec` pod and engine runners: run directories, process groups, recovery, probes |
@@ -66,9 +66,9 @@ package imports anything project-local, or if an `abc` package imports past
 | impl | `impl/policyclient` | the gha-lite policy engine HTTP client, including verdict extraction |
 | impl | `impl/metrics` | a thin wrapper over `prometheus/client_golang`: `Counter`/`Gauge`/`Summary` registered on a private registry, with a renderer for tests and examples. `queue_depth` counts keys ready to run, not keys waiting on a backoff, because the workqueue does not expose its delaying queue |
 | impl | `impl/assets` | writes a caller's asset set (a shim, a probe) into a directory, once. The exec runner writes its own run directory and does not use this |
-| factory | `controller` | informers + workqueue + worker pool + requeue policy + metrics |
+| factory | `controller` | informers + workqueue + worker pool + requeue policy + metrics; one `Source` per APIExport, since a resource may only be listed against the export that serves it |
 | factory | `admission` | per-parent admission: leases, planning, and the wake of queued runs |
-| factory | `dns` | the FQDN table, a pod's own name, and one token per workspace |
+| factory | `servicenames` | the FQDN-to-address table, a workload's own name, and one token per workspace. Not a DNS server: it builds the table a resolver shim is handed |
 | examples | `examples/*` | one runnable program per use case, each asserted by its own test |
 | support | `internal/livekcp` | starts a real kcp, applies a schema and an export, binds consumer workspaces |
 
@@ -90,7 +90,7 @@ ask for children to be created or stopped), and a list of status fields to
 write as null, because a merge patch cannot clear a field it is not told
 about.
 
-**`abc/driver`** is the requeue policy. `Policy.Next` reproduces the measured
+**`abc/reconcile`** owns the requeue policy too. `Policy.Next` reproduces the measured
 behaviour: a terminal key with no requeue stops, an unset requeue becomes the
 interval, and a key whose kind is clamped is re-checked at
 `MinTransitionPoll` because a running process is only visible by asking it.
@@ -104,10 +104,10 @@ Where the code in `../deno-kcp` moves.
 | deno-kcp | kcp-libs |
 |---|---|
 | `internal/provider/registry.go`, `registry_*.go`, `cluster_path.go` | `impl/kcpstore`, `common/ref`, `common/statuspatch` |
-| `internal/provider/watch.go`, `watch_cache.go`, `driver.go` | `impl/informerwatch`, `impl/exportwatch`, `abc/cache`, `abc/driver`, `factory/controller` |
+| `internal/provider/watch.go`, `watch_cache.go`, `driver.go` | `impl/informerwatch`, `impl/exportwatch`, `abc/cache`, `abc/reconcile` (its `Key`, `Handler` and `Policy`), `factory/controller` |
 | `internal/provider/admission.go` | `abc/queue`, `factory/admission` |
 | `internal/provider/metrics.go` | `impl/metrics` |
-| `internal/provider/service_dns.go` | `common/kcp`, `factory/dns` (name and token table composition) |
+| `internal/provider/service_dns.go` | `common/kcp`, `factory/servicenames` (name and token table composition) |
 | `internal/provider/run_refs.go` | `abc/runref` |
 | `internal/provider/provider.go` job allocation state | `abc/joballoc` |
 | `internal/provider/provider_runtime.go` probe tracker | `abc/probe` |
@@ -119,7 +119,7 @@ Where the code in `../deno-kcp` moves.
 | `internal/{denorun,denojob,denopod,policyengine,policyworkflowpod,policyworkflowrun,trigger}/*.go` | stay in the consumer, re-expressed as `abc/reconcile.Reconciler` deciders. The seam carries what they need: `denorun`'s cleared `runID` is `Result.Clear`, and `denojob`'s `CreateRuns`/`StopRuns` are `Operation`s with a `Target` |
 | `internal/provider/watch.go`'s two APIExports | `informerwatch.Source` per export, since a resource may only be listed against the export that serves it |
 | `internal/provider/kcpdns/embed.go` | `impl/assets` |
-| `api/v1alpha1/types_shared.go` | `common/denospec`, `common/deno` |
+| `api/v1alpha1/types_shared.go` | `common/denospec`, `common/denocomputer` |
 
 ## Two tiers
 
@@ -137,7 +137,8 @@ bind. Directly against it:
   resource.
 - `factory/controller` — `exportwatch` discovers the real virtual workspace
   URL from the export's endpoint slice, wildcard informers watch it, the
-  workqueue delivers keys, and a decider drives two widgets to `Succeeded`.
+  workqueue delivers keys, and a decider drives a widget from one export and a
+  gadget from the other to `Succeeded`.
 
 and the three examples that need a cluster: `examples/controller`,
 `examples/admission`, `examples/dns`.

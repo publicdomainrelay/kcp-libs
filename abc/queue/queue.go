@@ -22,6 +22,13 @@ type Lifecycle struct {
 
 type Policy string
 
+func EffectivePolicy(policy Policy) Policy {
+	if policy == "" {
+		return PolicyForbid
+	}
+	return policy
+}
+
 const (
 	PolicyAllow Policy = "Allow"
 
@@ -68,6 +75,10 @@ type Admission struct {
 	Message string
 
 	Preempt []ref.Ref
+}
+
+func (a Admission) Waiting() bool {
+	return a.Gated && !a.Allowed
 }
 
 func Limit(policy Policy, maxConcurrent *int32) (int32, bool) {

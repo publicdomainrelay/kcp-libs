@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/publicdomainrelay/kcp-libs/abc/driver"
+	"github.com/publicdomainrelay/kcp-libs/abc/reconcile"
 	"github.com/publicdomainrelay/kcp-libs/common/logging"
 	"github.com/publicdomainrelay/kcp-libs/common/statuspatch"
 	"github.com/publicdomainrelay/kcp-libs/factory/controller"
@@ -70,7 +70,7 @@ func TestLiveControllerAgainstRealKCP(t *testing.T) {
 		return probes
 	}
 
-	handler := driver.HandlerFunc(func(ctx context.Context, key driver.Key) (time.Duration, bool, error) {
+	handler := reconcile.HandlerFunc(func(ctx context.Context, key reconcile.Key) (time.Duration, bool, error) {
 		resource := resourceFor(key.Kind)
 		obj, err := resource.Get(ctx, key.Ref)
 		if err != nil {
@@ -111,7 +111,7 @@ func TestLiveControllerAgainstRealKCP(t *testing.T) {
 			{Base: gadgetBase[0], Resources: []informerwatch.Resource{{Kind: "gadget", GVR: livekcp.GadgetGVR}}},
 		},
 		Handler: handler,
-		Policy: driver.Policy{
+		Policy: reconcile.Policy{
 			Interval:          200 * time.Millisecond,
 			MinTransitionPoll: 10 * time.Millisecond,
 			ClampKinds:        map[string]bool{"probe": true},

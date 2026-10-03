@@ -15,6 +15,7 @@ import (
 
 	"github.com/publicdomainrelay/kcp-libs/abc/cache"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
+	"github.com/publicdomainrelay/kcp-libs/impl/kcpstore"
 )
 
 type Resource struct {
@@ -55,8 +56,6 @@ type Options struct {
 	Enqueue Enqueue
 
 	OnEvent func()
-
-	OnRegistrationError func(kind string, err error)
 }
 
 func Run(ctx context.Context, opts Options) error {
@@ -75,7 +74,9 @@ func Run(ctx context.Context, opts Options) error {
 		}
 		factory := dynamicinformer.NewFilteredDynamicSharedInformerFactory(client, 0, "", nil)
 		for _, resource := range source.Resources {
-			register(factory, resource, opts)
+			if err := register(factory, resource, opts); err != nil {
+				return err
+			}
 		}
 		factory.Start(stop)
 		factories = append(factories, factory)
@@ -92,13 +93,7 @@ func Run(ctx context.Context, opts Options) error {
 }
 
 func factoryClient(config *rest.Config, base string) (dynamic.Interface, error) {
-	cfg := rest.CopyConfig(config)
-	if cfg.QPS <= 0 {
-		cfg.QPS = 50
-	}
-	if cfg.Burst <= 0 {
-		cfg.Burst = 100
-	}
+	cfg := kcpstore.Tuned(config, 0, 0)
 	cfg.Host = strings.TrimSuffix(base, "/") + ref.APIPathPrefix + "*"
 	client, err := dynamic.NewForConfig(cfg)
 	if err != nil {
@@ -107,19 +102,17 @@ func factoryClient(config *rest.Config, base string) (dynamic.Interface, error) 
 	return client, nil
 }
 
-func register(factory dynamicinformer.DynamicSharedInformerFactory, resource Resource, opts Options) {
+func register(factory dynamicinformer.DynamicSharedInformerFactory, resource Resource, opts Options) error {
 	informer := factory.ForResource(resource.GVR).Informer()
 	if opts.Indexers != nil {
-		indexers := toK8sIndexers(opts.Indexers)
-		if err := informer.GetIndexer().AddIndexers(indexers); err != nil {
-			opts.OnRegistrationError(resource.Kind, err)
-			return
+		if err := informer.GetIndexer().AddIndexers(toK8sIndexers(opts.Indexers)); err != nil {
+			return fmt.Errorf("informerwatch: index %s: %w", resource.Kind, err)
 		}
 	}
 	if opts.Set != nil {
 		opts.Set.Add(resource.Kind, informer.GetIndexer())
 	}
-	_, _ = informer.AddEventHandler(k8scache.ResourceEventHandlerFuncs{
+	_, err := informer.AddEventHandler(k8scache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj any) {
 			if opts.OnEvent != nil {
 				opts.OnEvent()
@@ -145,6 +138,7 @@ func register(factory dynamicinformer.DynamicSharedInformerFactory, resource Res
 			}
 		},
 	})
+	return err
 }
 
 func toK8sIndexers(indexers cache.Indexers) k8scache.Indexers {

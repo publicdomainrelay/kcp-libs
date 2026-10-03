@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/publicdomainrelay/kcp-libs/abc/queue"
-	"github.com/publicdomainrelay/kcp-libs/common/deno"
+	"github.com/publicdomainrelay/kcp-libs/common/denocomputer"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 )
 
@@ -53,7 +53,7 @@ func newTestAdmission(source *fakeSource) (*Admission, *[]ref.Ref) {
 		Now:        func() time.Time { return time.Unix(1000, 0) },
 		RunKind:    "policyworkflowrun",
 		ParentKind: "policyworkflowpod",
-		Lifecycle:  queue.Lifecycle{Running: func(phase string) bool { return phase == string(deno.PhaseRunning) }, Terminal: terminal},
+		Lifecycle:  queue.Lifecycle{Running: func(phase string) bool { return phase == string(denocomputer.PhaseRunning) }, Terminal: terminal},
 		Wake: func(_ string, r ref.Ref) {
 			*woken = append(*woken, r)
 		},
@@ -64,7 +64,7 @@ func TestAdmitGrantsALeaseAndRefusesTheSecond(t *testing.T) {
 	source := &fakeSource{
 		parent:   ref.New("root:alice", "default", "pod"),
 		capacity: queue.Capacity{Policy: queue.PolicyForbid},
-		runs:     []queue.Run{run("a", string(deno.PhasePending), 1), run("b", string(deno.PhasePending), 2)},
+		runs:     []queue.Run{run("a", string(denocomputer.PhasePending), 1), run("b", string(denocomputer.PhasePending), 2)},
 	}
 	admission, _ := newTestAdmission(source)
 	first, err := admission.Admit(context.Background(), source.runs[0])
@@ -78,7 +78,7 @@ func TestAdmitGrantsALeaseAndRefusesTheSecond(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if second.Allowed || second.Reason != deno.ReasonAtCapacity {
+	if second.Allowed || second.Reason != denocomputer.ReasonAtCapacity {
 		t.Fatalf("the second run = %+v", second)
 	}
 }
@@ -86,7 +86,7 @@ func TestAdmitGrantsALeaseAndRefusesTheSecond(t *testing.T) {
 func TestAdmitWithNoParentIsNotGated(t *testing.T) {
 	source := &fakeSource{parent: ref.New("root:alice", "default", "pod"), missing: true}
 	admission, _ := newTestAdmission(source)
-	result, err := admission.Admit(context.Background(), run("a", string(deno.PhasePending), 1))
+	result, err := admission.Admit(context.Background(), run("a", string(denocomputer.PhasePending), 1))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -99,15 +99,15 @@ func TestAdmitReportsABlocker(t *testing.T) {
 	source := &fakeSource{
 		parent:   ref.New("root:alice", "default", "pod"),
 		capacity: queue.Capacity{Policy: queue.PolicyForbid},
-		blocker:  &queue.Blocker{Reason: deno.ReasonEngineNotReady, Message: "no endpoint"},
-		runs:     []queue.Run{run("a", string(deno.PhasePending), 1)},
+		blocker:  &queue.Blocker{Reason: denocomputer.ReasonEngineNotReady, Message: "no endpoint"},
+		runs:     []queue.Run{run("a", string(denocomputer.PhasePending), 1)},
 	}
 	admission, _ := newTestAdmission(source)
 	result, err := admission.Admit(context.Background(), source.runs[0])
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !result.Gated || result.Allowed || result.Reason != deno.ReasonEngineNotReady {
+	if !result.Gated || result.Allowed || result.Reason != denocomputer.ReasonEngineNotReady {
 		t.Fatalf("blocked admission = %+v", result)
 	}
 	if admission.Leases().Len() != 0 {
@@ -120,9 +120,9 @@ func TestWakeEnqueuesCapacityManyPlusTheParent(t *testing.T) {
 		parent:   ref.New("root:alice", "default", "pod"),
 		capacity: queue.Capacity{Policy: queue.PolicyForbid},
 		runs: []queue.Run{
-			run("a", string(deno.PhasePending), 1),
-			run("b", string(deno.PhasePending), 2),
-			run("c", string(deno.PhasePending), 3),
+			run("a", string(denocomputer.PhasePending), 1),
+			run("b", string(denocomputer.PhasePending), 2),
+			run("c", string(denocomputer.PhasePending), 3),
 		},
 	}
 	admission, woken := newTestAdmission(source)
@@ -144,7 +144,7 @@ func TestReleaseDropsTheLease(t *testing.T) {
 	source := &fakeSource{
 		parent:   ref.New("root:alice", "default", "pod"),
 		capacity: queue.Capacity{Policy: queue.PolicyForbid},
-		runs:     []queue.Run{run("a", string(deno.PhasePending), 1)},
+		runs:     []queue.Run{run("a", string(denocomputer.PhasePending), 1)},
 	}
 	admission, _ := newTestAdmission(source)
 	if _, err := admission.Admit(context.Background(), source.runs[0]); err != nil {

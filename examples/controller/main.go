@@ -9,11 +9,10 @@ import (
 	"time"
 
 	"github.com/publicdomainrelay/kcp-libs/abc/cache"
-	"github.com/publicdomainrelay/kcp-libs/abc/driver"
 	"github.com/publicdomainrelay/kcp-libs/abc/reconcile"
 	abcstore "github.com/publicdomainrelay/kcp-libs/abc/store"
 	"github.com/publicdomainrelay/kcp-libs/common/condition"
-	"github.com/publicdomainrelay/kcp-libs/common/deno"
+	"github.com/publicdomainrelay/kcp-libs/common/denocomputer"
 	"github.com/publicdomainrelay/kcp-libs/common/logging"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 	"github.com/publicdomainrelay/kcp-libs/common/statuspatch"
@@ -61,54 +60,55 @@ func decide(_ context.Context, o observed) (reconcile.Result[status], error) {
 	result.Status.Siblings = o.Siblings
 	switch o.Widget.Status.Phase {
 	case "":
-		result.Phase = string(deno.PhasePending)
+		result.Phase = string(denocomputer.PhasePending)
 		result.Add(reconcile.KindStart)
-	case string(deno.PhasePending):
-		result.Phase = string(deno.PhaseRunning)
+	case string(denocomputer.PhasePending):
+		result.Phase = string(denocomputer.PhaseRunning)
 		result.Status.Observed = 0
-	case string(deno.PhaseRunning):
+	case string(denocomputer.PhaseRunning):
 		result.Status.Observed++
 		if result.Status.Observed >= o.Widget.Spec.Steps {
-			result.Phase = string(deno.PhaseSucceeded)
+			result.Phase = string(denocomputer.PhaseSucceeded)
 		}
 	default:
 		return result, nil
 	}
 	result.Status.Conditions = condition.Copy(result.Status.Conditions)
-	if result.Phase == string(deno.PhaseSucceeded) {
-		condition.SetTrue(&result.Status.Conditions, 1, deno.ConditionComplete, "Complete", "every step ran")
+	if result.Phase == string(denocomputer.PhaseSucceeded) {
+		condition.SetTrue(&result.Status.Conditions, 1, denocomputer.ConditionComplete, "Complete", "every step ran")
 	} else {
-		condition.SetFalse(&result.Status.Conditions, 1, deno.ConditionComplete, "Running", "steps remain")
+		condition.SetFalse(&result.Status.Conditions, 1, denocomputer.ConditionComplete, "Running", "steps remain")
 	}
 	result.RequeueAfter = time.Millisecond
 	return result, nil
 }
 
-func handlerFor(set *cache.Set, resource *kcpstore.Resource[widget]) driver.Handler {
-	return driver.HandlerFunc(func(ctx context.Context, key driver.Key) (time.Duration, bool, error) {
-		obj, err := resource.Get(ctx, key.Ref)
-		if err != nil {
-			if kcpstore.IsNotFound(err) {
-				return 0, true, nil
+func handlerFor(set *cache.Set, resource *kcpstore.Resource[widget]) reconcile.Handler {
+	return reconcile.Bridge[observed, status]{
+		Read: func(ctx context.Context, key reconcile.Key) (observed, error) {
+			obj, err := resource.Get(ctx, key.Ref)
+			if err != nil {
+				if kcpstore.IsNotFound(err) {
+					return observed{}, reconcile.ErrGone
+				}
+				return observed{}, err
 			}
-			return 0, false, err
-		}
-		group := obj.Metadata.Labels[parentLabel]
-		siblings := int32(len(set.ByIndex("widget", cache.ByClusterParent,
-			ref.Key(key.Ref.LogicalCluster, key.Ref.Namespace, group))))
-
-		result, err := reconcile.Func[observed, status](decide).Reconcile(ctx, observed{Widget: *obj, Siblings: siblings})
-		if err != nil {
-			return 0, false, err
-		}
-		terminal := deno.TerminalPolicyWorkflow(result.Phase)
-		next := status{
-			Phase:      result.Phase,
-			Observed:   result.Status.Observed,
-			Siblings:   result.Status.Siblings,
-			Conditions: result.Status.Conditions,
-		}
-		if !abcstore.Unchanged(next, obj.Status) {
+			group := obj.Metadata.Labels[parentLabel]
+			siblings := int32(len(set.ByIndex("widget", cache.ByClusterParent,
+				ref.Key(key.Ref.LogicalCluster, key.Ref.Namespace, group))))
+			return observed{Widget: *obj, Siblings: siblings}, nil
+		},
+		Decider: reconcile.Func[observed, status](decide),
+		Apply: func(ctx context.Context, key reconcile.Key, o observed, result reconcile.Result[status]) error {
+			next := status{
+				Phase:      result.Phase,
+				Observed:   result.Status.Observed,
+				Siblings:   result.Status.Siblings,
+				Conditions: result.Status.Conditions,
+			}
+			if abcstore.Unchanged(next, o.Widget.Status) {
+				return nil
+			}
 			patch, err := statuspatch.Merge(map[string]any{
 				"phase":      next.Phase,
 				"observed":   next.Observed,
@@ -116,14 +116,12 @@ func handlerFor(set *cache.Set, resource *kcpstore.Resource[widget]) driver.Hand
 				"conditions": statuspatch.Optional(next.Conditions),
 			})
 			if err != nil {
-				return 0, false, err
+				return err
 			}
-			if err := resource.PatchStatus(ctx, key.Ref.WithResourceVersion(obj.Metadata.ResourceVersion), patch); err != nil {
-				return 0, false, err
-			}
-		}
-		return result.RequeueAfter, terminal, nil
-	})
+			return resource.PatchStatus(ctx, key.Ref.WithResourceVersion(o.Widget.Metadata.ResourceVersion), patch)
+		},
+		Terminal: denocomputer.TerminalPolicyWorkflow,
+	}
 }
 
 func Run(ctx context.Context, out io.Writer) error {
@@ -159,7 +157,6 @@ func Run(ctx context.Context, out io.Writer) error {
 	registry := metrics.New("example")
 	watched := cache.NewSet()
 	handler := handlerFor(watched, resource)
-	var _ driver.Handler = handler
 
 	for _, name := range []string{"alpha", "beta"} {
 		if err := seed(ctx, cluster.ConsumerCluster, resource, name, 1); err != nil {
@@ -173,7 +170,7 @@ func Run(ctx context.Context, out io.Writer) error {
 		Indexers: cache.IndexersFor(parentLabel, "", ""),
 		Set:      watched,
 		Handler:  handler,
-		Policy: driver.Policy{
+		Policy: reconcile.Policy{
 			Interval:          time.Second,
 			MinTransitionPoll: 10 * time.Millisecond,
 			ClampKinds:        map[string]bool{"widget": true},
@@ -214,7 +211,7 @@ func Run(ctx context.Context, out io.Writer) error {
 }
 
 func succeeded(obj widget) bool {
-	return obj.Status.Phase == string(deno.PhaseSucceeded)
+	return obj.Status.Phase == string(denocomputer.PhaseSucceeded)
 }
 
 func seed(ctx context.Context, cluster string, resource *kcpstore.Resource[widget], name string, steps int32) error {

@@ -17,6 +17,7 @@ import (
 
 	"github.com/publicdomainrelay/kcp-libs/common/kcp"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
+	"github.com/publicdomainrelay/kcp-libs/common/statuspatch"
 )
 
 type Options struct {
@@ -29,6 +30,10 @@ type Options struct {
 	QPS float32
 
 	Burst int
+}
+
+func (o Options) tuned(cfg *rest.Config) *rest.Config {
+	return Tuned(cfg, o.QPS, o.Burst)
 }
 
 const DefaultQPS float32 = 50
@@ -68,9 +73,9 @@ func New(opts Options) (*Store, error) {
 	if opts.Host == "" {
 		return nil, errors.New("kcpstore: Host is required")
 	}
-	cfg := Tuned(&rest.Config{}, opts.QPS, opts.Burst)
+	cfg := opts.tuned(&rest.Config{})
 	if opts.RestConfig != nil {
-		cfg = Tuned(opts.RestConfig, opts.QPS, opts.Burst)
+		cfg = opts.tuned(opts.RestConfig)
 	}
 	cfg.Host = ref.BaseHost(opts.Host)
 	cfg.ContentType = "application/json"
@@ -175,18 +180,6 @@ func (r *Resource[T]) List(ctx context.Context, logicalCluster string) ([]T, err
 	return decodeList[T](raw)
 }
 
-func (r *Resource[T]) ListNamespaced(ctx context.Context, logicalCluster, namespace string) ([]T, error) {
-	c, err := r.client(logicalCluster)
-	if err != nil {
-		return nil, err
-	}
-	raw, err := c.Get().Namespace(namespace).Resource(r.gvr.Resource).Do(ctx).Raw()
-	if err != nil {
-		return nil, fmt.Errorf("kcpstore: list %s in %s/%s: %w", r.gvr.Resource, logicalCluster, namespace, err)
-	}
-	return decodeList[T](raw)
-}
-
 func (r *Resource[T]) Create(ctx context.Context, logicalCluster string, obj *T) error {
 	c, err := r.client(logicalCluster)
 	if err != nil {
@@ -228,8 +221,12 @@ func (r *Resource[T]) PatchStatus(ctx context.Context, target ref.Ref, patch []b
 	if err != nil {
 		return err
 	}
+	body, err := statusBody(patch, target.ResourceVersion)
+	if err != nil {
+		return err
+	}
 	response, err := c.Patch(mergePatch).SubResource("status").Namespace(target.Namespace).Resource(r.gvr.Resource).
-		Name(target.Name).Body(patch).Do(ctx).Raw()
+		Name(target.Name).Body(body).Do(ctx).Raw()
 	if err != nil {
 		return fmt.Errorf("kcpstore: write %s status for %s in %s: %w%s", r.gvr.Resource, target.Name, target.LogicalCluster, err, detail(response))
 	}
@@ -254,15 +251,11 @@ func (r *Resource[T]) Finalizers(ctx context.Context, target ref.Ref) ([]string,
 	if err != nil {
 		return nil, err
 	}
-	var obj struct {
-		Metadata struct {
-			Finalizers []string `json:"finalizers"`
-		} `json:"metadata"`
+	finalizers, err := statuspatch.FinalizersOf(raw)
+	if err != nil {
+		return nil, fmt.Errorf("kcpstore: %w", err)
 	}
-	if err := json.Unmarshal(raw, &obj); err != nil {
-		return nil, fmt.Errorf("kcpstore: decode finalizers for %s: %w", target.Name, err)
-	}
-	return obj.Metadata.Finalizers, nil
+	return finalizers, nil
 }
 
 func (r *Resource[T]) RemoveFinalizer(ctx context.Context, target ref.Ref, finalizer string) error {

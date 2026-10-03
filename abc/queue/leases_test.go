@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/publicdomainrelay/kcp-libs/common/deno"
+	"github.com/publicdomainrelay/kcp-libs/common/denocomputer"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 )
 
@@ -38,8 +38,8 @@ func TestLeasesReleaseOnRunningOrTerminal(t *testing.T) {
 	leases.Grant(second, parent, now)
 
 	observed := map[ref.Ref]string{
-		first:  string(deno.PhaseRunning),
-		second: string(deno.PhaseSucceeded),
+		first:  string(denocomputer.PhaseRunning),
+		second: string(denocomputer.PhaseSucceeded),
 	}
 	if held := leases.Count(parent, observed, now, testLifecycle); held != 0 {
 		t.Fatalf("held = %d, want 0 once both are observed", held)

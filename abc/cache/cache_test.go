@@ -5,7 +5,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	"github.com/publicdomainrelay/kcp-libs/common/deno"
+	"github.com/publicdomainrelay/kcp-libs/common/denocomputer"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 )
 
@@ -21,7 +21,7 @@ func (f *fakeIndexer) GetByKey(key string) (any, bool, error) {
 func (f *fakeIndexer) ByIndex(indexName, indexedValue string) ([]any, error) {
 	var out []any
 	for key, obj := range f.objects {
-		values, err := IndexersFor(deno.PolicyWorkflowPodLabel, deno.JobRunLabel, "policyWorkflowPod")[indexName](obj)
+		values, err := IndexersFor(denocomputer.PolicyWorkflowPodLabel, denocomputer.JobRunLabel, "policyWorkflowPod")[indexName](obj)
 		if err != nil {
 			return nil, err
 		}
@@ -59,13 +59,13 @@ type runObject struct {
 
 func object(name, namespace, cluster, parent, phase string) *unstructured.Unstructured {
 	obj := map[string]any{
-		"apiVersion": "deno.computer/v1alpha1",
+		"apiVersion": "denocomputer.computer/v1alpha1",
 		"kind":       "PolicyWorkflowRun",
 		"metadata": map[string]any{
 			"name":        name,
 			"namespace":   namespace,
 			"annotations": map[string]any{"kcp.io/cluster": cluster},
-			"labels":      map[string]any{deno.PolicyWorkflowPodLabel: parent},
+			"labels":      map[string]any{denocomputer.PolicyWorkflowPodLabel: parent},
 		},
 		"status": map[string]any{"phase": phase},
 	}
@@ -106,7 +106,7 @@ func TestDecodeIntoConsumerTypes(t *testing.T) {
 	if decoded.Metadata.Name != "run-a" || decoded.Status.Phase != "Running" {
 		t.Fatalf("decoded = %+v", decoded)
 	}
-	if decoded.Metadata.Labels[deno.PolicyWorkflowPodLabel] != "pod" {
+	if decoded.Metadata.Labels[denocomputer.PolicyWorkflowPodLabel] != "pod" {
 		t.Fatalf("labels = %v", decoded.Metadata.Labels)
 	}
 	missing, err := Decode[runObject](nil)
@@ -137,9 +137,9 @@ func TestObjectHelpers(t *testing.T) {
 }
 
 func TestIndexersForClusterNameAndJob(t *testing.T) {
-	indexers := IndexersFor(deno.PolicyWorkflowPodLabel, deno.JobRunLabel, "policyWorkflowPod")
+	indexers := IndexersFor(denocomputer.PolicyWorkflowPodLabel, denocomputer.JobRunLabel, "policyWorkflowPod")
 	obj := object("run-a", "default", "root:alice", "pod", "Running")
-	obj.SetLabels(map[string]string{deno.JobRunLabel: "job-1"})
+	obj.SetLabels(map[string]string{denocomputer.JobRunLabel: "job-1"})
 
 	values, err := indexers[ByClusterName](obj)
 	if err != nil || len(values) != 1 || values[0] != ref.Key("root:alice", "default", "run-a") {

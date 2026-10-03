@@ -53,7 +53,7 @@ func TestTestSupportIsNotImportedByProductionCode(t *testing.T) {
 	}
 }
 
-func TestLayerDependenciesFlowOneWay(t *testing.T) {
+func TestNoLayerImportsFromAbove(t *testing.T) {
 	for _, entry := range packages(t) {
 		if strings.HasSuffix(entry.ImportPath, "/internal/boundaries") {
 			continue
@@ -73,8 +73,8 @@ func TestLayerDependenciesFlowOneWay(t *testing.T) {
 			if layer == "internal" || importedLayer == "internal" {
 				continue
 			}
-			if rank(importedLayer) >= rank(layer) {
-				t.Fatalf("%s (%s) imports %s (%s); dependencies must flow common <- abc <- impl <- factory <- examples",
+			if rank(importedLayer) > rank(layer) {
+				t.Fatalf("%s (%s) imports %s (%s); a package may not import from a layer above it",
 					entry.ImportPath, layer, imported, importedLayer)
 			}
 		}

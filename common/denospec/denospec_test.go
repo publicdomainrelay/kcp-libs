@@ -70,3 +70,29 @@ func TestEffectiveRestartPolicy(t *testing.T) {
 		t.Fatal("an explicit policy is preserved")
 	}
 }
+
+func TestProbeCommandCarriesTheShimsLease(t *testing.T) {
+	command := ProbeCommand("/runs/.kcpdns/shim.ts", "/runs/.kcpdns/probe.ts", "pds.default.alice.svc.kcp.local", "/health",
+		[]string{"KCP_SERVICE_DOMAIN", "KCP_DNS_TABLE"})
+	joined := strings.Join(command, " ")
+	for _, want := range []string{
+		"run",
+		"--allow-env=KCP_SERVICE_DOMAIN,KCP_DNS_TABLE",
+		"--allow-net",
+		"--preload /runs/.kcpdns/shim.ts",
+		"/runs/.kcpdns/probe.ts",
+		"pds.default.alice.svc.kcp.local",
+		"/health",
+	} {
+		if !strings.Contains(joined, want) {
+			t.Fatalf("probe command %q must contain %q", joined, want)
+		}
+	}
+}
+
+func TestProbeCommandDefaultsThePath(t *testing.T) {
+	command := ProbeCommand("shim", "probe", "name", "", nil)
+	if command[len(command)-1] != "/" {
+		t.Fatalf("path = %q, want /", command[len(command)-1])
+	}
+}

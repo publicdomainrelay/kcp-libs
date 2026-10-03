@@ -1,11 +1,12 @@
 package kcpstore
 
 import (
-	"encoding/json"
 	"fmt"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
+
+	"github.com/publicdomainrelay/kcp-libs/common/statuspatch"
 )
 
 var (
@@ -23,31 +24,21 @@ func IsConflict(err error) bool {
 }
 
 func StatusPatch(status map[string]any) ([]byte, error) {
-	body, err := json.Marshal(map[string]any{"status": status})
+	body, err := statuspatch.Merge(status)
 	if err != nil {
-		return nil, fmt.Errorf("kcpstore: encode status: %w", err)
+		return nil, fmt.Errorf("kcpstore: %w", err)
 	}
 	return body, nil
 }
 
+func statusBody(patch []byte, resourceVersion string) ([]byte, error) {
+	return statuspatch.WithResourceVersion(patch, resourceVersion)
+}
+
 func removeFinalizerPatch(current []string, dropped string) ([]byte, error) {
-	remaining := make([]string, 0, len(current))
-	for _, finalizer := range current {
-		if finalizer != dropped {
-			remaining = append(remaining, finalizer)
-		}
-	}
-	if len(remaining) == len(current) {
-		return nil, nil
-	}
-	return json.Marshal([]map[string]any{
-		{"op": "test", "path": "/metadata/finalizers", "value": current},
-		{"op": "add", "path": "/metadata/finalizers", "value": remaining},
-	})
+	return statuspatch.FinalizerRemove(current, dropped)
 }
 
 func addFinalizerPatch(finalizers []string) ([]byte, error) {
-	return json.Marshal([]map[string]any{
-		{"op": "add", "path": "/metadata/finalizers", "value": finalizers},
-	})
+	return statuspatch.FinalizerAdd(finalizers)
 }

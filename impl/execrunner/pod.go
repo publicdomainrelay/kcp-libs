@@ -71,10 +71,10 @@ func NewPod(opts PodOptions) (*Pod, error) {
 func (p *Pod) Start(_ context.Context, req runner.PodRequest) (string, error) {
 	files := map[string][]byte{"main.ts": []byte(req.Script)}
 	if req.DenoJSON != "" {
-		files["deno.json"] = []byte(req.DenoJSON)
+		files["denocomputer.json"] = []byte(req.DenoJSON)
 	}
 	if req.DenoLock != "" {
-		files["deno.lock"] = []byte(req.DenoLock)
+		files["denocomputer.lock"] = []byte(req.DenoLock)
 	}
 	if bundle := p.trustBundle(); len(bundle) > 0 {
 		files["ca.pem"] = bundle

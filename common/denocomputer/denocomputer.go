@@ -1,7 +1,7 @@
-package deno
+package denocomputer
 
 const (
-	Group = "deno.computer"
+	Group = "denocomputer.computer"
 
 	Version = "v1alpha1"
 
@@ -9,29 +9,29 @@ const (
 )
 
 const (
-	PolicyWorkflowPodLabel = "deno.computer/policyworkflowpod"
+	PolicyWorkflowPodLabel = "denocomputer.computer/policyworkflowpod"
 
-	JobRunLabel = "deno.computer/job"
+	JobRunLabel = "denocomputer.computer/job"
 
-	TriggerLabel = "deno.computer/trigger"
+	TriggerLabel = "denocomputer.computer/trigger"
 )
 
 const (
-	FinalizerDenoRun = "denorun.deno.computer/run"
+	FinalizerDenoRun = "denorun.denocomputer.computer/run"
 
-	FinalizerDenoPod = "denopod.deno.computer/run"
+	FinalizerDenoPod = "denopod.denocomputer.computer/run"
 
-	FinalizerDenoJob = "denojob.deno.computer/run"
+	FinalizerDenoJob = "denojob.denocomputer.computer/run"
 
-	FinalizerPolicyEngine = "policyengine.deno.computer/run"
+	FinalizerPolicyEngine = "policyengine.denocomputer.computer/run"
 
-	FinalizerPolicyWorkflowRun = "policyworkflowrun.deno.computer/run"
+	FinalizerPolicyWorkflowRun = "policyworkflowrun.denocomputer.computer/run"
 
-	FinalizerPolicyWorkflowPod = "policyworkflowpod.deno.computer/run"
+	FinalizerPolicyWorkflowPod = "policyworkflowpod.denocomputer.computer/run"
 
-	FinalizerRunTrigger = "runtrigger.deno.computer/run"
+	FinalizerRunTrigger = "runtrigger.denocomputer.computer/run"
 
-	FinalizerOpenBao = "openbao.deno.computer/namespace"
+	FinalizerOpenBao = "openbao.denocomputer.computer/namespace"
 )
 
 const (
@@ -61,23 +61,6 @@ const (
 
 	ReasonQueued = "Queued"
 )
-
-type ConcurrencyPolicy string
-
-const (
-	ConcurrencyAllow ConcurrencyPolicy = "Allow"
-
-	ConcurrencyForbid ConcurrencyPolicy = "Forbid"
-
-	ConcurrencyReplace ConcurrencyPolicy = "Replace"
-)
-
-func EffectiveConcurrencyPolicy(policy ConcurrencyPolicy) ConcurrencyPolicy {
-	if policy == "" {
-		return ConcurrencyForbid
-	}
-	return policy
-}
 
 type Phase string
 

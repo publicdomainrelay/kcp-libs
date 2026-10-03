@@ -1,11 +1,14 @@
-package driver
+package reconcile
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 )
+
+var ErrGone = errors.New("reconcile: the observed object no longer exists")
 
 type Key struct {
 	Kind string
@@ -62,13 +65,40 @@ func (p Policy) Next(key Key, after time.Duration, terminal bool) (time.Duration
 	return after, true
 }
 
-func (p Policy) ConflictAfter(key Key) time.Duration {
-	if p.ClampKinds[key.Kind] {
-		return p.Clamp()
-	}
-	return p.Default()
+func (p Policy) ConflictAfter() time.Duration {
+	return p.Clamp()
 }
 
 const DefaultRequeueAfter = 2 * time.Second
 
 const DefaultMinTransitionPoll = 25 * time.Millisecond
+
+type Bridge[Observed, Status any] struct {
+	Read func(ctx context.Context, key Key) (Observed, error)
+
+	Decider Reconciler[Observed, Status]
+
+	Apply func(ctx context.Context, key Key, observed Observed, result Result[Status]) error
+
+	Terminal func(phase string) bool
+}
+
+func (b Bridge[Observed, Status]) Process(ctx context.Context, key Key) (time.Duration, bool, error) {
+	observed, err := b.Read(ctx, key)
+	if err != nil {
+		if errors.Is(err, ErrGone) {
+			return 0, true, nil
+		}
+		return 0, false, err
+	}
+	result, err := b.Decider.Reconcile(ctx, observed)
+	if err != nil {
+		return 0, false, err
+	}
+	if b.Apply != nil {
+		if err := b.Apply(ctx, key, observed, result); err != nil {
+			return 0, false, err
+		}
+	}
+	return result.RequeueAfter, b.Terminal(result.Phase), nil
+}

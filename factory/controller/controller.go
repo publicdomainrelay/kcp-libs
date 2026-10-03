@@ -15,7 +15,7 @@ import (
 	"k8s.io/client-go/util/workqueue"
 
 	"github.com/publicdomainrelay/kcp-libs/abc/cache"
-	"github.com/publicdomainrelay/kcp-libs/abc/driver"
+	"github.com/publicdomainrelay/kcp-libs/abc/reconcile"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 	"github.com/publicdomainrelay/kcp-libs/impl/informerwatch"
 	"github.com/publicdomainrelay/kcp-libs/impl/metrics"
@@ -32,9 +32,9 @@ type Options struct {
 
 	Reactor informerwatch.Reactor
 
-	Handler driver.Handler
+	Handler reconcile.Handler
 
-	Policy driver.Policy
+	Policy reconcile.Policy
 
 	Workers int
 
@@ -52,7 +52,7 @@ type Controller struct {
 
 	set *cache.Set
 
-	queue workqueue.TypedRateLimitingInterface[driver.Key]
+	queue workqueue.TypedRateLimitingInterface[reconcile.Key]
 
 	reconciles atomic.Uint64
 
@@ -82,10 +82,10 @@ func New(opts Options) (*Controller, error) {
 		return nil, errors.New("controller: at least one source is required")
 	}
 	if opts.Policy.Interval <= 0 {
-		opts.Policy.Interval = driver.DefaultRequeueAfter
+		opts.Policy.Interval = reconcile.DefaultRequeueAfter
 	}
 	if opts.Policy.MinTransitionPoll <= 0 {
-		opts.Policy.MinTransitionPoll = driver.DefaultMinTransitionPoll
+		opts.Policy.MinTransitionPoll = reconcile.DefaultMinTransitionPoll
 	}
 	if opts.Workers <= 0 {
 		opts.Workers = DefaultWorkers()
@@ -108,7 +108,7 @@ func New(opts Options) (*Controller, error) {
 	c := &Controller{
 		opts:  opts,
 		set:   opts.Set,
-		queue: workqueue.NewTypedRateLimitingQueue(workqueue.DefaultTypedControllerRateLimiter[driver.Key]()),
+		queue: workqueue.NewTypedRateLimitingQueue(workqueue.DefaultTypedControllerRateLimiter[reconcile.Key]()),
 	}
 	c.reconcileSeconds = opts.Metrics.Summary("reconcile_seconds", "time spent inside a reconcile")
 	c.queueDepth = opts.Metrics.Gauge("queue_depth", "work keys that are ready to reconcile")
@@ -129,7 +129,7 @@ func (c *Controller) Lookup() informerwatch.Lookup {
 }
 
 func (c *Controller) Enqueue(kind string, r ref.Ref) {
-	c.queue.Add(driver.Key{Kind: kind, Ref: ref.New(r.LogicalCluster, r.Namespace, r.Name)})
+	c.queue.Add(reconcile.Key{Kind: kind, Ref: ref.New(r.LogicalCluster, r.Namespace, r.Name)})
 }
 
 func (c *Controller) QueueDepth() int {
@@ -223,7 +223,7 @@ func (c *Controller) worker(ctx context.Context) {
 				if c.opts.IsConflict(err) {
 					c.conflicts.Add(1)
 					c.queue.Forget(key)
-					c.queue.AddAfter(key, c.opts.Policy.ConflictAfter(key))
+					c.queue.AddAfter(key, c.opts.Policy.ConflictAfter())
 					return
 				}
 				c.errors.Add(1)

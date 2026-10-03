@@ -2,6 +2,7 @@ package reconcile
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -150,3 +151,59 @@ func TestFuncAdaptsAFunction(t *testing.T) {
 		t.Fatal("Func must call the function it wraps")
 	}
 }
+
+func TestBridgeReadsDecidesAndApplies(t *testing.T) {
+	applied := false
+	bridge := Bridge[runObserved, runStatus]{
+		Read: func(_ context.Context, key Key) (runObserved, error) {
+			if key.Ref.Name == "gone" {
+				return runObserved{}, ErrGone
+			}
+			return runObserved{Running: true}, nil
+		},
+		Decider: Func[runObserved, runStatus](decideRun),
+		Apply: func(_ context.Context, _ Key, observed runObserved, result Result[runStatus]) error {
+			if !observed.Running {
+				t.Fatal("Apply must receive what Read read")
+			}
+			applied = true
+			return nil
+		},
+		Terminal: func(phase string) bool { return phase == "Succeeded" || phase == "Failed" },
+	}
+
+	key := Key{Kind: "run", Ref: ref.New("root:alice", "default", "one")}
+	after, terminal, err := bridge.Process(context.Background(), key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if terminal || after != 0 {
+		t.Fatalf("a running run is not terminal: (%v, %v)", after, terminal)
+	}
+
+	gone := Key{Kind: "run", Ref: ref.New("root:alice", "default", "gone")}
+	_, terminal, err = bridge.Process(context.Background(), gone)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !terminal {
+		t.Fatal("an object that is gone must not be retried")
+	}
+	if !applied {
+		t.Fatal("the bridge must apply the result")
+	}
+}
+
+func TestBridgeReportsAFailedApply(t *testing.T) {
+	bridge := Bridge[runObserved, runStatus]{
+		Read:     func(context.Context, Key) (runObserved, error) { return runObserved{}, nil },
+		Decider:  Func[runObserved, runStatus](decideRun),
+		Apply:    func(context.Context, Key, runObserved, Result[runStatus]) error { return errApply },
+		Terminal: func(string) bool { return false },
+	}
+	if _, _, err := bridge.Process(context.Background(), Key{}); !errors.Is(err, errApply) {
+		t.Fatalf("err = %v, want the apply failure to surface", err)
+	}
+}
+
+var errApply = errors.New("the status write failed")

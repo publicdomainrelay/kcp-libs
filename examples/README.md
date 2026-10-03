@@ -21,9 +21,9 @@ cluster for all six, because kcp's own startup is about ten seconds and is the
 same every time; point `KCP_LIBS_KUBECONFIG` at an existing cluster to do the
 same by hand.
 
-Every example declares the same permissive `Widget` and then gives it its own
-spec and status: `livekcp.Object[Spec, Status]` is the envelope, so an example
-only writes the fields its story needs.
+The three that need a cluster share one permissive object, a `Widget`:
+`livekcp.Object[Spec, Status]` is the envelope, so an example writes only the
+fields its story needs. The other three need no cluster and never touch it.
 
 The other three need no cluster: `workloads` runs real processes, and `pki` and
 `policy` talk to a fake vault and a fake policy engine -- separate products
@@ -32,9 +32,10 @@ official `github.com/openbao/openbao/api/v2`, and the fake vault answers the
 same wire protocol that client speaks.
 
 `go test ./examples/...` runs all six and asserts the lines they print. The
-three that need kcp skip unless one is running or `KCP_LIBS_REQUIRE_LIVE=1` is
-set. `make examples` starts one cluster for all six and takes about 17s; the
-three that need it take 1 - 2s each once it is up.
+three that need kcp skip unless `KCP_LIBS_REQUIRE_LIVE=1` is set, which
+`make test-live` and `make examples` set for you. `make examples` starts one
+cluster for all six and takes about 17s; the three that need it take 1 - 2s
+each once it is up.
 
 ## The shape every example has
 
@@ -54,11 +55,13 @@ task after a few polls.
 
 ## The cluster
 
-`internal/livekcp` starts kcp in a temp directory, applies an
-`APIResourceSchema` and an `APIExport` for one example kind (`Widget`, in
-`example.computer/v1alpha1`, with permissive `spec` and `status`), creates a
-provider workspace and two consumer workspaces bound to that export, and waits
-for the bindings. Everything the examples create is a `Widget` there.
+`internal/livekcp` starts kcp in a temp directory, applies APIResourceSchemas
+and APIExports for two example kinds (`Widget` and `Gadget`, in
+`example.computer/v1alpha1`, each with permissive `spec` and `status`),
+creates a provider workspace and two consumer workspaces bound to both
+exports, and waits for the bindings. Two exports rather than one because a
+resource may only be watched against the export that serves it, and the
+controller test proves the driver can tell them apart.
 
 That is why `examples/controller` shows a real watch-driven controller: the
 virtual workspace URL comes from the export's endpoint slice, the wildcard
@@ -72,8 +75,7 @@ fails the build if anything outside `examples/` and tests reaches into
 
 | Package | Reach for it when | Shown in |
 |---|---|---|
-| `abc/reconcile` | you are writing a decider: pure `Observed -> Result`, no I/O | `controller` `decide` |
-| `abc/driver` | you need the requeue rules: interval, clamp, conflict, terminal | `controller` `Policy` |
+| `abc/reconcile` | you are writing a decider, or you need the requeue rules; `Bridge` turns one into the other | `controller` `Bridge`, `Policy` |
 | `abc/cache` | you want the informer's objects by index instead of a list, and you own the set | `controller` `cache.NewSet`, `IndexersFor`, `ByIndex` |
 | `factory/controller` | you want informers plus a workqueue plus a worker pool, wired | `controller` `controller.New` |
 | `impl/kcpstore` | you need to read or write a CRD on kcp, typed or raw | `controller`, `admission`, `dns` |
@@ -97,19 +99,21 @@ fails the build if anything outside `examples/` and tests reaches into
 | `abc/policy` | you submit a workflow and poll for its verdict | `policy` |
 | `impl/policyclient` | the gha-lite engine's HTTP API, verdict unwrapping included | `policy` `policyclient.New` |
 | `common/outputs` | a JSON output map has to become flat strings | `impl/policyclient` (see `policy`) |
-| `factory/dns` | a workload resolves a peer by name, and tokens are per workspace | `dns` |
+| `factory/servicenames` | a workload resolves a peer by name, and tokens are per workspace | `dns` |
 | `common/kcp` | a workspace path has to become DNS labels, or back | `dns` `ServiceLabels` |
 | `common/ref` | you need the identity of an object: cluster, namespace, name | `controller`, `admission`, `dns`, `workloads` |
 | `common/statuspatch` | the status write is a merge patch, or a finalizer patch | `controller`, `admission` |
 | `common/condition` | a status carries `metav1.Condition` and you edit one | `controller` `decide` |
-| `common/deno` | you are working in the `deno.computer` vocabulary | `controller` phases and condition |
+| `common/denocomputer` | you are working in the `deno.computer` vocabulary | `controller` phases and condition |
 | `common/logging` | a JSON slog logger, or one that throws output away | `controller` `logging.New` |
 | `abc/store` | the interfaces `impl/kcpstore` implements, and `Same` | `controller` |
 | `internal/livekcp` | you want the examples and live tests to have a real kcp | `controller`, `admission`, `dns` |
 
 ## What each example is about
 
-**`controller`** — the whole loop. A `Widget` is created in a workspace, the
+**`controller`** — the whole loop, and the only example that watches two
+exports at once: widgets from one, gadgets from the other, each on its own
+`Source`. A `Widget` is created in a workspace, the
 informer sees it, the workqueue delivers the key, the decider says what phase
 it should be in, and the handler patches the status. It shows the difference
 between the list path (two widgets seeded before the controller starts) and the

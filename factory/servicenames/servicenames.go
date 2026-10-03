@@ -1,4 +1,4 @@
-package dns
+package servicenames
 
 import (
 	"context"
@@ -25,8 +25,6 @@ const (
 	DomainKey = "KCP_SERVICE_DOMAIN"
 
 	NamespaceKey = "KCP_NAMESPACE"
-
-	ShimKey = "KCP_SHIM"
 )
 
 type Source interface {

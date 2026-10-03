@@ -9,7 +9,7 @@ import (
 
 	"github.com/publicdomainrelay/kcp-libs/abc/queue"
 	"github.com/publicdomainrelay/kcp-libs/abc/runref"
-	"github.com/publicdomainrelay/kcp-libs/common/deno"
+	"github.com/publicdomainrelay/kcp-libs/common/denocomputer"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 	"github.com/publicdomainrelay/kcp-libs/common/statuspatch"
 	"github.com/publicdomainrelay/kcp-libs/factory/admission"
@@ -139,7 +139,7 @@ func Run(ctx context.Context, out io.Writer) error {
 	batches := kcpstore.Of[batch](store, livekcp.WidgetGVR)
 	batchObject := livekcp.NewObject[batchSpec, batchStatus](namespace, batchName)
 	batchObject.Metadata.Labels = map[string]string{roleLabel: "batch"}
-	batchObject.Spec.ConcurrencyPolicy = string(deno.ConcurrencyAllow)
+	batchObject.Spec.ConcurrencyPolicy = string(queue.PolicyAllow)
 	maxItems := int32(maxConcurrent)
 	batchObject.Spec.MaxConcurrent = &maxItems
 	if err := livekcp.Seed(ctx, cluster.ConsumerCluster, batches, namespace, batchName, batchObject); err != nil {
@@ -159,7 +159,7 @@ func Run(ctx context.Context, out io.Writer) error {
 		Source:     source{items: resource, batches: batches},
 		RunKind:    "item",
 		ParentKind: "batch",
-		Lifecycle:  queue.Lifecycle{Running: deno.RunningPhase, Terminal: deno.TerminalPolicyWorkflow},
+		Lifecycle:  queue.Lifecycle{Running: denocomputer.RunningPhase, Terminal: denocomputer.TerminalPolicyWorkflow},
 		Wake:       tally.wake,
 	})
 	started := runref.New(time.Minute)
@@ -178,11 +178,11 @@ func Run(ctx context.Context, out io.Writer) error {
 		remaining := 0
 		for i := range all {
 			obj := &all[i]
-			if obj.Metadata.Labels[roleLabel] != "item" || deno.TerminalPolicyWorkflow(obj.Status.Phase) {
+			if obj.Metadata.Labels[roleLabel] != "item" || denocomputer.TerminalPolicyWorkflow(obj.Status.Phase) {
 				continue
 			}
 			remaining++
-			if obj.Status.Phase == string(deno.PhaseRunning) {
+			if obj.Status.Phase == string(denocomputer.PhaseRunning) {
 				observedRunning++
 			}
 			target := ref.New(cluster.ConsumerCluster, obj.Metadata.Namespace, obj.Metadata.Name)
@@ -191,14 +191,14 @@ func Run(ctx context.Context, out io.Writer) error {
 			if err != nil {
 				return err
 			}
-			if obj.Status.Phase == string(deno.PhaseRunning) {
+			if obj.Status.Phase == string(denocomputer.PhaseRunning) {
 				if obj.Status.Steps < obj.Spec.Steps {
-					if err := writeStatus(ctx, resource, target, obj.Metadata.ResourceVersion, string(deno.PhaseRunning), obj.Status.Steps+1); err != nil {
+					if err := writeStatus(ctx, resource, target, obj.Metadata.ResourceVersion, string(denocomputer.PhaseRunning), obj.Status.Steps+1); err != nil {
 						return err
 					}
 					continue
 				}
-				if err := writeStatus(ctx, resource, target, obj.Metadata.ResourceVersion, string(deno.PhaseSucceeded), obj.Status.Steps); err != nil {
+				if err := writeStatus(ctx, resource, target, obj.Metadata.ResourceVersion, string(denocomputer.PhaseSucceeded), obj.Status.Steps); err != nil {
 					return err
 				}
 				if err := admits.Wake(ctx, parent); err != nil {
@@ -206,14 +206,14 @@ func Run(ctx context.Context, out io.Writer) error {
 				}
 				continue
 			}
-			if decision.Gated && !decision.Allowed {
+			if decision.Waiting() {
 				tally.capacityWaits++
 				if tally.waitMessage == "" {
 					tally.waitMessage = fmt.Sprintf("%s waits: %s", obj.Metadata.Name, decision.Message)
 				}
 				continue
 			}
-			if err := writeStatus(ctx, resource, target, obj.Metadata.ResourceVersion, string(deno.PhaseRunning), 0); err != nil {
+			if err := writeStatus(ctx, resource, target, obj.Metadata.ResourceVersion, string(denocomputer.PhaseRunning), 0); err != nil {
 				return err
 			}
 			started.Record(target, "workload-"+obj.Metadata.Name, obj.Metadata.UID, time.Now())
@@ -244,11 +244,11 @@ func Run(ctx context.Context, out io.Writer) error {
 	}
 	succeeded := 0
 	for i := range final {
-		if final[i].Metadata.Labels[roleLabel] == "item" && final[i].Status.Phase == string(deno.PhaseSucceeded) {
+		if final[i].Metadata.Labels[roleLabel] == "item" && final[i].Status.Phase == string(denocomputer.PhaseSucceeded) {
 			succeeded++
 		}
 	}
-	limit, unlimited := queue.Limit(queue.Policy(deno.ConcurrencyAllow), &maxItems)
+	limit, unlimited := queue.Limit(queue.PolicyAllow, &maxItems)
 	fmt.Fprintln(out, tally.waitMessage)
 	fmt.Fprintf(out, "the batch allows %d at once and %d items were created\n", limit, itemCount)
 	fmt.Fprintf(out, "started %d of %d items, peak observed running %d, waited at capacity on %d passes\n",

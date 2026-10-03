@@ -37,18 +37,3 @@ func ServiceFQDN(name, namespace, logicalCluster, domain string) string {
 	}
 	return host + "." + ServiceSegment + "." + domain
 }
-
-func ServiceSuffix(domain string) string {
-	return "." + ServiceSegment + "." + domain
-}
-
-func ClusterFromLabels(labels string) string {
-	parts := strings.Split(labels, ".")
-	out := []string{RootWorkspace}
-	for i := len(parts) - 1; i >= 0; i-- {
-		if parts[i] != "" {
-			out = append(out, parts[i])
-		}
-	}
-	return strings.Join(out, ":")
-}

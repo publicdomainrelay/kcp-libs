@@ -33,11 +33,3 @@ func TestServiceFQDN(t *testing.T) {
 		}
 	}
 }
-
-func TestClusterFromLabelsInvertsServiceLabels(t *testing.T) {
-	for _, cluster := range []string{"root:alice", "root:acme:prod", "root"} {
-		if got := ClusterFromLabels(ServiceLabels(cluster)); got != cluster {
-			t.Fatalf("round trip of %q = %q", cluster, got)
-		}
-	}
-}
