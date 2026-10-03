@@ -1,11 +1,25 @@
 package store
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"time"
 
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 )
+
+func Same(a, b any) bool {
+	left, err := json.Marshal(a)
+	if err != nil {
+		return false
+	}
+	right, err := json.Marshal(b)
+	if err != nil {
+		return false
+	}
+	return bytes.Equal(left, right)
+}
 
 type Reader[T any] interface {
 	Get(ctx context.Context, r ref.Ref) (*T, error)

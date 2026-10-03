@@ -81,15 +81,16 @@ func (p *Pod) Start(_ context.Context, req runner.PodRequest) (string, error) {
 	if bundle := p.trustBundle(); len(bundle) > 0 {
 		files["ca.pem"] = bundle
 	}
-	env := p.env(req)
 	args := append([]string{"run"}, req.PermissionArgs...)
 	args = append(args, "main.ts")
 	return p.sup.start(processSpec{
-		binary: p.opts.DenoBin,
-		args:   args,
-		files:  files,
-		env:    env,
-		envMap: req.Env,
+		binary:     p.opts.DenoBin,
+		args:       args,
+		files:      files,
+		env:        p.env(req),
+		envMap:     req.Env,
+		envForDir:  p.dirEnv,
+		resultFile: "done.json",
 	})
 }
 
@@ -203,11 +204,18 @@ func (p *Pod) env(req runner.PodRequest) []string {
 	if req.Namespace != "" {
 		env = append(env, "KCP_NAMESPACE="+req.Namespace)
 	}
-	if !containsKey(env, "DENO_DIR") {
-		env = append(env, "DENO_DIR="+filepath.Join(p.opts.RunsDir, req.Name, ".deno"))
+	return env
+}
+
+func (p *Pod) dirEnv(dir string) []string {
+	var env []string
+	if p.opts.NamespaceDir != "" {
+		env = append(env, "DENO_DIR="+p.opts.NamespaceDir)
+	} else {
+		env = append(env, "DENO_DIR="+filepath.Join(dir, ".deno"))
 	}
 	if len(p.trustBundle()) > 0 {
-		env = withDefault(env, "DENO_CERT", "ca.pem")
+		env = append(env, "DENO_CERT="+"ca.pem")
 	}
 	return env
 }

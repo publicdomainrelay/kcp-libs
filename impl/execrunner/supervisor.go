@@ -36,6 +36,8 @@ type process struct {
 
 	stopped bool
 
+	exitCode int32
+
 	env map[string]string
 }
 
@@ -81,12 +83,17 @@ func (s *supervisor) start(entry processSpec) (string, error) {
 	}
 	defer stderr.Close()
 
+	env := append([]string{}, entry.env...)
+	if entry.envForDir != nil {
+		env = append(env, entry.envForDir(dir)...)
+	}
+
 	cmd := exec.Command(entry.binary, entry.args...)
 	cmd.Dir = entry.dir
 	if entry.dir == "" {
 		cmd.Dir = dir
 	}
-	cmd.Env = append(os.Environ(), entry.env...)
+	cmd.Env = append(os.Environ(), env...)
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
@@ -104,6 +111,10 @@ func (s *supervisor) start(entry processSpec) (string, error) {
 	}
 	go func() {
 		run.waitErr = cmd.Wait()
+		if cmd.ProcessState != nil {
+			run.exitCode = int32(cmd.ProcessState.ExitCode())
+		}
+		s.writeDone(run, entry.resultFile)
 		close(run.done)
 	}()
 	s.writeState(run)
@@ -126,6 +137,21 @@ type processSpec struct {
 	env []string
 
 	envMap map[string]string
+
+	envForDir func(dir string) []string
+
+	resultFile string
+}
+
+func (s *supervisor) writeDone(run *process, resultFile string) {
+	if resultFile == "" {
+		return
+	}
+	body, err := json.Marshal(podDone{ExitCode: run.exitCode})
+	if err != nil {
+		return
+	}
+	_ = os.WriteFile(filepath.Join(run.dir, resultFile), body, 0o644)
 }
 
 func (s *supervisor) writeState(run *process) {
@@ -204,8 +230,16 @@ func (s *supervisor) stop(id string) error {
 	if run.pid > 0 {
 		_ = syscall.Kill(-run.pid, syscall.SIGKILL)
 	}
+	if run.cmd != nil {
+		select {
+		case <-run.done:
+		case <-time.After(stopGrace):
+		}
+	}
 	return nil
 }
+
+const stopGrace = 2 * time.Second
 
 func (s *supervisor) probe(ctx context.Context, id string, command []string, timeout time.Duration, withEnv bool) (bool, error) {
 	if len(command) == 0 {
@@ -252,23 +286,6 @@ func envPairs(env map[string]string) []string {
 		out = append(out, key+"="+value)
 	}
 	return out
-}
-
-func withDefault(values []string, key, value string) []string {
-	if containsKey(values, key) {
-		return values
-	}
-	return append(values, key+"="+value)
-}
-
-func containsKey(env []string, key string) bool {
-	prefix := key + "="
-	for _, entry := range env {
-		if len(entry) >= len(prefix) && entry[:len(prefix)] == prefix {
-			return true
-		}
-	}
-	return false
 }
 
 func processAlive(pid int) bool {

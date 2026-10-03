@@ -219,6 +219,9 @@ func (c *Controller) worker(ctx context.Context) {
 			after, terminal, err := c.opts.Handler.Process(ctx, key)
 			c.reconcileSeconds.Observe(c.opts.Now().Sub(start))
 			c.queueDepth.SetInt(int64(c.queue.Len()))
+			if age := c.CacheAge(); age > 0 {
+				c.cacheAge.Set(age.Seconds())
+			}
 			if err != nil {
 				if c.opts.IsConflict(err) {
 					c.conflicts.Add(1)
