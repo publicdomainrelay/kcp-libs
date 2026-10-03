@@ -187,11 +187,3 @@ func logEndpointWait(opts Options, endpoints Endpoints, err error) {
 func Paths(endpoints Endpoints, export string) []string {
 	return endpoints[export]
 }
-
-func Counts(endpoints Endpoints) map[string]int {
-	out := make(map[string]int, len(endpoints))
-	for export, urls := range endpoints {
-		out[export] = len(urls)
-	}
-	return out
-}

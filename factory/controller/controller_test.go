@@ -13,6 +13,7 @@ import (
 	"github.com/publicdomainrelay/kcp-libs/abc/reconcile"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 	"github.com/publicdomainrelay/kcp-libs/impl/informerwatch"
+	"github.com/publicdomainrelay/kcp-libs/impl/metrics"
 )
 
 func newTestController(t *testing.T, handler reconcile.Handler, policy reconcile.Policy) *Controller {
@@ -176,4 +177,23 @@ func TestCacheAgeMeasuresTheInformerNotTheReconciler(t *testing.T) {
 	if age := controller.CacheAge(); age != 30*time.Second {
 		t.Fatalf("a reconcile must not reset the cache age, got %v", age)
 	}
+}
+
+func TestTwoControllersCannotShareOneRegistry(t *testing.T) {
+	defer func() {
+		if recover() == nil {
+			t.Fatal("a shared registry would export the first controller's queue depth under the second one's")
+		}
+	}()
+	registry := metrics.New("shared")
+	first := newTestController(t, reconcile.HandlerFunc(func(context.Context, reconcile.Key) (time.Duration, bool, error) {
+		return 0, true, nil
+	}), reconcile.Policy{Interval: time.Hour})
+	second := newTestController(t, reconcile.HandlerFunc(func(context.Context, reconcile.Key) (time.Duration, bool, error) {
+		return 0, true, nil
+	}), reconcile.Policy{Interval: time.Hour})
+	first.opts.Metrics = registry
+	second.opts.Metrics = registry
+	first.registerMetrics()
+	second.registerMetrics()
 }

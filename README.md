@@ -50,11 +50,11 @@ package imports anything project-local, or if an `abc` package imports past
 | common | `common/ref` | `Ref{LogicalCluster, Namespace, Name, ResourceVersion}`, composite keys, `BaseHost`/`ClusterURL` |
 | common | `common/kcp` | `kcp.io/cluster`, `kcp.io/path`, service labels and FQDNs, the inverse |
 | common | `common/condition` | `metav1.Condition` set/remove/find, transition-time preservation |
-| common | `common/statuspatch` | merge-patch bodies, resource-version stamping, finalizer JSON patches, `Optional` |
+| common | `common/statuspatch` | merge-patch bodies, resource-version stamping, finalizer JSON patches |
 | common | `common/denocomputer` | the `deno.computer` API group vocabulary: labels, finalizers, conditions, phases, terminal predicates. Named for the group, not the runtime. Kept whole rather than trimmed to what this module calls: a consumer adopting the library needs the words, and half a vocabulary is worse than none |
 | common | `common/denospec` | the shared wire shape: pod template, exec probe, service account ref, permissions, deno argv |
 | common | `common/clientlimit` | `Apply`, which raises a rest config off client-go's 5-requests-a-second default. Shared by the three transports that build one |
-| common | `common/expiring` | a ttl map with `Set`, `Get`, `Peek`, `Delete`, `DeleteIf`, `Expire`, `Range`, `SetPruning`. Backs the leases, the start index and the job allocations |
+| common | `common/expiring` | a ttl map with `Set`, `Get`, `Delete`, `DeleteIf`, `Expire`, `Range`, `SetPruning`. Backs the leases, the start index and the job allocations |
 | common | `common/ttl` | retention and active-deadline decisions |
 | common | `common/outputs` | `map[string]any` to `map[string]string` |
 | common | `common/logging` | JSON slog logger |
@@ -150,9 +150,10 @@ what reports whether it took.
 
 Some of the surface here exists for the consumer rather than for this module's
 own production code: each row has a caller in deno-kcp and none has one here.
-Most are exercised by a test in this module; the last two rows are the
-vocabulary a consumer's own types are described with, and carry no behaviour to
-test:
+Most rows are exercised by a test in this module. The last two rows are the
+vocabulary a consumer's own types are described with: the pod-template and
+exec-probe types there are plain declarations, the terminal predicates beside
+them are tested:
 
 | Export | What the consumer does with it |
 |---|---|

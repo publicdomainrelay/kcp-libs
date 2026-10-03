@@ -5,7 +5,11 @@ GO ?= go
 check: fmt vet tidy test
 
 test:
-	$(GO) test ./...
+	@if [ -d ../deno-kcp/api/v1alpha1 ]; then \
+		KCP_LIBS_REQUIRE_CONSUMER=1 $(GO) test ./...; \
+	else \
+		$(GO) test ./...; \
+	fi
 
 race:
 	$(GO) test -race ./...

@@ -137,10 +137,17 @@ func TestAGaugeFunctionCannotStealAnotherMetricsName(t *testing.T) {
 	registry.GaugeFunc("queue_depth", "work keys waiting", func() float64 { return 0 })
 }
 
-func TestTheRegistryIsAStandardRegisterer(t *testing.T) {
+var _ prometheus.Registerer = New("kcp").Registry()
+
+func TestAGaugeRegisteredTwiceIsShared(t *testing.T) {
 	registry := New("kcp")
-	var _ prometheus.Registerer = registry.Registry()
-	if registry.Registry() == nil {
-		t.Fatal("the underlying registry must be reachable for anything this wrapper does not cover")
+	first := registry.Gauge("queue_depth", "work keys waiting")
+	second := registry.Gauge("queue_depth", "work keys waiting")
+	if first != second {
+		t.Fatal("the same gauge name and help must return the same gauge")
+	}
+	first.Set(3)
+	if got := testutil.ToFloat64(second); got != 3 {
+		t.Fatalf("gauge = %v, want 3", got)
 	}
 }

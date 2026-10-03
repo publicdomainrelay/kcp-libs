@@ -113,8 +113,15 @@ func New(opts Options) (*Controller, error) {
 		set:   opts.Set,
 		queue: workqueue.NewTypedRateLimitingQueue(workqueue.DefaultTypedControllerRateLimiter[reconcile.Key]()),
 	}
+	c.registerMetrics()
+	return c, nil
+}
+
+func (c *Controller) registerMetrics() {
+	opts := c.opts
 	c.reconcileSeconds = opts.Metrics.Summary("reconcile_seconds", "time spent inside a reconcile")
 	c.conflictsTotal = opts.Metrics.Counter("conflicts_total", "writes rejected by optimistic concurrency")
+
 	c.queueDepth = opts.Metrics.GaugeFunc("queue_depth", "work keys that are ready to reconcile", func() float64 {
 		return float64(c.queue.Len())
 	})
@@ -124,7 +131,6 @@ func New(opts Options) (*Controller, error) {
 		}
 		return c.CacheAge().Seconds()
 	})
-	return c, nil
 }
 
 func DefaultWorkers() int {

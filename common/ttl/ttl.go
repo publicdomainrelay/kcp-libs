@@ -25,7 +25,7 @@ func Expiry(completion *metav1.Time, seconds *int64) (time.Time, bool) {
 	return completion.Add(time.Duration(*seconds) * time.Second), true
 }
 
-func Expired(completion *metav1.Time, seconds *int64, now time.Time) (delete bool, after time.Duration, known bool) {
+func Expired(completion *metav1.Time, seconds *int64, now time.Time) (expired bool, after time.Duration, known bool) {
 	expiry, ok := Expiry(completion, seconds)
 	if !ok {
 		return false, 0, false

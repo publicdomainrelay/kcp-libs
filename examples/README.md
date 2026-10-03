@@ -37,8 +37,11 @@ official `github.com/openbao/openbao/api/v2`, and the fake vault answers the
 same wire protocol that client speaks.
 
 `go test ./examples/...` asserts the lines each example prints. The three that
-need kcp skip unless `KCP_LIBS_REQUIRE_LIVE=1` is set, which `make test-live`
-and `make examples` set for you; the other three always run. `make examples` starts one
+need kcp skip unless `KCP_LIBS_REQUIRE_LIVE=1` is set; `scripts/live.sh`, which
+both `make test-live` and `make examples` go through, exports it. Those two
+targets run the examples rather than their tests, so to assert the kcp-backed
+three run `KCP_LIBS_REQUIRE_LIVE=1 go test ./examples/...`; the other three
+always run. `make examples` starts one
 cluster for all six and takes about 17s; the three that need it take 1 - 2s
 each once it is up.
 

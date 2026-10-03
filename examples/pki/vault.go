@@ -66,12 +66,6 @@ func (v *vault) CallCount() int {
 	return len(v.calls)
 }
 
-func (v *vault) Calls() []string {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-	return append([]string(nil), v.calls...)
-}
-
 func (v *vault) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	v.mu.Lock()
 	v.calls = append(v.calls, r.Method+" "+r.URL.Path)

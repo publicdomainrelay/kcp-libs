@@ -10,9 +10,11 @@ import (
 	"sync"
 	"time"
 
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/rest"
 
 	"github.com/publicdomainrelay/kcp-libs/common/clientlimit"
@@ -20,6 +22,16 @@ import (
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 	"github.com/publicdomainrelay/kcp-libs/common/statuspatch"
 )
+
+var (
+	mergePatch = types.MergePatchType
+
+	jsonPatch = types.JSONPatchType
+)
+
+func IsNotFound(err error) bool {
+	return apierrors.IsNotFound(err)
+}
 
 type Options struct {
 	Host string
@@ -213,7 +225,7 @@ func (r *Resource[T]) PatchStatus(ctx context.Context, target ref.Ref, patch []b
 	return nil
 }
 
-func (r *Resource[T]) Patch(ctx context.Context, target ref.Ref, patch []byte) error {
+func (r *Resource[T]) PatchJSON(ctx context.Context, target ref.Ref, patch []byte) error {
 	c, err := r.client(target.LogicalCluster)
 	if err != nil {
 		return err
@@ -250,22 +262,22 @@ func (r *Resource[T]) RemoveFinalizer(ctx context.Context, target ref.Ref, final
 }
 
 func (r *Resource[T]) RemoveKnownFinalizer(ctx context.Context, target ref.Ref, current []string, finalizer string) error {
-	patch, err := removeFinalizerPatch(current, finalizer)
+	patch, err := statuspatch.FinalizerRemove(current, finalizer)
 	if err != nil {
 		return err
 	}
 	if patch == nil {
 		return nil
 	}
-	return r.Patch(ctx, target, patch)
+	return r.PatchJSON(ctx, target, patch)
 }
 
 func (r *Resource[T]) AddFinalizer(ctx context.Context, target ref.Ref, finalizers []string) error {
-	patch, err := addFinalizerPatch(finalizers)
+	patch, err := statuspatch.FinalizerAdd(finalizers)
 	if err != nil {
 		return err
 	}
-	return r.Patch(ctx, target, patch)
+	return r.PatchJSON(ctx, target, patch)
 }
 
 func decode[T any](raw []byte) (*T, error) {

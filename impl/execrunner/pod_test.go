@@ -329,3 +329,42 @@ func TestEngineEnforcesItsTimeout(t *testing.T) {
 	}
 	t.Fatal("the engine never hit its timeout")
 }
+
+func TestAFailedStartLeavesNoRunDirectory(t *testing.T) {
+	dir := t.TempDir()
+	runsDir := filepath.Join(dir, "runs")
+	pod, err := NewPod(PodOptions{DenoBin: filepath.Join(dir, "absent"), RunsDir: runsDir})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pod.Start(context.Background(), runner.PodRequest{Name: "pds", Script: "x"}); err == nil {
+		t.Fatal("a binary that is not there must fail the start")
+	}
+	entries, err := os.ReadDir(runsDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(entries) != 0 {
+		t.Fatalf("a failed start left %d directories behind", len(entries))
+	}
+}
+
+func TestRunIdentifiersDoNotRepeatWithinASecond(t *testing.T) {
+	dir := t.TempDir()
+	stub := writeStub(t, dir, `exit 0`)
+	pod, err := NewPod(PodOptions{DenoBin: stub, RunsDir: filepath.Join(dir, "runs")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	seen := map[string]bool{}
+	for range 5 {
+		id, err := pod.Start(context.Background(), runner.PodRequest{Name: "pds", Script: "x"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if seen[id] {
+			t.Fatalf("%s was handed out twice, and a second run would overwrite the first", id)
+		}
+		seen[id] = true
+	}
+}

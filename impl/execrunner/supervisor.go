@@ -96,19 +96,24 @@ func (s *supervisor) start(entry processSpec) (string, error) {
 	if err := os.Mkdir(dir, 0o755); err != nil {
 		return "", fmt.Errorf("execrunner: create the %s directory: %w", s.prefix, err)
 	}
+	abandon := func(err error) (string, error) {
+		_ = os.RemoveAll(dir)
+		return "", err
+	}
+
 	for name, body := range entry.files {
 		if err := os.WriteFile(filepath.Join(dir, name), body, 0o644); err != nil {
-			return "", fmt.Errorf("execrunner: write %s: %w", name, err)
+			return abandon(fmt.Errorf("execrunner: write %s: %w", name, err))
 		}
 	}
 	stdout, err := os.Create(filepath.Join(dir, "stdout.txt"))
 	if err != nil {
-		return "", fmt.Errorf("execrunner: create stdout file: %w", err)
+		return abandon(fmt.Errorf("execrunner: create stdout file: %w", err))
 	}
 	defer stdout.Close()
 	stderr, err := os.Create(filepath.Join(dir, "stderr.txt"))
 	if err != nil {
-		return "", fmt.Errorf("execrunner: create stderr file: %w", err)
+		return abandon(fmt.Errorf("execrunner: create stderr file: %w", err))
 	}
 	defer stderr.Close()
 
@@ -127,8 +132,7 @@ func (s *supervisor) start(entry processSpec) (string, error) {
 	cmd.Stderr = stderr
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	if err := cmd.Start(); err != nil {
-		_ = os.RemoveAll(dir)
-		return "", fmt.Errorf("execrunner: start %s process: %w", s.prefix, err)
+		return abandon(fmt.Errorf("execrunner: start %s process: %w", s.prefix, err))
 	}
 
 	run := &process{
@@ -142,8 +146,7 @@ func (s *supervisor) start(entry processSpec) (string, error) {
 	}
 	if err := writeState(run); err != nil {
 		_ = syscall.Kill(-run.pid, syscall.SIGKILL)
-		_ = os.RemoveAll(dir)
-		return "", err
+		return abandon(err)
 	}
 	s.mu.Lock()
 	s.runs[id] = run
