@@ -37,6 +37,36 @@ func TestMaterialiseWritesAndCaches(t *testing.T) {
 	}
 }
 
+func TestRewriteReplacesTheFilesMaterialiseCached(t *testing.T) {
+	dir := t.TempDir()
+	set := &Set{Dir: dir, Files: map[string][]byte{"shim.ts": []byte("v1")}}
+	paths, err := set.Materialise()
+	if err != nil {
+		t.Fatal(err)
+	}
+	set.Files["shim.ts"] = []byte("v2")
+	if _, err := set.Materialise(); err != nil {
+		t.Fatal(err)
+	}
+	body, err := os.ReadFile(paths["shim.ts"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(body) != "v1" {
+		t.Fatalf("a second materialise is cached, so the file still reads %q", body)
+	}
+	if _, err := set.Rewrite(); err != nil {
+		t.Fatal(err)
+	}
+	body, err = os.ReadFile(paths["shim.ts"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(body) != "v2" {
+		t.Fatalf("a rewrite must replace the file, it reads %q", body)
+	}
+}
+
 func TestPathNamesAMissingFile(t *testing.T) {
 	set := &Set{Dir: t.TempDir(), Files: map[string][]byte{"a.ts": []byte("x")}}
 	if _, err := set.Path("b.ts"); err == nil {

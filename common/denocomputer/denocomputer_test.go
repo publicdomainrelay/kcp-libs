@@ -1,6 +1,7 @@
 package denocomputer
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -125,7 +126,7 @@ func TestTheLabelsAreTheOnesTheConsumerDeclares(t *testing.T) {
 		}
 		return
 	}
-	if !consumerMentions(t, TriggerLabel) {
+	if !consumerMentions(t, fmt.Sprintf("%q", TriggerLabel)) {
 		t.Fatalf("the consumer never names %q, so this module's value for it is invented", TriggerLabel)
 	}
 }
@@ -176,17 +177,19 @@ func consumerRoot(t *testing.T) string {
 func TestThePhasesAndConditionsAreTheOnesTheConsumerStores(t *testing.T) {
 	declared := consumerConstants(t)
 	for name, value := range map[string]string{
-		"DenoRunPending":          string(PhasePending),
-		"DenoRunRunning":          string(PhaseRunning),
-		"DenoRunSucceeded":        string(PhaseSucceeded),
-		"DenoRunFailed":           string(PhaseFailed),
-		"PolicyWorkflowCancelled": string(PhaseCancelled),
-		"RunTriggerTriggered":     string(PhaseTriggered),
-		"ConditionReady":          ConditionReady,
-		"ConditionComplete":       ConditionComplete,
-		"ConditionFailed":         ConditionFailed,
-		"ConditionSuspended":      ConditionSuspended,
-		"ConditionCancelled":      ConditionCancelled,
+		"DenoRunPending":            string(PhasePending),
+		"DenoRunRunning":            string(PhaseRunning),
+		"DenoRunSucceeded":          string(PhaseSucceeded),
+		"DenoRunFailed":             string(PhaseFailed),
+		"PolicyWorkflowCancelled":   string(PhaseCancelled),
+		"RunTriggerTriggered":       string(PhaseTriggered),
+		"ConditionReady":            ConditionReady,
+		"ConditionComplete":         ConditionComplete,
+		"ConditionFailed":           ConditionFailed,
+		"ConditionSuspended":        ConditionSuspended,
+		"ConditionCancelled":        ConditionCancelled,
+		"OpenBaoConditionReady":     OpenBaoConditionReady,
+		"OpenBaoConditionAmbiguous": OpenBaoConditionAmbiguous,
 	} {
 		want, ok := declared[name]
 		if !ok {
@@ -194,6 +197,15 @@ func TestThePhasesAndConditionsAreTheOnesTheConsumerStores(t *testing.T) {
 		}
 		if value != want {
 			t.Fatalf("%s = %q, the consumer declares %q", name, value, want)
+		}
+	}
+	for name, reason := range map[string]string{
+		"ReasonPolicyWorkflowPodMissing": ReasonPolicyWorkflowPodMissing,
+		"ReasonEngineNotReady":           ReasonEngineNotReady,
+		"ReasonQueued":                   ReasonQueued,
+	} {
+		if !consumerMentions(t, fmt.Sprintf("%q", reason)) {
+			t.Fatalf("%s = %q, but the consumer never writes that literal, so %s is invented", name, reason, name)
 		}
 	}
 }

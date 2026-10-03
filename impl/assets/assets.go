@@ -16,7 +16,9 @@ type Set struct {
 
 	Perm os.FileMode
 
-	once sync.Once
+	mu sync.Mutex
+
+	written bool
 
 	paths map[string]string
 
@@ -26,14 +28,29 @@ type Set struct {
 var ErrNoDirectory = errors.New("assets: a directory is required")
 
 func (s *Set) Materialise() (map[string]string, error) {
-	s.once.Do(func() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if !s.written {
 		s.err = s.write()
-	})
+		s.written = true
+	}
+	return s.published(), s.err
+}
+
+func (s *Set) Rewrite() (map[string]string, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.err = s.write()
+	s.written = true
+	return s.published(), s.err
+}
+
+func (s *Set) published() map[string]string {
 	out := make(map[string]string, len(s.paths))
 	for name, path := range s.paths {
 		out[name] = path
 	}
-	return out, s.err
+	return out
 }
 
 func (s *Set) Path(name string) (string, error) {

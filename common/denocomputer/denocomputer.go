@@ -39,9 +39,9 @@ const (
 
 	ConditionCancelled = "Cancelled"
 
-	ConditionOpenBaoReady = "Ready"
+	OpenBaoConditionReady = "Ready"
 
-	ConditionOpenBaoAmbiguous = "Ambiguous"
+	OpenBaoConditionAmbiguous = "Ambiguous"
 )
 
 const (
