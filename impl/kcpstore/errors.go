@@ -17,10 +17,6 @@ func IsNotFound(err error) bool {
 	return apierrors.IsNotFound(err)
 }
 
-func IsConflict(err error) bool {
-	return apierrors.IsConflict(err)
-}
-
 func removeFinalizerPatch(current []string, dropped string) ([]byte, error) {
 	return statuspatch.FinalizerRemove(current, dropped)
 }

@@ -52,12 +52,12 @@ package imports anything project-local, or if an `abc` package imports past
 | common | `common/statuspatch` | merge-patch bodies, resource-version stamping, finalizer JSON patches, `Optional` |
 | common | `common/denocomputer` | the `deno.computer` API group vocabulary: labels, finalizers, conditions, phases, terminal predicates. Named for the group, not the runtime. Kept whole rather than trimmed to what this module calls: a consumer adopting the library needs the words, and half a vocabulary is worse than none |
 | common | `common/denospec` | the shared wire shape: pod template, exec probe, service account ref, permissions, deno argv |
-| common | `common/kcpclient` | the client rate-limit defaults every transport shares, so a controller does not inherit client-go's 5 requests a second |
+| common | `common/clientlimit` | `Apply`, which raises a rest config off client-go's 5-requests-a-second default. Shared by the three transports that build one |
 | common | `common/expiring` | a ttl map with `Set`, `Get`, `Peek`, `Delete`, `DeleteIf`, `Expire`, `Range`, `SetPruning`. Backs the leases, the start index and the job allocations |
 | common | `common/ttl` | retention and active-deadline decisions |
 | common | `common/outputs` | `map[string]any` to `map[string]string` |
 | common | `common/logging` | JSON slog logger |
-| abc | `abc/reconcile` | the whole reconcile contract: `Result[Status]` with `Ops []Operation{Kind, Target}` and `Clear []string`, `Reconciler[Observed, Status]`, the work `Key`, the `Handler` the driver consumes, the requeue `Policy`, and `Bridge` which turns a decider into a handler |
+| abc | `abc/reconcile` | the whole reconcile contract: `Result[Status]` with `Ops []Operation{Kind, Target}` and `ClearFields []string`, `Patch` which turns one into the merge patch the API server wants, `Reconciler[Observed, Status]`, the work `Key`, the `Handler` the driver consumes, the requeue `Policy`, and `Bridge` which turns a decider into a handler |
 | abc | `abc/queue` | **the queue semantics**: capacity, `Decision`, `Plan`, `PlanIndex`, `WakeList`, `Leases`, and the concurrency policies they decide on. Takes a `Lifecycle` predicate, so it names no phase itself |
 | abc | `abc/cache` | `Indexer`/`Set`, index names and index functions, `Decode[T]` |
 | abc | `abc/probe` | liveness failure counters and the threshold decision |
@@ -127,26 +127,33 @@ Where the code in `../deno-kcp` moves.
 | `internal/provider/policy_client.go` | `impl/policyclient`, `abc/policy` |
 | `internal/runner/*.go` | `impl/execrunner`, `impl/memoryrunner`, `abc/runner` |
 | `internal/denoperm/denoperm.go` | `common/denospec` |
-| `internal/{denorun,denojob,denopod,policyengine,policyworkflowpod,policyworkflowrun,trigger}/*.go` | stay in the consumer, re-expressed as `abc/reconcile.Reconciler` deciders. The seam carries what they need: `denorun`'s cleared `runID` is `Result.Clear`, and `denojob`'s `CreateRuns`/`StopRuns` are `Operation`s with a `Target` |
+| `internal/{denorun,denojob,denopod,policyengine,policyworkflowpod,policyworkflowrun,trigger}/*.go` | stay in the consumer, re-expressed as `abc/reconcile.Reconciler` deciders. The seam carries what they need: `denorun`'s cleared `runID` is `Result.ClearFields`, written as a null by `reconcile.Patch`, and `denojob`'s `CreateRuns`/`StopRuns` are `Operation`s with a `Target` |
 | `internal/provider/watch.go`'s two APIExports | `informerwatch.Source` per export, since a resource may only be listed against the export that serves it |
 | `internal/provider/kcpdns/embed.go` | `impl/assets` |
 | `api/v1alpha1/types_shared.go` | `common/denospec`, `common/denocomputer` |
 
+Two exported methods exist for the consumer rather than for this module's own
+production code, and are kept for that reason: `reconcile.Result.AddFor`, which
+is how a decider that owns children asks for one to be created or stopped, and
+`kcpstore.Resource.AddFinalizer`, which is the add half of the finalizer patch
+that `RemoveFinalizer` takes back off. Both are exercised by tests here and
+neither has an in-module caller.
+
 ## Two tiers
 
-**Unit** — `go test ./...`, no cluster, no binaries, milliseconds. Everything
+**Unit**  - `go test ./...`, no cluster, no binaries, milliseconds. Everything
 pure: the queue, the requeue policy, the cache indexers, the status patches,
 the runners, the PKI orchestration, the transports against `httptest`.
 
-**Live** — anything that has to talk to kcp. `internal/livekcp` starts a real
+**Live**  - anything that has to talk to kcp. `internal/livekcp` starts a real
 kcp in a temp directory, applies an `APIResourceSchema` and an `APIExport`,
 creates two consumer workspaces with `APIBinding`s, and waits for them to
 bind. Directly against it:
 
-- `impl/kcpstore` — create, get, list, a status merge patch, a finalizer JSON
+- `impl/kcpstore`  - create, get, list, a status merge patch, a finalizer JSON
   patch, the cluster path annotation, delete, and a 404, all through the typed
   resource.
-- `factory/controller` — `exportwatch` discovers the real virtual workspace
+- `factory/controller`  - `exportwatch` discovers the real virtual workspace
   URL from the export's endpoint slice, wildcard informers watch it, the
   workqueue delivers keys, and a decider drives a widget from one export and a
   gadget from the other to `Succeeded`.
@@ -173,7 +180,7 @@ The other thing that made those numbers what they are: `impl/kcpstore` sets
 defaults every REST client to 5 requests a second with a burst of 10, and a
 controller that inherits that spends most of its time waiting on its own rate
 limiter -- the admission example went from 21.7s to 1.6s when it stopped.
-`kcpstore.Options` overrides both, and `common/kcpclient.Tuned` applies the same
+`kcpstore.Options` overrides both, and `common/clientlimit.Tuned` applies the same
 defaults to a config you built yourself.
 
 Run one on its own with `go run ./examples/controller`, or point several at a

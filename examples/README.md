@@ -36,9 +36,9 @@ with nothing to install here. Both clients are real: `openbaoclient` wraps the
 official `github.com/openbao/openbao/api/v2`, and the fake vault answers the
 same wire protocol that client speaks.
 
-`go test ./examples/...` runs all six and asserts the lines they print. The
-three that need kcp skip unless `KCP_LIBS_REQUIRE_LIVE=1` is set, which
-`make test-live` and `make examples` set for you. `make examples` starts one
+`go test ./examples/...` asserts the lines each example prints. The three that
+need kcp skip unless `KCP_LIBS_REQUIRE_LIVE=1` is set, which `make test-live`
+and `make examples` set for you; the other three always run. `make examples` starts one
 cluster for all six and takes about 17s; the three that need it take 1 - 2s
 each once it is up.
 
@@ -107,24 +107,24 @@ fails the build if anything outside `examples/` and tests reaches into
 | `factory/servicenames` | a workload resolves a peer by name, and tokens are per workspace | `dns` |
 | `common/kcp` | a workspace path has to become DNS labels, or back | `dns` `ServiceLabels` |
 | `common/ref` | you need the identity of an object: cluster, namespace, name | `controller`, `admission`, `dns`, `workloads` |
-| `common/expiring` | you need a ttl-bounded map | `abc/queue` `Leases`, `abc/runref`, `abc/joballoc` (all four live under `abc/`) |
+| `common/expiring` | you need a ttl-bounded map | `abc/queue` `Leases`, `abc/runref`, `abc/joballoc` (the callers live under `abc/`) |
 | `common/statuspatch` | the status write is a merge patch, or a finalizer patch | `controller`, `admission` |
 | `common/condition` | a status carries `metav1.Condition` and you edit one | `controller` `decide` |
 | `common/denocomputer` | you are working in the `deno.computer` vocabulary | `controller` phases and condition |
 | `common/logging` | a JSON slog logger, or one that throws output away | `controller` `logging.New` |
-| `abc/store` | the interfaces `impl/kcpstore` implements, and `Same` | `controller` |
+| `abc/store` | the interfaces `impl/kcpstore` implements, and `Unchanged` | `controller` |
 | `internal/livekcp` | you want the examples and live tests to have a real kcp | `controller`, `admission`, `dns` |
 
 ## What each example is about
 
-**`controller`** — the whole loop. A `Widget` is created in a workspace, the
+**`controller`**  - the whole loop. A `Widget` is created in a workspace, the
 informer sees it, the workqueue delivers the key, the decider says what phase
 it should be in, and the handler patches the status. It shows the difference
 between the list path (two widgets seeded before the controller starts) and the
 watch path (a third created after), and reads the informer cache by index to
 count the widgets in a group.
 
-**`admission`** — the queue. A batch allows two items at once and five are
+**`admission`**  - the queue. A batch allows two items at once and five are
 created, so three wait. It prints the `AtCapacity` message one of them
 carries, reports the peak number of items observed running against the cap of
 two, and shows the lease the admission takes so two passes cannot both see a
@@ -132,24 +132,24 @@ free slot. The duplicate-start guard is exercised both ways: five copies that
 predate their own write are refused, and ten legitimate starts -- retries and
 recreated objects -- are allowed through.
 
-**`workloads`** — processes. Permissions become argv, a stand-in runtime is
+**`workloads`**  - processes. Permissions become argv, a stand-in runtime is
 materialised, the process runs, its `result.json` becomes outputs, a probe
 runs in the run directory, a liveness tracker asks for a restart, retention
 decides on a delete, and the same `PodRunner` interface answers without a
 process at all.
 
-**`pki`** — certificates. A fake vault implements the OpenBao API, the
+**`pki`**  - certificates. A fake vault implements the OpenBao API, the
 provisioner generates a root, gives a namespace an intermediate signed by it,
 writes the role, and issues a leaf for the workload's service name. The
 authority is cached (a second leaf costs one call), and deleting the namespace
 makes the next provisioning do the work again.
 
-**`policy`** — the policy engine. A workflow is submitted, polled to a
+**`policy`**  - the policy engine. A workflow is submitted, polled to a
 terminal state, and the verdict comes back flattened into outputs. A failed
 workflow reports why, and an unreachable engine leaves the task running rather
 than failing it.
 
-**`dns`** — names. Workloads in two workspaces advertise addresses in their own
+**`dns`**  - names. Workloads in two workspaces advertise addresses in their own
 spec, and the example builds the FQDN table from them, injects a workload's own
 name before it can be observed, and mints one token per workspace through a
 real `TokenRequest`. The FQDNs carry the workspace *path*, read from the

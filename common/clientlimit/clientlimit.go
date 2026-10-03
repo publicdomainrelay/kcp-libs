@@ -1,4 +1,4 @@
-package kcpclient
+package clientlimit
 
 import "k8s.io/client-go/rest"
 
@@ -6,7 +6,7 @@ const DefaultQPS float32 = 50
 
 const DefaultBurst = 100
 
-func Tuned(cfg *rest.Config, qps float32, burst int) *rest.Config {
+func Apply(cfg *rest.Config, qps float32, burst int) *rest.Config {
 	out := rest.CopyConfig(cfg)
 	if qps <= 0 {
 		qps = DefaultQPS

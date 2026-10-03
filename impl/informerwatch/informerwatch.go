@@ -14,7 +14,7 @@ import (
 	k8scache "k8s.io/client-go/tools/cache"
 
 	"github.com/publicdomainrelay/kcp-libs/abc/cache"
-	"github.com/publicdomainrelay/kcp-libs/common/kcpclient"
+	"github.com/publicdomainrelay/kcp-libs/common/clientlimit"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 )
 
@@ -104,7 +104,7 @@ func Run(ctx context.Context, opts Options) error {
 }
 
 func factoryClient(config *rest.Config, base string) (dynamic.Interface, error) {
-	cfg := kcpclient.Tuned(config, 0, 0)
+	cfg := clientlimit.Apply(config, 0, 0)
 	cfg.Host = strings.TrimSuffix(base, "/") + ref.APIPathPrefix + "*"
 	client, err := dynamic.NewForConfig(cfg)
 	if err != nil {

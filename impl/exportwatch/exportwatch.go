@@ -14,7 +14,7 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 
-	"github.com/publicdomainrelay/kcp-libs/common/kcpclient"
+	"github.com/publicdomainrelay/kcp-libs/common/clientlimit"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 )
 
@@ -51,7 +51,7 @@ func Client(opts Options) (dynamic.Interface, error) {
 	if opts.Config == nil {
 		return nil, errors.New("exportwatch: a rest config is required")
 	}
-	cfg := kcpclient.Tuned(opts.Config, 0, 0)
+	cfg := clientlimit.Apply(opts.Config, 0, 0)
 	cfg.Host = opts.host() + ref.APIPathPrefix + opts.ProviderWorkspace
 	client, err := dynamic.NewForConfig(cfg)
 	if err != nil {

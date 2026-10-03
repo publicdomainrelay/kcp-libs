@@ -15,8 +15,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/rest"
 
+	"github.com/publicdomainrelay/kcp-libs/common/clientlimit"
 	"github.com/publicdomainrelay/kcp-libs/common/kcp"
-	"github.com/publicdomainrelay/kcp-libs/common/kcpclient"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 	"github.com/publicdomainrelay/kcp-libs/common/statuspatch"
 )
@@ -34,7 +34,7 @@ type Options struct {
 }
 
 func (o Options) tuned(cfg *rest.Config) *rest.Config {
-	return kcpclient.Tuned(cfg, o.QPS, o.Burst)
+	return clientlimit.Apply(cfg, o.QPS, o.Burst)
 }
 
 type Store struct {
