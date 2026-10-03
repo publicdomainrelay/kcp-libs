@@ -47,6 +47,11 @@ func main() { Run(context.Background(), os.Stdout) }
 `main_test.go` asserts the exact lines it prints. Output is the observable
 behaviour, so a broken library breaks a line of prose.
 
+`main.go` is the whole story. When an example needs a service to talk to, the
+fake for it gets its own file: `pki/vault.go` and `pki/certs.go` are a vault
+that issues real certificates, `policy/engine.go` is an engine that finishes a
+task after a few polls.
+
 ## The cluster
 
 `internal/livekcp` starts kcp in a temp directory, applies an

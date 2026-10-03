@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/publicdomainrelay/kcp-libs/abc/queue"
+	"github.com/publicdomainrelay/kcp-libs/common/deno"
 	"github.com/publicdomainrelay/kcp-libs/common/ref"
 )
 
@@ -102,7 +103,17 @@ func (a *Admission) Wake(ctx context.Context, parent ref.Ref) error {
 	}
 	limit, unlimited := queue.Limit(capacity.Policy, capacity.MaxConcurrent)
 	if a.opts.RunKind != "" {
-		for _, run := range queue.WakeList(runs, a.opts.Terminal, limit, unlimited) {
+		running := int32(0)
+		for _, run := range runs {
+			if run.Phase == string(deno.PhaseRunning) {
+				running++
+			}
+		}
+		free := limit - running
+		if free < 0 {
+			free = 0
+		}
+		for _, run := range queue.WakeList(runs, a.opts.Terminal, free, unlimited) {
 			a.opts.Wake(a.opts.RunKind, run)
 		}
 	}

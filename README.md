@@ -40,7 +40,7 @@ package imports anything project-local, or if an `abc` package imports past
 | common | `common/kcp` | `kcp.io/cluster`, `kcp.io/path`, service labels and FQDNs, the inverse |
 | common | `common/condition` | `metav1.Condition` set/remove/find, transition-time preservation |
 | common | `common/statuspatch` | merge-patch bodies, resource-version stamping, finalizer JSON patches, `Optional` |
-| common | `common/deno` | the `deno.computer` domain: labels, finalizers, conditions, phases, terminal predicates, concurrency policies |
+| common | `common/deno` | the `deno.computer` domain: labels, finalizers, conditions, phases, terminal predicates, concurrency policies. Kept whole, not trimmed to what this module itself calls: a consumer adopting the library needs the vocabulary, and half a vocabulary is worse than none |
 | common | `common/denospec` | the shared wire shape: pod template, exec probe, service account ref, permissions, deno argv |
 | common | `common/ttl` | retention and active-deadline decisions |
 | common | `common/outputs` | `map[string]any` to `map[string]string` |
@@ -64,7 +64,7 @@ package imports anything project-local, or if an `abc` package imports past
 | impl | `impl/openbaoclient` | a typed adapter over the official `github.com/openbao/openbao/api/v2` client |
 | impl | `impl/pkiprovisioner` | one intermediate CA per namespace, root in the root namespace, cached |
 | impl | `impl/policyclient` | the gha-lite policy engine HTTP client, including verdict extraction |
-| impl | `impl/metrics` | dependency-free Prometheus text registry |
+| impl | `impl/metrics` | dependency-free Prometheus text registry. `queue_depth` counts keys ready to run, not keys waiting on a backoff: the workqueue does not expose its delaying queue |
 | impl | `impl/assets` | writes a caller's asset set next to a runs directory, once |
 | factory | `controller` | informers + workqueue + worker pool + requeue policy + metrics |
 | factory | `admission` | per-parent admission: leases, planning, and the wake of queued runs |
