@@ -226,3 +226,28 @@ system_contexts:
   id: sc.impl-kcpstore
   name: impl-kcpstore
   upstream: self
+- code:
+  - impl/memoryrunner/memoryrunner.go
+  - impl/memoryrunner/memoryrunner_test.go
+  id: sc.impl-memoryrunner
+  name: impl-memoryrunner
+  upstream: self
+- code:
+  - impl/metrics/metrics.go
+  - impl/metrics/metrics_test.go
+  id: sc.impl-metrics
+  name: impl-metrics
+  upstream: self
+- code:
+  - impl/openbaoclient/openbaoclient.go
+  - impl/openbaoclient/openbaoclient_test.go
+  - impl/openbaoclient/testcert_test.go
+  id: sc.impl-openbaoclient
+  name: impl-openbaoclient
+  upstream: self
+- code:
+  - impl/pkiprovisioner/pkiprovisioner.go
+  - impl/pkiprovisioner/pkiprovisioner_test.go
+  id: sc.impl-pkiprovisioner
+  name: impl-pkiprovisioner
+  upstream: self

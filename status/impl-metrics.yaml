@@ -1,0 +1,107 @@
+conditions:
+- message: 'undeclared: New, Registry, Registry.Counter, Registry.Gauge, Registry.GaugeFunc,
+    Registry.Handler, Registry.Listen, Registry.Name, Registry.Registry, Registry.Render,
+    Registry.Summary, Server, Server.Address, Server.Close'
+  reason: InterfacesMissing
+  status: "False"
+  type: CodeSynced
+- message: observed facts match the synced fingerprint
+  reason: FingerprintEqual
+  status: "False"
+  type: Drifted
+- message: the spec passes the validator
+  reason: ValidatorPassed
+  status: "True"
+  type: SpecValid
+observed:
+  files:
+  - impl/metrics/metrics.go
+  - impl/metrics/metrics_test.go
+  fingerprint: 24d04ad5674a078ef487488f75f3606f7539a9c056ef1b72f63d77320f2df886
+  interfaces:
+  - codegraphId: struct:7917d94287fa848087ff53481834da21
+    file: impl/metrics/metrics.go
+    kind: struct
+    line: 15
+    name: Registry
+  - codegraphId: function:3dd18f3afa474317bc20bf9d8ce521ed
+    file: impl/metrics/metrics.go
+    kind: function
+    line: 21
+    name: New
+    signature: (prefix string) *Registry
+  - codegraphId: method:398ced1f3e757d374616550142bd5518
+    file: impl/metrics/metrics.go
+    kind: method
+    line: 25
+    name: Registry.Registry
+    signature: () *prometheus.Registry
+  - codegraphId: method:75c11a332140d7b3055ad5d064bf82cf
+    file: impl/metrics/metrics.go
+    kind: method
+    line: 33
+    name: Registry.Name
+    signature: (name string) string
+  - codegraphId: method:b518b6626d0caa622f7f0fa1c0410bcf
+    file: impl/metrics/metrics.go
+    kind: method
+    line: 40
+    name: Registry.Counter
+    signature: (name, help string) prometheus.Counter
+  - codegraphId: method:7c6900816ec7f4f0413e76c1f65af404
+    file: impl/metrics/metrics.go
+    kind: method
+    line: 45
+    name: Registry.Gauge
+    signature: (name, help string) prometheus.Gauge
+  - codegraphId: method:22dbba2741b262a6e8f413f68c6881a9
+    file: impl/metrics/metrics.go
+    kind: method
+    line: 50
+    name: Registry.GaugeFunc
+    signature: (name, help string, value func() float64) prometheus.GaugeFunc
+  - codegraphId: method:54ddf7ba8219fb9150866ee200bac2ce
+    file: impl/metrics/metrics.go
+    kind: method
+    line: 58
+    name: Registry.Summary
+    signature: (name, help string) prometheus.Summary
+  - codegraphId: method:b5bbba2315db1d50de247c1650bdff0c
+    file: impl/metrics/metrics.go
+    kind: method
+    line: 76
+    name: Registry.Render
+    signature: (w io.Writer) error
+  - codegraphId: method:85f974cd4e6426f92ba1d7e4a6f5c3e7
+    file: impl/metrics/metrics.go
+    kind: method
+    line: 90
+    name: Registry.Handler
+    signature: () http.Handler
+  - codegraphId: struct:a14e163798928aaf7cacdaa7f5b3e1cb
+    file: impl/metrics/metrics.go
+    kind: struct
+    line: 94
+    name: Server
+  - codegraphId: method:efe5348355d57e0d4f64052375fb2ca7
+    file: impl/metrics/metrics.go
+    kind: method
+    line: 100
+    name: Registry.Listen
+    signature: (address string) (*Server, error)
+  - codegraphId: method:5aa29e31405d7485061154e56775d604
+    file: impl/metrics/metrics.go
+    kind: method
+    line: 112
+    name: Server.Address
+    signature: () string
+  - codegraphId: method:dafe620a88e59c54431ba7b2aa5c720e
+    file: impl/metrics/metrics.go
+    kind: method
+    line: 119
+    name: Server.Close
+    signature: () error
+observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+realizedSpecHash: 08977ae3da91070a25596c4a8d986528100c16e0b1da3656bd2803be137cc3ef
+syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+syncedFingerprint: 24d04ad5674a078ef487488f75f3606f7539a9c056ef1b72f63d77320f2df886

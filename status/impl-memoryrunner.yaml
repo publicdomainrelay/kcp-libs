@@ -1,0 +1,105 @@
+conditions:
+- message: 'undeclared: Engine, Engine.Observe, Engine.Probe, Engine.Start, Engine.Stop,
+    EngineOptions, NewEngine, NewPod, Pod, Pod.Observe, Pod.Probe, Pod.Start, Pod.Stop,
+    PodOptions'
+  reason: InterfacesMissing
+  status: "False"
+  type: CodeSynced
+- message: observed facts match the synced fingerprint
+  reason: FingerprintEqual
+  status: "False"
+  type: Drifted
+- message: the spec passes the validator
+  reason: ValidatorPassed
+  status: "True"
+  type: SpecValid
+observed:
+  files:
+  - impl/memoryrunner/memoryrunner.go
+  - impl/memoryrunner/memoryrunner_test.go
+  fingerprint: f3ba58fab141e24d3435bfe73fbe29c5fcf88daaf6fbb478abb508b912b68ec8
+  interfaces:
+  - codegraphId: struct:ac6c667397cefb3293ada1d745b0df58
+    file: impl/memoryrunner/memoryrunner.go
+    kind: struct
+    line: 13
+    name: PodOptions
+  - codegraphId: struct:f1cb1d1b9762a5263f685d1b1a57baa4
+    file: impl/memoryrunner/memoryrunner.go
+    kind: struct
+    line: 21
+    name: Pod
+  - codegraphId: function:e28103a134b3e9ac6daaf0bb72e41005
+    file: impl/memoryrunner/memoryrunner.go
+    kind: function
+    line: 41
+    name: NewPod
+    signature: (opts PodOptions) *Pod
+  - codegraphId: method:806b7d8c875ce7fdb1779fc6b3eb84f8
+    file: impl/memoryrunner/memoryrunner.go
+    kind: method
+    line: 51
+    name: Pod.Start
+    signature: (_ context.Context, req runner.PodRequest) (string, error)
+  - codegraphId: method:d13dc67d5b49f32d887748200e8e6880
+    file: impl/memoryrunner/memoryrunner.go
+    kind: method
+    line: 59
+    name: Pod.Observe
+    signature: (_ context.Context, runID string) (runner.PodStatus, error)
+  - codegraphId: method:e9fd6d2481d5bc0aad2f394f8ba186eb
+    file: impl/memoryrunner/memoryrunner.go
+    kind: method
+    line: 73
+    name: Pod.Stop
+    signature: (_ context.Context, runID string) error
+  - codegraphId: method:7a9767b282a97214edbe56a9c367cbf9
+    file: impl/memoryrunner/memoryrunner.go
+    kind: method
+    line: 86
+    name: Pod.Probe
+    signature: (_ context.Context, _ string, _ []string, _ time.Duration) (bool, error)
+  - codegraphId: struct:ee18afe6dcdfa47419c426a3dd83071d
+    file: impl/memoryrunner/memoryrunner.go
+    kind: struct
+    line: 90
+    name: EngineOptions
+  - codegraphId: struct:9d329f0ad839a867f04ada3209850157
+    file: impl/memoryrunner/memoryrunner.go
+    kind: struct
+    line: 94
+    name: Engine
+  - codegraphId: function:e2306bd41881382147eaf8b3069895ee
+    file: impl/memoryrunner/memoryrunner.go
+    kind: function
+    line: 112
+    name: NewEngine
+    signature: (opts EngineOptions) *Engine
+  - codegraphId: method:48226f7f64a37307caf8965bccf68855
+    file: impl/memoryrunner/memoryrunner.go
+    kind: method
+    line: 116
+    name: Engine.Start
+    signature: (_ context.Context, _ runner.EngineRequest) (string, error)
+  - codegraphId: method:098390ace6e69e0022deef1529cb656b
+    file: impl/memoryrunner/memoryrunner.go
+    kind: method
+    line: 124
+    name: Engine.Observe
+    signature: (_ context.Context, runID string) (runner.EngineStatus, error)
+  - codegraphId: method:ee1b796b776a0010bd5381e7774de163
+    file: impl/memoryrunner/memoryrunner.go
+    kind: method
+    line: 138
+    name: Engine.Stop
+    signature: (_ context.Context, runID string) error
+  - codegraphId: method:49f3a507847759e15ebe12029f4d7ab6
+    file: impl/memoryrunner/memoryrunner.go
+    kind: method
+    line: 147
+    name: Engine.Probe
+    signature: (_ context.Context, _ string, _ []string, _ time.Duration) (bool, error)
+observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+realizedSpecHash: 5c4919719638ce9c9cc6b9082072ab3ae68b7e0708e0cdc4ef9ba16c29eee316
+syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+syncedFingerprint: f3ba58fab141e24d3435bfe73fbe29c5fcf88daaf6fbb478abb508b912b68ec8
