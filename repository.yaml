@@ -16,6 +16,7 @@ spec:
 status:
   headCommit: 51a1c3e1cd2278b3d8a73e53795b2dc3faa0c5a8
   indexedCommit: 51a1c3e1cd2278b3d8a73e53795b2dc3faa0c5a8
+  observedCommit: 51a1c3e1cd2278b3d8a73e53795b2dc3faa0c5a8
   phase: Populated
   contexts:
     total: 44
