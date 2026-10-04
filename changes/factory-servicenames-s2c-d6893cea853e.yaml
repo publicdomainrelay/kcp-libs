@@ -17,5 +17,36 @@ spec:
     - +r.workspace-source-tests
     - +r.workspace-source-widens-the-token-set
 status:
-  phase: Running
-  message: the agent is realizing factory-servicenames
+  phase: Succeeded
+  branch: spec/factory-servicenames/d6893cea
+  commit: 14dcfd78fe3271e82320f9c28b712d6304e6ef72
+  filesTouched:
+  - factory/servicenames/servicenames.go
+  - factory/servicenames/servicenames_test.go
+  agentLog: |-
+    Done. `go test ./...` exit 0.
+
+    Changes in `factory/servicenames/servicenames.go`:
+    - `Workspaces` interface (`Clusters(ctx) []string`) + `WorkspacesFunc` adapter; `Options.Workspaces` field.
+    - `clusterName` helper: resolves logical cluster through `Paths` when non-empty, else unchanged. `Name` uses it.
+    - `Tokens` keys each mint by `clusterName`, so token key equals cluster string in service name; skips a key already minted (dedup).
+    - `Env` workspaces = table clusters ∪ workspace source clusters ∪ target's own cluster, deduped; target cluster added even when self address empty.
+
+    Tests added in `factory/servicenames/servicenames_test.go`: no-pod cluster minted under path key, nil source adds nothing, duplicate cluster minted once.
+
+    verify: exit 0, 229ms, 37 ok, 7 without tests
+  message: 'realized factory-servicenames on spec/factory-servicenames/d6893cea: 2
+    file(s) touched, verify exit 0'
+  progress:
+    turns: 1
+    tools:
+    - tool: Edit
+      count: 2
+    - tool: Read
+      count: 2
+    files:
+    - factory/servicenames/servicenames.go
+    - factory/servicenames/servicenames_test.go
+    notes: 2
+    first: "2026-10-04T23:19:48Z"
+    last: "2026-10-04T23:20:22Z"
