@@ -9,5 +9,8 @@ _The resolved code references are regenerated on every run. Cite the ids above r
 <!-- SPECD_MANAGED_BEGIN -->
 ## Resolved code references
 
-_None yet._
+- `file:common/kcp/kcp.go` file kcp.go (common/kcp/kcp.go)
+- `file:common/kcp/kcp_test.go` file kcp_test.go (common/kcp/kcp_test.go)
+- `function:027166c10dcc0d8f2f48420216ff5951` function ServiceFQDN (common/kcp/kcp.go)
+- `function:0b14d327c26ec834adfa4a6551d0fc8c` function ServiceLabels (common/kcp/kcp.go)
 <!-- SPECD_MANAGED_END -->

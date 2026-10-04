@@ -2,6 +2,8 @@ apiVersion: specs.publicdomainrelay.dev/v1alpha1
 codeRefIndex:
 - file:common/outputs/outputs.go outputs.go@common/outputs/outputs.go
 - file:common/outputs/outputs_test.go outputs_test.go@common/outputs/outputs_test.go
+- function:1f7915d8cd9aa1f3759d833f5af90128 StringifyValue@common/outputs/outputs.go:19
+- function:d16f38628fc00d680c6f54309865e821 Stringify@common/outputs/outputs.go:8
 kind: SystemContext
 metadata:
   name: common-outputs

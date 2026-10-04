@@ -1,16 +1,36 @@
 conditions:
-- message: 'missing: ServiceFQDN, ServiceLabels; unresolved: r.fqdn-default-namespace:
-    file:common/kcp/kcp.go, r.fqdn-default-namespace: function:027166c10dcc0d8f2f48420216ff5951,
-    r.fqdn-known-shapes: file:common/kcp/kcp_test.go, r.labels-root-only-empty: function:0b14d327c26ec834adfa4a6551d0fc8c'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
-- message: no synced fingerprint has been recorded yet
-  reason: NotSyncedYet
+- message: observed facts match the synced fingerprint
+  reason: FingerprintEqual
   status: "False"
   type: Drifted
 - message: the spec passes the validator
   reason: ValidatorPassed
   status: "True"
   type: SpecValid
-observed: {}
+observed:
+  files:
+  - common/kcp/kcp.go
+  - common/kcp/kcp_test.go
+  fingerprint: f02d64cd71c3557976f663f2fa352997f5ef648661b81a2e7e87d3fd236e75ad
+  interfaces:
+  - codegraphId: function:0b14d327c26ec834adfa4a6551d0fc8c
+    file: common/kcp/kcp.go
+    kind: function
+    line: 17
+    name: ServiceLabels
+    signature: (logicalCluster string) string
+  - codegraphId: function:027166c10dcc0d8f2f48420216ff5951
+    file: common/kcp/kcp.go
+    kind: function
+    line: 29
+    name: ServiceFQDN
+    signature: (name, namespace, logicalCluster, domain string) string
+observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+realizedSpecHash: 2544e8fa49e3c11e4e21cc6a6d1348ac07ac4f4856882a6a13200f8118231589
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: f02d64cd71c3557976f663f2fa352997f5ef648661b81a2e7e87d3fd236e75ad

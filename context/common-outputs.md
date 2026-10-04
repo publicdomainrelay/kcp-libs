@@ -9,5 +9,8 @@ _The resolved code references are regenerated on every run. Cite the ids above r
 <!-- SPECD_MANAGED_BEGIN -->
 ## Resolved code references
 
-_None yet._
+- `file:common/outputs/outputs.go` file outputs.go (common/outputs/outputs.go)
+- `file:common/outputs/outputs_test.go` file outputs_test.go (common/outputs/outputs_test.go)
+- `function:1f7915d8cd9aa1f3759d833f5af90128` function StringifyValue (common/outputs/outputs.go)
+- `function:d16f38628fc00d680c6f54309865e821` function Stringify (common/outputs/outputs.go)
 <!-- SPECD_MANAGED_END -->

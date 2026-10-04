@@ -1,6 +1,9 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
 codeRefIndex:
 - file:common/logging/logging.go logging.go@common/logging/logging.go
+- function:630830e31f658442858bdfe9d070a2bd New@common/logging/logging.go:16
+- function:7e515b3fbe4a91f9d8b15bdd7d149aca Discard@common/logging/logging.go:28
+- struct:e5309481f2a5ce717212c88d3d90aa51 Options@common/logging/logging.go:8
 kind: SystemContext
 metadata:
   name: common-logging

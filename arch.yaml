@@ -2354,9 +2354,23 @@ system_contexts:
       be rendered as Deno flags, rejecting commas and empty values, and return nil
       for a permission set that can be rendered.
   upstream: self
-- codeRefIndex:
+- code:
+  - common/expiringmap/expiringmap.go
+  - common/expiringmap/expiringmap_test.go
+  codeRefIndex:
   - file:common/expiringmap/expiringmap.go expiringmap.go@common/expiringmap/expiringmap.go
   - file:common/expiringmap/expiringmap_test.go expiringmap_test.go@common/expiringmap/expiringmap_test.go
+  - function:b650d97e85ca58be6eed757f0ef38420 NewMap@common/expiringmap/expiringmap.go:22
+  - method:17d4b8f64aa42e72ce9ddd19f369e46f Map.Len@common/expiringmap/expiringmap.go:98
+  - method:565f61a59f8a37b307e3fa936cd2346d Map.Expire@common/expiringmap/expiringmap.go:65
+  - method:7b7c2151e545ad092e0d5272ef61b892 Map.SetPruning@common/expiringmap/expiringmap.go:87
+  - method:7ec6b2c7bd76f63321cd3c4b190a603f Map.DeleteIf@common/expiringmap/expiringmap.go:57
+  - method:82e839c35aabb06ef821933917ec63f0 Map.Delete@common/expiringmap/expiringmap.go:51
+  - method:833590fe505d58158e5ad88ed13ba9cc Map.Set@common/expiringmap/expiringmap.go:29
+  - method:8f9103006c5e1c080fd378e749aabca6 Map.Range@common/expiringmap/expiringmap.go:73
+  - method:b2e22247efe32229253f3fb18c64c607 Map.Get@common/expiringmap/expiringmap.go:35
+  - struct:0cf196f032937400c5ba73ab5c3d51ff Map@common/expiringmap/expiringmap.go:14
+  - struct:4591c45a4e14e38ecea0056987c4a802 Entry@common/expiringmap/expiringmap.go:8
   id: sc.common-expiringmap
   intent: 'This context exists as the shared expiry primitive for the wider kcp-libs
     project: callers that need a bounded-lifetime cache (for example the job allocator''s
@@ -2516,9 +2530,14 @@ system_contexts:
       time or accepted by the non-nil prune predicate, then stores the new key and
       value under the same lock, so the pruning and the insert are atomic.
   upstream: self
-- codeRefIndex:
+- code:
+  - common/kcp/kcp.go
+  - common/kcp/kcp_test.go
+  codeRefIndex:
   - file:common/kcp/kcp.go kcp.go@common/kcp/kcp.go
   - file:common/kcp/kcp_test.go kcp_test.go@common/kcp/kcp_test.go
+  - function:027166c10dcc0d8f2f48420216ff5951 ServiceFQDN@common/kcp/kcp.go:29
+  - function:0b14d327c26ec834adfa4a6551d0fc8c ServiceLabels@common/kcp/kcp.go:17
   id: sc.common-kcp
   intent: This context exists so the naming rules that map a KCP logical cluster path
     onto DNS labels and fully qualified service names stay specified in one place.
@@ -2595,8 +2614,13 @@ system_contexts:
     text: Table-driven tests SHOULD keep covering ServiceLabels and ServiceFQDN, including
       the root-only and empty-namespace cases.
   upstream: self
-- codeRefIndex:
+- code:
+  - common/logging/logging.go
+  codeRefIndex:
   - file:common/logging/logging.go logging.go@common/logging/logging.go
+  - function:630830e31f658442858bdfe9d070a2bd New@common/logging/logging.go:16
+  - function:7e515b3fbe4a91f9d8b15bdd7d149aca Discard@common/logging/logging.go:28
+  - struct:e5309481f2a5ce717212c88d3d90aa51 Options@common/logging/logging.go:8
   id: sc.common-logging
   intent: 'This context exists so that structured logging has one definition instead
     of every package building its own slog handler. It fixes the decisions that would
@@ -2659,9 +2683,14 @@ system_contexts:
     text: Loggers should be produced only through Options via New or Discard, so format,
       default level, and the service attribute stay in one place.
   upstream: self
-- codeRefIndex:
+- code:
+  - common/outputs/outputs.go
+  - common/outputs/outputs_test.go
+  codeRefIndex:
   - file:common/outputs/outputs.go outputs.go@common/outputs/outputs.go
   - file:common/outputs/outputs_test.go outputs_test.go@common/outputs/outputs_test.go
+  - function:1f7915d8cd9aa1f3759d833f5af90128 StringifyValue@common/outputs/outputs.go:19
+  - function:d16f38628fc00d680c6f54309865e821 Stringify@common/outputs/outputs.go:8
   id: sc.common-outputs
   intent: 'This context exists to fix the contract for converting arbitrary JSON-ish
     values into the string map that kcp surfaces as outputs. The two functions are

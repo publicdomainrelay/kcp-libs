@@ -1,17 +1,40 @@
 conditions:
-- message: 'missing: Discard, New, Options; unresolved: r.discard-writes-nothing:
-    file:common/logging/logging.go, r.discard-writes-nothing: function:7e515b3fbe4a91f9d8b15bdd7d149aca,
-    r.new-defaults-level-to-info: function:630830e31f658442858bdfe9d070a2bd, r.new-defaults-level-to-info:
-    struct:e5309481f2a5ce717212c88d3d90aa51'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
-- message: no synced fingerprint has been recorded yet
-  reason: NotSyncedYet
+- message: observed facts match the synced fingerprint
+  reason: FingerprintEqual
   status: "False"
   type: Drifted
 - message: the spec passes the validator
   reason: ValidatorPassed
   status: "True"
   type: SpecValid
-observed: {}
+observed:
+  files:
+  - common/logging/logging.go
+  fingerprint: d291177aa9649b3089a9ccef3f20d5605ccb1ef08e5415c915f5a58cf547de4d
+  interfaces:
+  - codegraphId: struct:e5309481f2a5ce717212c88d3d90aa51
+    file: common/logging/logging.go
+    kind: struct
+    line: 8
+    name: Options
+  - codegraphId: function:630830e31f658442858bdfe9d070a2bd
+    file: common/logging/logging.go
+    kind: function
+    line: 16
+    name: New
+    signature: (opts Options) *slog.Logger
+  - codegraphId: function:7e515b3fbe4a91f9d8b15bdd7d149aca
+    file: common/logging/logging.go
+    kind: function
+    line: 28
+    name: Discard
+    signature: () *slog.Logger
+observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+realizedSpecHash: e047c051da5d59000e16121d1a292cda587bfc00a98c760a9a5ace274e4968be
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: d291177aa9649b3089a9ccef3f20d5605ccb1ef08e5415c915f5a58cf547de4d

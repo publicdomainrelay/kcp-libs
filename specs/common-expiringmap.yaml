@@ -2,6 +2,17 @@ apiVersion: specs.publicdomainrelay.dev/v1alpha1
 codeRefIndex:
 - file:common/expiringmap/expiringmap.go expiringmap.go@common/expiringmap/expiringmap.go
 - file:common/expiringmap/expiringmap_test.go expiringmap_test.go@common/expiringmap/expiringmap_test.go
+- function:b650d97e85ca58be6eed757f0ef38420 NewMap@common/expiringmap/expiringmap.go:22
+- method:17d4b8f64aa42e72ce9ddd19f369e46f Map.Len@common/expiringmap/expiringmap.go:98
+- method:565f61a59f8a37b307e3fa936cd2346d Map.Expire@common/expiringmap/expiringmap.go:65
+- method:7b7c2151e545ad092e0d5272ef61b892 Map.SetPruning@common/expiringmap/expiringmap.go:87
+- method:7ec6b2c7bd76f63321cd3c4b190a603f Map.DeleteIf@common/expiringmap/expiringmap.go:57
+- method:82e839c35aabb06ef821933917ec63f0 Map.Delete@common/expiringmap/expiringmap.go:51
+- method:833590fe505d58158e5ad88ed13ba9cc Map.Set@common/expiringmap/expiringmap.go:29
+- method:8f9103006c5e1c080fd378e749aabca6 Map.Range@common/expiringmap/expiringmap.go:73
+- method:b2e22247efe32229253f3fb18c64c607 Map.Get@common/expiringmap/expiringmap.go:35
+- struct:0cf196f032937400c5ba73ab5c3d51ff Map@common/expiringmap/expiringmap.go:14
+- struct:4591c45a4e14e38ecea0056987c4a802 Entry@common/expiringmap/expiringmap.go:8
 kind: SystemContext
 metadata:
   name: common-expiringmap
