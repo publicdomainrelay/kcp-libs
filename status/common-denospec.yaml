@@ -1,8 +1,8 @@
 conditions:
-- message: 'undeclared: Args, EffectiveRestartPolicy, ExecProbe, Permission, Permissions,
-    PodTemplate, ProbeCommand, RestartPolicy, ServiceAccountRef, Validate'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -74,6 +74,6 @@ observed:
     name: Args
     signature: (p *Permissions) ([]string, error)
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: d494f396ee1b7b518346dfc08dc1ccc86074f8b84a664b4ab74cbdaa075fedbf
+realizedSpecHash: be51cda5782286f6d8ce82635599584af4fb4233ae6812fddd8cf5648e0f67c2
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: 4f798ca4c98967ec7a6d2281a9580b8a04cbb3c3a0c5784b9c2c5325db499521

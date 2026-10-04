@@ -10,5 +10,17 @@ spec:
   systemContext: common-denospec
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing common-denospec
-  phase: Running
+  agentLog: 'The common/denospec package holds the Go shapes that describe a Deno
+    workload for the KCP libraries: ServiceAccountRef names the identity a pod runs
+    as, Permission and Permissions model Deno''s permission flags in both allow and
+    deny form, PodTemplate and ExecProbe describe the pod and its probe command, and
+    RestartPolicy carries the restart behaviour. Beyond the plain data shapes, the
+    package turns that declaration into the two things a consumer needs at runtime:
+    Permissions.Validate rejects permission values that cannot be expressed as Deno
+    flags, and Permissions.Args renders the validated permissions into a Deno command-line
+    argument list, with EffectiveRestartPolicy and ProbeCommand supplying the restart
+    choice and the probe invocation line. A contract test cross-checks each shape
+    against the same shape declared by the TypeScript consumer, so a value written
+    from one side decodes as the other.'
+  message: wrote 11 requirement(s) and 10 interface(s) for common-denospec
+  phase: Succeeded
