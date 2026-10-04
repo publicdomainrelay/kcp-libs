@@ -4,5 +4,128 @@ metadata:
   name: common-condition
   namespace: default
 spec:
+  intent: 'This context exists to specify the shared condition helpers that kcp-libs
+    controllers use when reporting status. Rather than each controller reimplementing
+    condition bookkeeping, common/condition centralises it: a single Set entry point
+    that records type, status, reason, message and observed generation through meta.SetStatusCondition,
+    thin SetTrue/SetFalse wrappers over that entry point, and the small reader/eraser
+    functions Of, Is, Remove and Copy that callers need around it. It exists so condition
+    handling is uniform, so the observed generation is never forgotten, and so callers
+    can hand out copies of a condition list without aliasing the live one.'
+  interfaces:
+  - file: common/condition/condition.go
+    kind: function
+    name: Copy
+    signature: func Copy(in []metav1.Condition) []metav1.Condition
+  - file: common/condition/condition.go
+    kind: function
+    name: Is
+    signature: func Is(list []metav1.Condition, kind string, status metav1.ConditionStatus)
+      bool
+  - file: common/condition/condition.go
+    kind: function
+    name: Of
+    signature: func Of(list []metav1.Condition, kind string) *metav1.Condition
+  - file: common/condition/condition.go
+    kind: function
+    name: Remove
+    signature: func Remove(list *[]metav1.Condition, kind string)
+  - file: common/condition/condition.go
+    kind: function
+    name: Set
+    signature: func Set(list *[]metav1.Condition, generation int64, status metav1.ConditionStatus,
+      kind, reason, message string)
+  - file: common/condition/condition.go
+    kind: function
+    name: SetFalse
+    signature: func SetFalse(list *[]metav1.Condition, generation int64, kind, reason,
+      message string)
+  - file: common/condition/condition.go
+    kind: function
+    name: SetTrue
+    signature: func SetTrue(list *[]metav1.Condition, generation int64, kind, reason,
+      message string)
   repository: kcp-libs
+  requirements:
+  - codeRefs:
+    - file:common/condition/condition.go
+    - function:741af730ad7d212947f2d9d42bf55557
+    id: r.copy-independent-clone
+    level: MUST
+    text: Copy must return an independent clone of the input condition slice, so that
+      mutating the returned slice does not change the input.
+  - codeRefs:
+    - file:common/condition/condition.go
+    - function:e1d40351c0eded29676ce645d7c908ab
+    id: r.is-status-test
+    level: MUST
+    text: Is must report whether the condition of the given kind exists in the list
+      and carries the given status.
+  - codeRefs:
+    - file:common/condition/condition.go
+    - function:d9d1ab909c15980c4699a3cb56bea924
+    - function:ead30502c3fe49e900a144e9e71219a5
+    id: r.mutations-through-pointer
+    level: SHOULD
+    text: The mutating helpers Set, SetTrue, SetFalse and Remove should take a pointer
+      to the condition slice and update the caller's list in place rather than returning
+      a new list.
+  - codeRefs:
+    - file:common/condition/condition_test.go
+    - function:d9d1ab909c15980c4699a3cb56bea924
+    id: r.observed-generation-recorded
+    level: MUST
+    text: Set must record the supplied generation as the condition's ObservedGeneration,
+      so a condition written at generation 3 reports ObservedGeneration 3.
+  - codeRefs:
+    - file:common/condition/condition.go
+    - function:2f22991378805fd945c1a0d94b1e9b0e
+    id: r.of-lookup-or-nil
+    level: MUST
+    text: Of must return a pointer to the condition of the given kind in the list,
+      and nil when no condition of that kind is present.
+  - codeRefs:
+    - file:common/condition/condition.go
+    - function:ead30502c3fe49e900a144e9e71219a5
+    id: r.remove-by-kind
+    level: MUST
+    text: Remove must delete the condition of the given kind from the list, after
+      which Of for that kind returns nil.
+  - codeRefs:
+    - file:common/condition/condition.go
+    - function:d9d1ab909c15980c4699a3cb56bea924
+    id: r.set-delegates-to-metav1
+    level: MUST
+    text: Set must write a metav1.Condition carrying the given type, status, reason,
+      message and observed generation, by delegating to meta.SetStatusCondition on
+      the caller's list pointer.
+  - codeRefs:
+    - file:common/condition/condition.go
+    - function:eee1a190d5df1941cf6cb5d346a99684
+    id: r.set-false-shorthand
+    level: MUST
+    text: SetFalse must set the condition with status metav1.ConditionFalse, forwarding
+      the generation, kind, reason and message to Set.
+  - codeRefs:
+    - file:common/condition/condition_test.go
+    - function:d9d1ab909c15980c4699a3cb56bea924
+    id: r.set-replaces-same-type
+    level: MUST
+    text: A set must replace the previous condition of the same type, so the list
+      holds at most one condition per type and its length does not grow on repeated
+      sets.
+  - codeRefs:
+    - file:common/condition/condition.go
+    - function:a5845019d1d1a5d547885188f6cf2d6a
+    id: r.set-true-shorthand
+    level: MUST
+    text: SetTrue must set the condition with status metav1.ConditionTrue, forwarding
+      the generation, kind, reason and message to Set.
+  - codeRefs:
+    - file:common/condition/condition.go
+    - file:common/condition/condition_test.go
+    id: r.unchanged-condition-keeps-transition-time
+    level: MUST
+    text: Setting a condition whose type, status, reason and message are unchanged
+      must preserve the existing transition time rather than resetting it.
   upstream: self

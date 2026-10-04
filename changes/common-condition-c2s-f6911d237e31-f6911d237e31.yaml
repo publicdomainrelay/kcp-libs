@@ -10,5 +10,15 @@ spec:
   systemContext: common-condition
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing common-condition
-  phase: Running
+  agentLog: 'The common/condition package is a small helper layer over Kubernetes
+    metav1.Condition slices. It gives controllers seven functions: Copy for taking
+    an independent snapshot of a condition list, Set for writing one condition of
+    a given type with metadata, the SetTrue and SetFalse shorthands for the two boolean
+    status values, Remove for deleting a condition by type, Of for looking one condition
+    up by type, and Is for testing whether a condition of a given type currently carries
+    a given status. All mutation happens through a pointer to the slice so the caller''s
+    list is updated in place, and the package delegates the actual list maintenance
+    to k8s.io/apimachinery meta.SetStatusCondition. Tests in condition_test.go cover
+    set-and-is, removal, copy independence, and transition-time preservation.'
+  message: wrote 11 requirement(s) and 7 interface(s) for common-condition
+  phase: Succeeded

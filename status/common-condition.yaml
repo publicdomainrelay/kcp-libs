@@ -1,7 +1,8 @@
 conditions:
-- message: 'undeclared: Copy, Is, Of, Remove, Set, SetFalse, SetTrue'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -64,6 +65,6 @@ observed:
     signature: (list []metav1.Condition, kind string, status metav1.ConditionStatus)
       bool
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: b29f0814e4e2f1a093ff1b779915b31e563d9810ba0e787cb1c2ec5163260713
+realizedSpecHash: 9e19ee58995b1622cb584cb9ec1fa62f4126964c2e3afe989fb8b55ec03a7339
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: 03969d86347d250731d2493bfa63d3fd951eb36fc3df2845519d5d30c6dc9c6b
