@@ -1,12 +1,12 @@
-syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-syncedFingerprint: b82792fd142a2e2a51b90788af96c30a625b6639391e9709b5cc1cadfd50e421
-realizedSpecHash: 4d1c0cbdbbf743fa9968ac7eddf2dae33e4e822cabc33c65fbba9880b814ff98
+observedCommit: 14dcfd78fe3271e82320f9c28b712d6304e6ef72
+syncedCommit: 14dcfd78fe3271e82320f9c28b712d6304e6ef72
+syncedFingerprint: 516bcb2f05bd78fc0d422ebaa6aee9baaf6d4b05f64b85437bc43e9a6b33bff8
+realizedSpecHash: f463ea163b65bce3ff04788414ed926be602ef620a2f94c9335dc47706f455e2
 conditions:
 - type: CodeSynced
-  status: "True"
-  reason: InterfacesObserved
-  message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
+  status: "False"
+  reason: InterfacesMissing
+  message: 'undeclared: Workspaces, Workspaces.Clusters, WorkspacesFunc, WorkspacesFunc.Clusters'
 - type: Drifted
   status: "False"
   reason: FingerprintEqual
@@ -42,74 +42,96 @@ observed:
     file: factory/servicenames/servicenames.go
     line: 39
     codegraphId: method:9f382eff81d8cc14c42263ff6cc96655
-  - name: PathResolver
+  - name: Workspaces
     kind: interface
     file: factory/servicenames/servicenames.go
     line: 43
-    codegraphId: interface:519ba0a5dc01e2e03c8ae8130b661f15
+    codegraphId: interface:4ebaec1f74109d6dcdd5736cd559e3a4
+  - name: Workspaces.Clusters
+    kind: method
+    signature: (ctx context.Context) []string
+    file: factory/servicenames/servicenames.go
+    line: 44
+    codegraphId: method:cf182c7f9ed04c1919dc7b4d08b33cad
+  - name: WorkspacesFunc
+    kind: type_alias
+    file: factory/servicenames/servicenames.go
+    line: 47
+    codegraphId: type_alias:a6d9b9d4187d6bb1511f3a5ec95fa053
+  - name: WorkspacesFunc.Clusters
+    kind: method
+    signature: (ctx context.Context) []string
+    file: factory/servicenames/servicenames.go
+    line: 49
+    codegraphId: method:7f75929e6209618a7c76aae36b0b0ced
+  - name: PathResolver
+    kind: interface
+    file: factory/servicenames/servicenames.go
+    line: 53
+    codegraphId: interface:c70a17259fae28f88b3e1922fd769641
   - name: PathResolver.Lookup
     kind: method
     signature: (ctx context.Context, logicalCluster string) string
     file: factory/servicenames/servicenames.go
-    line: 44
-    codegraphId: method:3bf4a3c644a5c736a402c5c943469567
+    line: 54
+    codegraphId: method:9fac36ee8b8d24e43bbc4732929d149c
   - name: PathResolverFunc
     kind: type_alias
     file: factory/servicenames/servicenames.go
-    line: 47
-    codegraphId: type_alias:d0b47bece9defe5890614e1e7fd29a77
+    line: 57
+    codegraphId: type_alias:18970bc4f4801584a91a93a1396a18a1
   - name: PathResolverFunc.Lookup
     kind: method
     signature: (ctx context.Context, logicalCluster string) string
     file: factory/servicenames/servicenames.go
-    line: 49
-    codegraphId: method:ccfd372e76badab8463bd241875ea2cd
+    line: 59
+    codegraphId: method:cae3fb88acdade71c05e6f034630da80
   - name: Options
     kind: struct
     file: factory/servicenames/servicenames.go
-    line: 53
-    codegraphId: struct:cea2d734e279f4a25d0548390b498f77
+    line: 63
+    codegraphId: struct:6a9fe9f2761d8754abd4ba3af073a35f
   - name: Resolver
     kind: struct
     file: factory/servicenames/servicenames.go
-    line: 69
-    codegraphId: struct:3112320f513f73cfe648eedde3b1fdc4
+    line: 81
+    codegraphId: struct:dd81ce362a0aa33a9ebf018c6e22efaa
   - name: New
     kind: function
     signature: (opts Options) *Resolver
     file: factory/servicenames/servicenames.go
-    line: 73
-    codegraphId: function:b19b27cc115a548b83269276a58c99fc
+    line: 85
+    codegraphId: function:37ab5725bd1c20dbfd19a629daa2966c
   - name: Resolver.Name
     kind: method
     signature: (ctx context.Context, name, namespace, logicalCluster string) string
     file: factory/servicenames/servicenames.go
-    line: 83
-    codegraphId: method:4278b3fe1612ff604bfe889cf282fc0d
+    line: 104
+    codegraphId: method:fde6488c215fafdc9b615405664720f8
   - name: Resolver.Table
     kind: method
     signature: (ctx context.Context) (map[string]string, []string)
     file: factory/servicenames/servicenames.go
-    line: 93
-    codegraphId: method:af52145174fd9601d169c4b0b89a4a1a
+    line: 108
+    codegraphId: method:edee24a98f35bb7511a0389d67d2ebbf
   - name: Resolver.Tokens
     kind: method
     signature: (ctx context.Context, workspaces []string, account *denospec.ServiceAccountRef)
       string
     file: factory/servicenames/servicenames.go
-    line: 118
-    codegraphId: method:1d9eaefc92217c5a7cc9fcb25ad6cf14
+    line: 133
+    codegraphId: method:21dae96a0de0787a3171d9b273266bc6
   - name: Resolver.Env
     kind: method
     signature: (ctx context.Context, target ref.Ref, selfArgs, selfEnv string, account
       *denospec.ServiceAccountRef) map[string]string
     file: factory/servicenames/servicenames.go
-    line: 140
-    codegraphId: method:ad5afdbf8721ab5ce7a03ba3ddcd30e4
+    line: 159
+    codegraphId: method:bfae8f5500472858636c6d1c013433aa
   - name: AdvertisedAddress
     kind: function
     signature: (argsJSON, envJSON string) string
     file: factory/servicenames/servicenames.go
-    line: 166
-    codegraphId: function:07389965e6b38ea0b3612bdad786929e
-  fingerprint: b82792fd142a2e2a51b90788af96c30a625b6639391e9709b5cc1cadfd50e421
+    line: 192
+    codegraphId: function:8a334a3b9191ecba1125496302619eef
+  fingerprint: 516bcb2f05bd78fc0d422ebaa6aee9baaf6d4b05f64b85437bc43e9a6b33bff8

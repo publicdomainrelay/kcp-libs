@@ -1167,22 +1167,22 @@ system_contexts:
   codeRefIndex:
   - file:factory/servicenames/servicenames.go servicenames.go@factory/servicenames/servicenames.go
   - file:factory/servicenames/servicenames_test.go servicenames_test.go@factory/servicenames/servicenames_test.go
-  - function:07389965e6b38ea0b3612bdad786929e AdvertisedAddress@factory/servicenames/servicenames.go:166
-  - function:b19b27cc115a548b83269276a58c99fc New@factory/servicenames/servicenames.go:73
+  - function:37ab5725bd1c20dbfd19a629daa2966c New@factory/servicenames/servicenames.go:85
+  - function:8a334a3b9191ecba1125496302619eef AdvertisedAddress@factory/servicenames/servicenames.go:192
   - interface:3f1bd9500073f2f4d05118ef71f4e7fa Source@factory/servicenames/servicenames.go:33
-  - interface:519ba0a5dc01e2e03c8ae8130b661f15 PathResolver@factory/servicenames/servicenames.go:43
-  - method:1d9eaefc92217c5a7cc9fcb25ad6cf14 Resolver.Tokens@factory/servicenames/servicenames.go:118
-  - method:3bf4a3c644a5c736a402c5c943469567 PathResolver.Lookup@factory/servicenames/servicenames.go:44
-  - method:4278b3fe1612ff604bfe889cf282fc0d Resolver.Name@factory/servicenames/servicenames.go:83
+  - interface:c70a17259fae28f88b3e1922fd769641 PathResolver@factory/servicenames/servicenames.go:53
+  - method:21dae96a0de0787a3171d9b273266bc6 Resolver.Tokens@factory/servicenames/servicenames.go:133
   - method:9f382eff81d8cc14c42263ff6cc96655 SourceFunc.Pods@factory/servicenames/servicenames.go:39
-  - method:ad5afdbf8721ab5ce7a03ba3ddcd30e4 Resolver.Env@factory/servicenames/servicenames.go:140
-  - method:af52145174fd9601d169c4b0b89a4a1a Resolver.Table@factory/servicenames/servicenames.go:93
-  - method:ccfd372e76badab8463bd241875ea2cd PathResolverFunc.Lookup@factory/servicenames/servicenames.go:49
+  - method:9fac36ee8b8d24e43bbc4732929d149c PathResolver.Lookup@factory/servicenames/servicenames.go:54
+  - method:bfae8f5500472858636c6d1c013433aa Resolver.Env@factory/servicenames/servicenames.go:159
+  - method:cae3fb88acdade71c05e6f034630da80 PathResolverFunc.Lookup@factory/servicenames/servicenames.go:59
   - method:ec3d149f59e5f08d064d8abb43c7b47e Source.Pods@factory/servicenames/servicenames.go:34
-  - struct:3112320f513f73cfe648eedde3b1fdc4 Resolver@factory/servicenames/servicenames.go:69
-  - struct:cea2d734e279f4a25d0548390b498f77 Options@factory/servicenames/servicenames.go:53
+  - method:edee24a98f35bb7511a0389d67d2ebbf Resolver.Table@factory/servicenames/servicenames.go:108
+  - method:fde6488c215fafdc9b615405664720f8 Resolver.Name@factory/servicenames/servicenames.go:104
+  - struct:6a9fe9f2761d8754abd4ba3af073a35f Options@factory/servicenames/servicenames.go:63
+  - struct:dd81ce362a0aa33a9ebf018c6e22efaa Resolver@factory/servicenames/servicenames.go:81
+  - type_alias:18970bc4f4801584a91a93a1396a18a1 PathResolverFunc@factory/servicenames/servicenames.go:57
   - type_alias:3403f9a23dfea8c2fabcfb5d23057f58 SourceFunc@factory/servicenames/servicenames.go:37
-  - type_alias:d0b47bece9defe5890614e1e7fd29a77 PathResolverFunc@factory/servicenames/servicenames.go:47
 - id: sc.impl-assets
   name: impl-assets
   spec: specs/impl-assets.yaml
