@@ -2,13 +2,109 @@
 
 Repository: `kcp-libs`
 
-_(empty: write what this context is for)_
+This context exists so that every layer of kcp-libs agrees on the identity and the transport address of a KCP object. A Ref is the identity used as a map key, a cache index key and a workqueue key, so its string form must be stable and shared; BaseHost and ClusterURL exist so that callers holding either a bare host or a host that already carries a /clusters/<logicalCluster> path can still build a correct per-cluster URL. Keeping these helpers in one tiny package prevents the key format and the KCP API path prefix from being re-implemented, and diverging, in each consumer.
 
 _Write the prose above and the fields in the spec block. `codeRefs` and the resolved references below are maintained by the tool; an edit there is lost._
 
 ## spec
 
 ```yaml spec
+interfaces:
+- file: common/ref/ref.go
+  kind: function
+  name: BaseHost
+  signature: func BaseHost(host string) string
+- file: common/ref/ref.go
+  kind: function
+  name: ClusterURL
+  signature: func ClusterURL(host, logicalCluster string) string
+- file: common/ref/ref.go
+  kind: function
+  name: Key
+  signature: func Key(logicalCluster, namespace, name string) string
+- file: common/ref/ref.go
+  kind: function
+  name: New
+  signature: func New(logicalCluster, namespace, name string) Ref
+- file: common/ref/ref.go
+  kind: struct
+  name: Ref
+  signature: type Ref struct { LogicalCluster string; Namespace string; Name string;
+    ResourceVersion string }
+- file: common/ref/ref.go
+  kind: method
+  name: Ref.Key
+  signature: func (r Ref) Key() string
+- file: common/ref/ref.go
+  kind: method
+  name: Ref.WithNamespace
+  signature: func (r Ref) WithNamespace(namespace string) Ref
+- file: common/ref/ref.go
+  kind: method
+  name: Ref.WithResourceVersion
+  signature: func (r Ref) WithResourceVersion(version string) Ref
+requirements:
+- codeRefs:
+  - file:common/ref/ref_test.go
+  - function:757cbe1304d5ad40e0627224acf0be64
+  id: r.base-host-normalization
+  level: MUST
+  text: BaseHost must remove a single trailing slash, and must truncate a host at
+    the first occurrence of the /clusters/ API path prefix, so a host already scoped
+    to a logical cluster reduces to the bare scheme and authority.
+- codeRefs:
+  - file:common/ref/ref_test.go
+  - function:4c5cf31e71ec19179fbbb42d890195d5
+  id: r.cluster-url-build
+  level: MUST
+  text: ClusterURL must build the per-logical-cluster URL by normalizing the host
+    with BaseHost and then appending the /clusters/ prefix and the logical cluster,
+    so an already-scoped host does not accumulate a second cluster path.
+- codeRefs:
+  - file:common/ref/ref_test.go
+  - function:a77844fa6f24528303d849e5ed956c3c
+  - method:4e7c59fd75778a303dccf1476257f32b
+  id: r.key-format
+  level: MUST
+  text: The key of a reference must be the logical cluster, namespace and name joined
+    by single slash characters, with no other separator or escaping, and both the
+    free function and the method must produce exactly the same string.
+- codeRefs:
+  - file:common/ref/ref.go
+  - function:7999d84f451c59ca6a03577995281764
+  id: r.new-leaves-resource-version-empty
+  level: MUST
+  text: New must construct a Ref from the three identity strings and must leave the
+    resource version empty; a resource version is only ever set through the wither.
+- codeRefs:
+  - file:common/ref/ref.go
+  - struct:d0d183e54e296ffe32b06ffd08b347ca
+  id: r.ref-carries-identity
+  level: MUST
+  text: A Ref must carry the logical cluster, the namespace, the object name and an
+    optional resource version as its four exported fields, so consumers can read and
+    compare identity without an accessor.
+- codeRefs:
+  - file:common/ref/ref.go
+  id: r.stdlib-only
+  level: SHOULD
+  text: The package should depend only on the standard library and must not import
+    any kcp client, scheme or workload-runtime package, so every layer of the repository
+    can depend on it without a cycle.
+- codeRefs:
+  - file:common/ref/ref.go
+  - method:2948085699170c0e8f98592fb74fedb5
+  id: r.with-namespace-returns-copy
+  level: SHOULD
+  text: WithNamespace should return a Ref that carries the replacement namespace and
+    otherwise keeps the receiver's fields unchanged, and should not mutate the receiver.
+- codeRefs:
+  - file:common/ref/ref_test.go
+  - method:a10e7cf01872c2cd075539e6dba8e9f4
+  id: r.with-resource-version-returns-copy
+  level: MUST
+  text: WithResourceVersion must return a Ref that carries the given version and otherwise
+    keeps the receiver's identity unchanged, and must not mutate the receiver.
 upstream: self
 ```
 

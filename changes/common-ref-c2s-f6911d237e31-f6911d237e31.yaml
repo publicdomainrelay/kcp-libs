@@ -10,5 +10,14 @@ spec:
   systemContext: common-ref
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing common-ref
-  phase: Running
+  agentLog: 'common/ref is a small leaf package that gives the rest of kcp-libs one
+    canonical way to name a KCP object: a Ref struct holding a logical cluster, an
+    API namespace, an object name and an optional resource version. It renders those
+    four fields to a single slash-joined key string, offers copy-style withers for
+    the resource version and the namespace, and normalizes KCP API hosts by stripping
+    any trailing slash or /clusters/... path before rebuilding a per-logical-cluster
+    URL. The package imports only the standard library strings package and is depended
+    on by the cache, joballoc, runref, queue, controller, kcpstore and reconcile layers,
+    so it stays free of any client, scheme or workload-runtime dependency.'
+  message: wrote 8 requirement(s) and 8 interface(s) for common-ref
+  phase: Succeeded
