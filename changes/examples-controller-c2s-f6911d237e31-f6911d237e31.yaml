@@ -10,5 +10,14 @@ spec:
   systemContext: examples-controller
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing examples-controller
-  phase: Running
+  agentLog: This context is the controller example of kcp-libs (examples/controller/main.go
+    and its test main_test.go). Its single exported entry point is Run, which boots
+    a live kcp cluster, opens a kcpstore against the consumed cluster, awaits the
+    exportwatch endpoints for the published virtual workspace URL, and fails if kcp
+    published none. It seeds two widgets (alpha, beta), builds a controller over informerwatch
+    sources with a cache set and widget indexers, runs the controller in a goroutine,
+    waits for alpha, beta and then gamma to reach the succeeded phase, and finally
+    prints reconcile counts, queue depth, cache age and the rendered metric registry
+    to the output writer.
+  message: wrote 6 requirement(s) and 1 interface(s) for examples-controller
+  phase: Succeeded

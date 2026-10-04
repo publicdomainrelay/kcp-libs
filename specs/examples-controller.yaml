@@ -4,5 +4,62 @@ metadata:
   name: examples-controller
   namespace: default
 spec:
+  intent: 'This context exists to demonstrate, end to end and against a real kcp instance,
+    that the generic controller layer works: a store backed by kcp, an export watch
+    that discovers the virtual workspace URL, an informer-based controller with indexers
+    and a bounded reconcile policy, and metrics. It is an executable example and a
+    test fixture (main_test.go), not library code, so it composes the generic packages
+    (kcpstore, exportwatch, cache, informerwatch, controller, metrics) rather than
+    defining new abstractions.'
+  interfaces:
+  - file: examples/controller/main.go
+    kind: function
+    name: Run
+    signature: func Run(ctx context.Context, out io.Writer) error
   repository: kcp-libs
+  requirements:
+  - codeRefs:
+    - file:examples/controller/main.go
+    - function:23c706f296c8210aa4211fe5ad7815cf
+    id: r-await-exported-workspace-url
+    level: MUST
+    text: Run must build a kcpstore, await the exportwatch endpoints for livekcp.Export,
+      derive the base paths, and return an error when kcp published no virtual workspace
+      URL for the export.
+  - codeRefs:
+    - file:examples/controller/main.go
+    - function:23c706f296c8210aa4211fe5ad7815cf
+    id: r-report-controller-state
+    level: MUST
+    text: Run must report the reconcile count, the queue depth, the cache age and
+      the rendered metric registry to the output writer before returning.
+  - codeRefs:
+    - file:examples/controller/main.go
+    - function:23c706f296c8210aa4211fe5ad7815cf
+    id: r-seed-and-wait-for-widgets
+    level: MUST
+    text: Run must seed the widgets alpha and beta, start the controller, and wait
+      for each of them to reach the succeeded phase before seeding gamma and waiting
+      for it likewise.
+  - codeRefs:
+    - file:examples/controller/main_test.go
+    id: r-test-covers-run
+    level: SHOULD
+    text: The controller example should be covered by a test that drives Run and checks
+      its output.
+  - codeRefs:
+    - file:examples/controller/main.go
+    - function:23c706f296c8210aa4211fe5ad7815cf
+    id: r.run-is-the-entry-point
+    level: MUST
+    text: The example must expose Run(ctx context.Context, out io.Writer) error as
+      its entry point, returning an error and writing all human-readable output to
+      out.
+  - codeRefs:
+    - file:examples/controller/main.go
+    - function:23c706f296c8210aa4211fe5ad7815cf
+    id: r.start-and-stop-cluster
+    level: MUST
+    text: Run must start a live kcp cluster and stop it on return, and must return
+      the error if the cluster fails to start.
   upstream: self

@@ -7,6 +7,13 @@
 {"from":1201692521953659,"fromLabel":"SpecContext","to":4106627448554789,"toLabel":"SpecInterface","type":"DECLARES"}
 {"from":1201692521953659,"fromLabel":"SpecContext","to":5090740846768362,"toLabel":"SpecRequirement","type":"REQUIRES"}
 {"from":1201692521953659,"fromLabel":"SpecContext","to":6979432540917525,"toLabel":"SpecInterface","type":"DECLARES"}
+{"from":1725241850349288,"fromLabel":"SpecContext","to":1312363521876997,"toLabel":"SpecRequirement","type":"REQUIRES"}
+{"from":1725241850349288,"fromLabel":"SpecContext","to":1325069753821079,"toLabel":"SpecRequirement","type":"REQUIRES"}
+{"from":1725241850349288,"fromLabel":"SpecContext","to":228238756745705,"toLabel":"SpecRequirement","type":"REQUIRES"}
+{"from":1725241850349288,"fromLabel":"SpecContext","to":495790572839990,"toLabel":"SpecInterface","type":"DECLARES"}
+{"from":1725241850349288,"fromLabel":"SpecContext","to":5147426828021737,"toLabel":"SpecRequirement","type":"REQUIRES"}
+{"from":1725241850349288,"fromLabel":"SpecContext","to":7252576985375326,"toLabel":"SpecRequirement","type":"REQUIRES"}
+{"from":1725241850349288,"fromLabel":"SpecContext","to":7589564409799167,"toLabel":"SpecRequirement","type":"REQUIRES"}
 {"from":2274385908549082,"fromLabel":"SpecContext","to":1528459358863470,"toLabel":"SpecRequirement","type":"REQUIRES"}
 {"from":2274385908549082,"fromLabel":"SpecContext","to":1663981444717490,"toLabel":"SpecRequirement","type":"REQUIRES"}
 {"from":2274385908549082,"fromLabel":"SpecContext","to":1694498715024954,"toLabel":"SpecRequirement","type":"REQUIRES"}

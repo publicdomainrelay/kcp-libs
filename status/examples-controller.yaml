@@ -1,7 +1,8 @@
 conditions:
-- message: 'undeclared: Run'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -24,6 +25,6 @@ observed:
     name: Run
     signature: (ctx context.Context, out io.Writer) error
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: 9ccac5f4bd47ba318ffa8a670f0c9e201a3c1fa6c064c9bf580dadfc5928bf39
+realizedSpecHash: aa27954e312cd1174e56d247fb1a48f910ecfc8c814c899ba1753f99406a6d03
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: 882dba9bdedcea1e63e92bb22e1463ae695e06ddd657c91302b903fb6294c52a
