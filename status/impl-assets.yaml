@@ -51,7 +51,5 @@ observed:
     line: 18
     name: DNSSet
     signature: (runsDir string) *Set
-observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 realizedSpecHash: 5475713109c2863c512d868ce02434d4f3fca33732304ddf5dda88cc9d201e00
-syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 syncedFingerprint: be4c6f16907046046680aafaa15e85c525435f769125a5b14520883e0e58657b

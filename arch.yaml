@@ -6498,8 +6498,13 @@ system_contexts:
     text: The command defers Stop on the started cluster so the cluster is torn down
       when the process leaves main.
   upstream: self
-- codeRefIndex:
+- code:
+  - internal/livekcp/livetest/livetest.go
+  codeRefIndex:
   - file:internal/livekcp/livetest/livetest.go livetest.go@internal/livekcp/livetest/livetest.go
+  - function:42a6190b9b8e226427c4db2ace96f2cf Require@internal/livekcp/livetest/livetest.go:11
+  depends_on:
+  - sc.internal-livekcp
   id: sc.internal-livekcp-livetest
   intent: 'This context exists so that live tests, which need real kcp and kubectl
     binaries, can degrade gracefully on machines and CI runners that do not have those

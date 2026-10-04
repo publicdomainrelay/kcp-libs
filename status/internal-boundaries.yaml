@@ -16,7 +16,5 @@ observed:
   files:
   - internal/boundaries/boundaries_test.go
   fingerprint: ed9589d584219f9a35ec4448c4e32da0822f34b99a429fa282ba7e4065d95dd1
-observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 realizedSpecHash: fe986f0e6ed22f671e49fcc11e34b6db6d70e3856773017832b08293d47e9bbe
-syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 syncedFingerprint: ed9589d584219f9a35ec4448c4e32da0822f34b99a429fa282ba7e4065d95dd1

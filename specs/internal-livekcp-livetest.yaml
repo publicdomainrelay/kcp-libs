@@ -1,11 +1,14 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
 codeRefIndex:
 - file:internal/livekcp/livetest/livetest.go livetest.go@internal/livekcp/livetest/livetest.go
+- function:42a6190b9b8e226427c4db2ace96f2cf Require@internal/livekcp/livetest/livetest.go:11
 kind: SystemContext
 metadata:
   name: internal-livekcp-livetest
   namespace: default
 spec:
+  dependsOn:
+  - sc.internal-livekcp
   intent: 'This context exists so that live tests, which need real kcp and kubectl
     binaries, can degrade gracefully on machines and CI runners that do not have those
     tools. Instead of each test repeating PATH probing and environment checks, they

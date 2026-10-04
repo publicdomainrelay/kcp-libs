@@ -58,7 +58,5 @@ observed:
     line: 51
     name: EffectiveThreshold
     signature: (threshold int32) int32
-observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 realizedSpecHash: 2cbb3810fbb58b838868e88e65adc2c1ea454972065daaba8631da8ea622ffb3
-syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 syncedFingerprint: 31ebd9edc1ccb9876f8b30ad6111099724736ced33cd2fc05028946c857d48f2

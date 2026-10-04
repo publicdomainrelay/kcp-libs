@@ -9,5 +9,6 @@ _The resolved code references are regenerated on every run. Cite the ids above r
 <!-- SPECD_MANAGED_BEGIN -->
 ## Resolved code references
 
-_None yet._
+- `file:internal/livekcp/livetest/livetest.go` file livetest.go (internal/livekcp/livetest/livetest.go)
+- `function:42a6190b9b8e226427c4db2ace96f2cf` function Require (internal/livekcp/livetest/livetest.go)
 <!-- SPECD_MANAGED_END -->

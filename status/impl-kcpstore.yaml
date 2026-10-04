@@ -180,7 +180,5 @@ observed:
     line: 68
     name: PathCache.Len
     signature: () int
-observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 realizedSpecHash: f80e71c319d5ba996846cc3fcce751061efb9b1511db2d1c1af8bfaea933d379
-syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 syncedFingerprint: 532259b74f5b4d7136549d0d78bb3b1fd29270c16ea0372772873515fda3e588

@@ -40,7 +40,5 @@ observed:
     line: 26
     name: Client.Status
     signature: (ctx context.Context, endpoint, taskID string) (Task, error)
-observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 realizedSpecHash: 2dedaf5bb5fcf8246b9983b15fe1e0acdf1818f0d921011871fe7c0644ab928c
-syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 syncedFingerprint: 6ff489849d0bb602a22a2c89ce44795daeca1c04342c44f31437b98ae0e93a9c
