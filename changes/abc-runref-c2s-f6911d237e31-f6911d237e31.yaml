@@ -10,5 +10,18 @@ spec:
   systemContext: abc-runref
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing abc-runref
-  phase: Running
+  agentLog: 'abc/runref holds an in-memory index that answers one question: has this
+    reference already been started by a live run? Index wraps a common/expiringmap.Map
+    keyed by runID and holds Record values (normalized ref.Ref key, RunID, UID, and
+    the time it was recorded). New builds an Index with a TTL, so entries age out
+    on their own. Record normalizes the given ref through ref.New on LogicalCluster/Namespace/Name,
+    ignores an empty runID, and prunes any prior entry for the same normalized ref
+    that belongs to a different runID. Forget drops every entry matching a normalized
+    ref, and Keep is the caller-facing wrapper that calls Forget when the run is terminal
+    or the runID is empty and Record otherwise. Lookup scans entries for the first
+    one whose normalized ref matches. Len reports the raw entry count. The free function
+    AlreadyStarted turns a (Record, found) lookup plus a Current observation into
+    a duplicate-run verdict; it is called by tests and examples/admission. The package
+    is generic workload bookkeeping: it names no workload runtime.'
+  message: wrote 12 requirement(s) and 10 interface(s) for abc-runref
+  phase: Succeeded

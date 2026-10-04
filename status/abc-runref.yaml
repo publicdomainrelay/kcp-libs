@@ -1,8 +1,8 @@
 conditions:
-- message: 'undeclared: AlreadyStarted, Current, Index, Index.Forget, Index.Keep,
-    Index.Len, Index.Lookup, Index.Record, New, Record'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -76,6 +76,6 @@ observed:
     name: AlreadyStarted
     signature: (known Record, found bool, current Current) bool
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: c55df6cf0b7885c65c7233a75a6586fb95693032735c31d41ed083997215d8da
+realizedSpecHash: 4b944882697cba4c5280f72a3259d992188c7ebdca93c4c2e985245a54898b76
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: fd398ffddc48fa1fcd271b99e24b3e03d7e4f7e0f77d12f6c2e4e532c00e8d2c
