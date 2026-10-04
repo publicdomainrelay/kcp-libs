@@ -60,4 +60,5 @@ spec:
   systemContext: impl-openbaoclient
   toSpecHash: 024f19fa6e145862872bf79ff90782bc7bb6e0d4c3d7ee43236a36f794204f92
 status:
-  phase: Pending
+  message: the agent is realizing impl-openbaoclient
+  phase: Running
