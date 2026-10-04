@@ -23,7 +23,7 @@ observed:
     line: 11
     name: Require
     signature: (t *testing.T)
-observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 realizedSpecHash: 7dbb51b46c7736d767d170cff693f5726e19c27fbb7ca6b7b4b216c4ccd14aba
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: e84b9c04d9912f35831dcb7a566770ea637d3847ddbdb3dc190446c15fb610ea

@@ -54,7 +54,7 @@ observed:
     line: 194
     name: PolicyName
     signature: (cacheKey string) string
-observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 realizedSpecHash: b6b67546eebb2cddbe08175f89fb003fa5355805d84e2f1dc3e7b22e96ea64aa
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: 532b47e139d3937fa0b4377de642041321057c761ddcf92e8796e1ea4bf93d92

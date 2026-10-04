@@ -16,7 +16,7 @@ observed:
   files:
   - internal/livekcp/cmd/livecluster/main.go
   fingerprint: 3daa6f27145ba8386abd78decff62a52ec08144ccd7f0960d8c81872799d78f8
-observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 realizedSpecHash: 9d79ac18143aa5b92dd92bce5db9fce8fa2ef15f5df81dfac60fc4efca14fd96
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: 3daa6f27145ba8386abd78decff62a52ec08144ccd7f0960d8c81872799d78f8

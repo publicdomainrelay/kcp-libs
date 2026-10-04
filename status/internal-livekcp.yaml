@@ -115,7 +115,7 @@ observed:
     name: WaitFor
     signature: (ctx context.Context, cluster string, resource store.Reader[T], namespace,
       name string, reached func(T) bool) (*T, error)
-observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 realizedSpecHash: 6c3d735554e12997ac194e4659462e75ab3f805198e2e47a06570a25ee7a94a9
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: 2a84b83b92729f40da9d97a14782d86144e781d079b0b9521804be2b5bcf2440
