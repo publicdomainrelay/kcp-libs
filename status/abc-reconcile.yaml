@@ -172,7 +172,6 @@ observed:
     line: 105
     name: ReconcilerFunc.Reconcile
     signature: (ctx context.Context, observed Observed) (Result[Status], error)
-observedCommit: f9e2ef3cfa3a9ae4d984768e8fce97092fe179bf
 realizedSpecHash: 27d267b0e409ce00237ad80b3b92d8c92680ca2ffab285de1e9a1c94d821e8d5
 syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 syncedFingerprint: 7c683198c743c51ac982ede698fa067db256417452c9a127d93da74ad792438a

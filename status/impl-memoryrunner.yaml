@@ -98,7 +98,6 @@ observed:
     line: 147
     name: Engine.Probe
     signature: (_ context.Context, _ string, _ []string, _ time.Duration) (bool, error)
-observedCommit: f9e2ef3cfa3a9ae4d984768e8fce97092fe179bf
 realizedSpecHash: fa2159b69fa47870e38255e2df3dae83a874a287adca6245408a8350e410a7ed
 syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 syncedFingerprint: f3ba58fab141e24d3435bfe73fbe29c5fcf88daaf6fbb478abb508b912b68ec8

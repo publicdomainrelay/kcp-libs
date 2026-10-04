@@ -50,7 +50,6 @@ observed:
     line: 69
     name: vault.ServeHTTP
     signature: (w http.ResponseWriter, r *http.Request)
-observedCommit: f9e2ef3cfa3a9ae4d984768e8fce97092fe179bf
 realizedSpecHash: 6be5623a1f599312b48542fb9beaa5a086d95987585931f45112dedb27b4b5c7
 syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 syncedFingerprint: 2c9a1a4809273ff4f2a3b77ce1469b2dd208c8ef304c5f0aa4177ee28de97729

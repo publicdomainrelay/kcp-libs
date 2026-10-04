@@ -102,7 +102,6 @@ observed:
     name: EngineRunner.Probe
     signature: (ctx context.Context, runID string, command []string, timeout time.Duration)
       (bool, error)
-observedCommit: f9e2ef3cfa3a9ae4d984768e8fce97092fe179bf
 realizedSpecHash: 12dd6b810c49f0f8b79924fcb182aef15cf866b2bb9add0a95778c8dff8468c8
 syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 syncedFingerprint: 015e905df3adaf5c0e59ed3512ffdd239cfda4c9a8539d17e943a50e261e6afb

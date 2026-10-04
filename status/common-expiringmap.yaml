@@ -81,7 +81,6 @@ observed:
     line: 98
     name: Map.Len
     signature: () int
-observedCommit: f9e2ef3cfa3a9ae4d984768e8fce97092fe179bf
 realizedSpecHash: c20bd320a70983c65a867c9b7cf244fce09e1115419a674b0e35d90563933a7d
 syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 syncedFingerprint: 8d86aec4b4d243b9edded111cf695f85c0e14981fe5254093f8789553f64b786

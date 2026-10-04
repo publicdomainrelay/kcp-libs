@@ -30,7 +30,6 @@ observed:
     line: 19
     name: StringifyValue
     signature: (value any) string
-observedCommit: f9e2ef3cfa3a9ae4d984768e8fce97092fe179bf
 realizedSpecHash: 685f62702bbe9771dfb7e842576cf9e23e3e81e34468fe713eac80beb8dccabe
 syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 syncedFingerprint: 809bb4812e9604f8788b4fb1b33547079186dd90a7b3de8f52275b2ff7746b23

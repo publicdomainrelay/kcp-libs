@@ -75,7 +75,6 @@ observed:
     line: 83
     name: AlreadyStarted
     signature: (known Record, found bool, current Current) bool
-observedCommit: f9e2ef3cfa3a9ae4d984768e8fce97092fe179bf
 realizedSpecHash: 18db993f7105908cd0c1f8d42c2e5dfe04edaec762baaefa8aa99579b95e78b2
 syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 syncedFingerprint: fd398ffddc48fa1fcd271b99e24b3e03d7e4f7e0f77d12f6c2e4e532c00e8d2c

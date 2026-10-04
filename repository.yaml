@@ -20,4 +20,5 @@ status:
     total: 44
   headCommit: f9e2ef3cfa3a9ae4d984768e8fce97092fe179bf
   indexedCommit: f9e2ef3cfa3a9ae4d984768e8fce97092fe179bf
+  observedCommit: f9e2ef3cfa3a9ae4d984768e8fce97092fe179bf
   phase: Populated
