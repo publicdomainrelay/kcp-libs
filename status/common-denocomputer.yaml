@@ -1,8 +1,8 @@
 conditions:
-- message: 'undeclared: Phase, RunningPhase, TerminalDenoJob, TerminalDenoPod, TerminalDenoRun,
-    TerminalPolicyEngine, TerminalPolicyWorkflow'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -60,6 +60,6 @@ observed:
     name: RunningPhase
     signature: (phase string) bool
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: 3ec315d57727d6e33fdd4625096df7a42eb6190eb33a4e5d56eaef4fca589e33
+realizedSpecHash: c31f18ea329c20f10c043656dbebbbe0566fd2836557d6417b448d4d40006e7e
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: a15d0a79c1172da8d0928bd09a0e45a0077ce62dfd4939ed1ed946441b482fb7

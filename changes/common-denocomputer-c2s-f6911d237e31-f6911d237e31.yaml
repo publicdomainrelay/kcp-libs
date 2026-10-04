@@ -10,5 +10,20 @@ spec:
   systemContext: common-denocomputer
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing common-denocomputer
-  phase: Running
+  agentLog: 'common/denocomputer/denocomputer.go declares the deno.computer vocabulary
+    shared by the kcp-libs generic layers and the deno-kcp consumer: the API group
+    and version (Group, Version, APIVersion), pod/job/trigger label keys, finalizer
+    strings, condition names (including the OpenBao Ambiguous condition), reason strings,
+    and a Phase string type with eight values (Pending, Running, Succeeded, Failed,
+    Cancelled, Triggered, Skipped, Ready). On top of that vocabulary the package exports
+    six tiny phase predicates: TerminalDenoRun, TerminalDenoPod and TerminalDenoJob
+    hold for Succeeded or Failed; TerminalPolicyWorkflow additionally holds for Cancelled;
+    TerminalPolicyEngine holds only for Failed; RunningPhase holds only for Running.
+    denocomputer_test.go does not test behaviour against literals; it walks up the
+    tree to find the sibling deno-kcp checkout, parses the const assignments out of
+    its api/v1alpha1 and internal/provider packages, and fails if any group, version,
+    finalizer, label, phase, condition or reason this module declares disagrees with
+    the consumer, skipping when that checkout is absent unless KCP_LIBS_REQUIRE_CONSUMER=1
+    is set.'
+  message: wrote 12 requirement(s) and 7 interface(s) for common-denocomputer
+  phase: Succeeded
