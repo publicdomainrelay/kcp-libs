@@ -1,4 +1,4 @@
-# Context: examples-controller
+# Context: examples-workloads
 
 Repository: `kcp-libs`
 
@@ -15,7 +15,6 @@ upstream: self
 <!-- SPECD_MANAGED_BEGIN -->
 ## Resolved code references
 
-- `file:examples/controller/main.go` file main.go (examples/controller/main.go)
-- `file:examples/controller/main_test.go` file main_test.go (examples/controller/main_test.go)
-- `function:23c706f296c8210aa4211fe5ad7815cf` function Run (examples/controller/main.go)
+- `file:examples/workloads/main.go` file main.go (examples/workloads/main.go)
+- `file:examples/workloads/main_test.go` file main_test.go (examples/workloads/main_test.go)
 <!-- SPECD_MANAGED_END -->

@@ -13,17 +13,17 @@ conditions:
   type: SpecValid
 observed:
   files:
-  - examples/controller/main.go
-  - examples/controller/main_test.go
-  fingerprint: 882dba9bdedcea1e63e92bb22e1463ae695e06ddd657c91302b903fb6294c52a
+  - examples/dns/main.go
+  - examples/dns/main_test.go
+  fingerprint: bb0638c9a55e0410545ad3db015bbb6a75611c32d6b4743e1f6fc90309e0a1f8
   interfaces:
-  - codegraphId: function:23c706f296c8210aa4211fe5ad7815cf
-    file: examples/controller/main.go
+  - codegraphId: function:91d47a59cae63290c441f196217cef7e
+    file: examples/dns/main.go
     kind: function
-    line: 121
+    line: 48
     name: Run
     signature: (ctx context.Context, out io.Writer) error
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: 9ccac5f4bd47ba318ffa8a670f0c9e201a3c1fa6c064c9bf580dadfc5928bf39
+realizedSpecHash: b205d302dccacbb6d9e112bc21454b5fb447692989be29aa176f6027e9ed46ef
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-syncedFingerprint: 882dba9bdedcea1e63e92bb22e1463ae695e06ddd657c91302b903fb6294c52a
+syncedFingerprint: bb0638c9a55e0410545ad3db015bbb6a75611c32d6b4743e1f6fc90309e0a1f8

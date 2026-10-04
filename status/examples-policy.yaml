@@ -1,0 +1,55 @@
+conditions:
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
+  type: CodeSynced
+- message: no synced fingerprint has been recorded yet
+  reason: NotSyncedYet
+  status: "False"
+  type: Drifted
+- message: the spec passes the validator
+  reason: ValidatorPassed
+  status: "True"
+  type: SpecValid
+observed:
+  files:
+  - examples/policy/engine.go
+  - examples/policy/main.go
+  - examples/policy/main_test.go
+  fingerprint: a5ba8b73b8afcca1d31b33f4a820321242c05c2651d15c166731aafd0c6f32ba
+  interfaces:
+  - codegraphId: method:8adc047283ab850bffddf2fa6d30a23c
+    file: examples/policy/engine.go
+    kind: method
+    line: 58
+    name: engine.URL
+    signature: () string
+  - codegraphId: method:8efb924d3babc92148f8bda3b2d45469
+    file: examples/policy/engine.go
+    kind: method
+    line: 62
+    name: engine.Close
+    signature: () error
+  - codegraphId: method:5e7dd0b9cb49339a8dce6360d81790ab
+    file: examples/policy/engine.go
+    kind: method
+    line: 66
+    name: engine.Submits
+    signature: () int
+  - codegraphId: method:dd19ad85f3bd4cb7b58e6d21d7d16180
+    file: examples/policy/engine.go
+    kind: method
+    line: 72
+    name: engine.ServeHTTP
+    signature: (w http.ResponseWriter, r *http.Request)
+  - codegraphId: function:4cf3070e763136f1251e403942485497
+    file: examples/policy/main.go
+    kind: function
+    line: 18
+    name: Run
+    signature: (ctx context.Context, out io.Writer) error
+observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+realizedSpecHash: a3eca9ef0a1ce2e750ebdac146152eed430c2bfc79611fee51f10ba1e170e293
+syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+syncedFingerprint: a5ba8b73b8afcca1d31b33f4a820321242c05c2651d15c166731aafd0c6f32ba

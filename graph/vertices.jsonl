@@ -6,6 +6,7 @@
 {"id":2947771766721265,"intent":"","label":"SpecContext","name":"abc-cache","repo":"kcp-libs","scope":"","specHash":"41089167ac88f2b304672e0f2d6f7a14d4d21b3d5515f60db2830b54dfad0813"}
 {"id":3350245593333623,"intent":"","label":"SpecContext","name":"common-condition","repo":"kcp-libs","scope":"","specHash":"b29f0814e4e2f1a093ff1b779915b31e563d9810ba0e787cb1c2ec5163260713"}
 {"id":3375443051495837,"intent":"","label":"SpecContext","name":"common-denospec","repo":"kcp-libs","scope":"","specHash":"d494f396ee1b7b518346dfc08dc1ccc86074f8b84a664b4ab74cbdaa075fedbf"}
+{"id":3408711487795494,"intent":"","label":"SpecContext","name":"examples-workloads","repo":"kcp-libs","scope":"","specHash":"5da44e86e03e4c37fd1099d48eea4770329159a966078192c64dcbb10248d331"}
 {"id":390150439721720,"intent":"","label":"SpecContext","name":"common-expiringmap","repo":"kcp-libs","scope":"","specHash":"598d692d2f34ab8a07c643c6f551175dc9f9bb8f09afd941234b52972454b385"}
 {"id":4056105713833111,"intent":"","label":"SpecContext","name":"common-denocomputer","repo":"kcp-libs","scope":"","specHash":"3ec315d57727d6e33fdd4625096df7a42eb6190eb33a4e5d56eaef4fca589e33"}
 {"id":4082372757292309,"intent":"","label":"SpecContext","name":"abc-probe","repo":"kcp-libs","scope":"","specHash":"9a20eedb07c2a70d86b2e6f009ffc842dc2f02c232e5e07e17fcc622ccbc19dd"}
@@ -13,6 +14,7 @@
 {"id":483425385204023,"intent":"","label":"SpecContext","name":"abc-runner","repo":"kcp-libs","scope":"","specHash":"7e3c6667e97be86e3709b5b9a4e6699a4ad7482c2a87e5adbeaaa0f85be64643"}
 {"id":5192704548814348,"intent":"","label":"SpecContext","name":"abc-queue","repo":"kcp-libs","scope":"","specHash":"caf9079c1b73c0198859b73ee69fc8024cdba3be83dcdfcd31405b45bea82712"}
 {"id":5421030879416019,"intent":"","label":"SpecContext","name":"common-logging","repo":"kcp-libs","scope":"","specHash":"a57eb0e45ca66f347c51046418e53d23d38cf950c4e0f88421c7f58b417de68e"}
+{"id":6287016898872952,"intent":"","label":"SpecContext","name":"examples-pki","repo":"kcp-libs","scope":"","specHash":"8d5996e1fe2d6513001ad964afc66a7e327000f975b0fbbf3a08d2e5824b2812"}
 {"id":6684422870448707,"intent":"","label":"SpecContext","name":"abc-pki","repo":"kcp-libs","scope":"","specHash":"25d1af638d3056930d486c0ddd85d75bde52394d914a534019b0ee93042f1b67"}
 {"id":6708180597227963,"intent":"","label":"SpecContext","name":"common-ref","repo":"kcp-libs","scope":"","specHash":"149629ba4d6bf71cadbb26d3e75026c1e39b9dbfa28d6f292cedc1104890500d"}
 {"id":7086204792805690,"intent":"","label":"SpecContext","name":"abc-store","repo":"kcp-libs","scope":"","specHash":"494f9278c759d3c8c2a988c26b738f109abf05e08f6f86f0bdd274fb58ea7b8e"}
@@ -21,4 +23,6 @@
 {"id":7848846491944960,"intent":"","label":"SpecContext","name":"common-outputs","repo":"kcp-libs","scope":"","specHash":"b259b97c49f84e7f0c0ecb7b6a6401fc7c6ef8c461597462ba84dd9cdf5b38a4"}
 {"id":8215495528691040,"label":"SpecRepo","name":"kcp-libs","path":"","scope":""}
 {"id":8377239726777626,"intent":"","label":"SpecContext","name":"common-ttl","repo":"kcp-libs","scope":"","specHash":"0c61b101a79a646ca67f8c0d360ef59cadc756ec79ff31737dc3bc512061d93b"}
+{"id":9006944642116106,"intent":"","label":"SpecContext","name":"examples-policy","repo":"kcp-libs","scope":"","specHash":"a3eca9ef0a1ce2e750ebdac146152eed430c2bfc79611fee51f10ba1e170e293"}
+{"id":980772779362991,"intent":"","label":"SpecContext","name":"examples-dns","repo":"kcp-libs","scope":"","specHash":"b205d302dccacbb6d9e112bc21454b5fb447692989be29aa176f6027e9ed46ef"}
 {"id":988476581375101,"intent":"","label":"SpecContext","name":"abc-joballoc","repo":"kcp-libs","scope":"","specHash":"ef1e5e31345d5e43632e10acbd66bde62d48d729cf5b146618ddc49f362787ca"}

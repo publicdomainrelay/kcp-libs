@@ -136,6 +136,33 @@ system_contexts:
   id: sc.examples-admission
   name: examples-admission
   upstream: self
-- id: sc.examples-controller
+- code:
+  - examples/controller/main.go
+  - examples/controller/main_test.go
+  id: sc.examples-controller
   name: examples-controller
+  upstream: self
+- code:
+  - examples/dns/main.go
+  - examples/dns/main_test.go
+  id: sc.examples-dns
+  name: examples-dns
+  upstream: self
+- code:
+  - examples/pki/certs.go
+  - examples/pki/main.go
+  - examples/pki/main_test.go
+  - examples/pki/vault.go
+  id: sc.examples-pki
+  name: examples-pki
+  upstream: self
+- code:
+  - examples/policy/engine.go
+  - examples/policy/main.go
+  - examples/policy/main_test.go
+  id: sc.examples-policy
+  name: examples-policy
+  upstream: self
+- id: sc.examples-workloads
+  name: examples-workloads
   upstream: self

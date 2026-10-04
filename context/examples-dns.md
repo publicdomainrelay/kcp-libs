@@ -1,4 +1,4 @@
-# Context: examples-controller
+# Context: examples-dns
 
 Repository: `kcp-libs`
 
@@ -15,7 +15,7 @@ upstream: self
 <!-- SPECD_MANAGED_BEGIN -->
 ## Resolved code references
 
-- `file:examples/controller/main.go` file main.go (examples/controller/main.go)
-- `file:examples/controller/main_test.go` file main_test.go (examples/controller/main_test.go)
-- `function:23c706f296c8210aa4211fe5ad7815cf` function Run (examples/controller/main.go)
+- `file:examples/dns/main.go` file main.go (examples/dns/main.go)
+- `file:examples/dns/main_test.go` file main_test.go (examples/dns/main_test.go)
+- `function:91d47a59cae63290c441f196217cef7e` function Run (examples/dns/main.go)
 <!-- SPECD_MANAGED_END -->
