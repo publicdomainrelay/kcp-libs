@@ -16,7 +16,7 @@ spec:
 status:
   contexts:
     failed: 0
-    summarized: 14
+    summarized: 15
     total: 44
   headCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
   indexedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8

@@ -4,5 +4,78 @@ metadata:
   name: common-kcp
   namespace: default
 spec:
+  intent: This context exists so the naming rules that map a KCP logical cluster path
+    onto DNS labels and fully qualified service names stay specified in one place.
+    The rest of the repository, the examples and the service-name factory all depend
+    on the exact string shape produced here, so the reversal order, the root-workspace
+    and empty-segment skipping, the default namespace fallback and the omission of
+    an empty label suffix must hold exactly as the tests assert them.
+  interfaces:
+  - file: common/kcp/kcp.go
+    kind: function
+    name: ServiceFQDN
+    signature: func ServiceFQDN(name, namespace, logicalCluster, domain string) string
+  - file: common/kcp/kcp.go
+    kind: function
+    name: ServiceLabels
+    signature: func ServiceLabels(logicalCluster string) string
   repository: kcp-libs
+  requirements:
+  - codeRefs:
+    - file:common/kcp/kcp.go
+    - function:027166c10dcc0d8f2f48420216ff5951
+    id: r.fqdn-default-namespace
+    level: MUST
+    text: ServiceFQDN MUST substitute "default" when the namespace argument is empty,
+      and MUST prefix the namespace to the service name as name + "." + namespace.
+  - codeRefs:
+    - file:common/kcp/kcp.go
+    - function:027166c10dcc0d8f2f48420216ff5951
+    id: r.fqdn-empty-labels-omitted
+    level: MUST
+    text: ServiceFQDN MUST append the ServiceLabels result as a dotted suffix only
+      when it is non-empty, so a root-only cluster yields no label segment.
+  - codeRefs:
+    - file:common/kcp/kcp_test.go
+    - function:027166c10dcc0d8f2f48420216ff5951
+    id: r.fqdn-known-shapes
+    level: MUST
+    text: 'ServiceFQDN MUST return the asserted shapes: name "pds" with cluster "root:alice"
+      gives "pds.default.alice.svc.kcp.local" under DefaultServiceDomain, and cluster
+      "root" gives "pds.default.svc.kcp.local".'
+  - codeRefs:
+    - file:common/kcp/kcp.go
+    - function:027166c10dcc0d8f2f48420216ff5951
+    id: r.fqdn-svc-domain-suffix
+    level: MUST
+    text: ServiceFQDN MUST terminate the host with the ServiceSegment value "svc"
+      followed by the domain, producing host + ".svc." + domain.
+  - codeRefs:
+    - file:common/kcp/kcp.go
+    - function:0b14d327c26ec834adfa4a6551d0fc8c
+    id: r.labels-root-only-empty
+    level: MUST
+    text: ServiceLabels MUST return the empty string for a logical cluster that contains
+      only the root workspace, for example "root".
+  - codeRefs:
+    - file:common/kcp/kcp.go
+    - function:0b14d327c26ec834adfa4a6551d0fc8c
+    id: r.labels-skip-empty-and-root
+    level: MUST
+    text: ServiceLabels MUST skip parts that are empty and parts equal to RootWorkspace,
+      and MUST join the remaining parts with ".".
+  - codeRefs:
+    - file:common/kcp/kcp.go
+    - function:0b14d327c26ec834adfa4a6551d0fc8c
+    id: r.labels-split-on-colon
+    level: MUST
+    text: ServiceLabels MUST split the logical cluster on ":" and walk the resulting
+      parts from the last to the first, so the deepest workspace segment appears first
+      in the result.
+  - codeRefs:
+    - file:common/kcp/kcp_test.go
+    id: r.tests-cover-helpers
+    level: SHOULD
+    text: Table-driven tests SHOULD keep covering ServiceLabels and ServiceFQDN, including
+      the root-only and empty-namespace cases.
   upstream: self

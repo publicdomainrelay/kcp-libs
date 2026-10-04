@@ -10,5 +10,16 @@ spec:
   systemContext: common-kcp
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing common-kcp
-  phase: Running
+  agentLog: 'common/kcp holds the small cluster-naming helpers shared by the rest
+    of kcp-libs. ServiceLabels turns a KCP logical cluster path such as "root:acme:prod"
+    into a reversed dotted DNS label ("prod.acme"), splitting on ":", dropping empty
+    segments and the root workspace, and iterating from the deepest segment back to
+    the top so the leaf appears first. ServiceFQDN builds a cluster-local service
+    hostname from a service name, namespace, logical cluster and domain: it calls
+    ServiceLabels, substitutes "default" when the namespace is empty, joins name and
+    namespace, appends the label suffix only when it is non-empty, and finishes with
+    the "svc" segment plus the domain. Both functions are covered by table-driven
+    tests in kcp_test.go, and callers include the DNS and PKI examples plus the servicenames
+    factory.'
+  message: wrote 8 requirement(s) and 2 interface(s) for common-kcp
+  phase: Succeeded

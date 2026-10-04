@@ -1,7 +1,8 @@
 conditions:
-- message: 'undeclared: ServiceFQDN, ServiceLabels'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -30,6 +31,6 @@ observed:
     name: ServiceFQDN
     signature: (name, namespace, logicalCluster, domain string) string
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: f17dce116ac26682c6b2621f5421d7b885872a9153cb240d84873b931b19a856
+realizedSpecHash: 2544e8fa49e3c11e4e21cc6a6d1348ac07ac4f4856882a6a13200f8118231589
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: f02d64cd71c3557976f663f2fa352997f5ef648661b81a2e7e87d3fd236e75ad
