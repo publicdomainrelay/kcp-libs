@@ -2,13 +2,162 @@
 
 Repository: `kcp-libs`
 
-_(empty: write what this context is for)_
+This context exists as the shared expiry primitive for the wider kcp-libs project: callers that need a bounded-lifetime cache (for example the job allocator's lookup tables) get one place that owns the TTL comparison, the lazy delete on read, and the locking discipline, rather than each site re-deriving `at.Sub(entry.At) >= ttl` and remembering to hold a lock while doing it. Passing `at` in rather than calling time.Now keeps the expiry behaviour deterministic and testable, which is exactly how the accompanying test file drives it.
 
 _Write the prose above and the fields in the spec block. `codeRefs` and the resolved references below are maintained by the tool; an edit there is lost._
 
 ## spec
 
 ```yaml spec
+interfaces:
+- file: common/expiringmap/expiringmap.go
+  kind: const
+  name: DefaultTTL
+  signature: const DefaultTTL = 2 * time.Minute
+- file: common/expiringmap/expiringmap.go
+  kind: struct
+  name: Entry
+  signature: type Entry[V any] struct { Value V; At time.Time }
+- file: common/expiringmap/expiringmap.go
+  kind: struct
+  name: Map
+  signature: type Map[K comparable, V any] struct { TTL time.Duration; mu sync.Mutex;
+    entries map[K]Entry[V] }
+- file: common/expiringmap/expiringmap.go
+  kind: method
+  name: Map.Delete
+  signature: func (m *Map[K, V]) Delete(key K)
+- file: common/expiringmap/expiringmap.go
+  kind: method
+  name: Map.DeleteIf
+  signature: func (m *Map[K, V]) DeleteIf(drop func(K, V) bool) int
+- file: common/expiringmap/expiringmap.go
+  kind: method
+  name: Map.Expire
+  signature: func (m *Map[K, V]) Expire(at time.Time) int
+- file: common/expiringmap/expiringmap.go
+  kind: method
+  name: Map.Get
+  signature: func (m *Map[K, V]) Get(key K, at time.Time) (V, bool)
+- file: common/expiringmap/expiringmap.go
+  kind: method
+  name: Map.Len
+  signature: func (m *Map[K, V]) Len() int
+- file: common/expiringmap/expiringmap.go
+  kind: method
+  name: Map.Range
+  signature: func (m *Map[K, V]) Range(visit func(K, V) bool)
+- file: common/expiringmap/expiringmap.go
+  kind: method
+  name: Map.Set
+  signature: func (m *Map[K, V]) Set(key K, value V, at time.Time)
+- file: common/expiringmap/expiringmap.go
+  kind: method
+  name: Map.SetPruning
+  signature: func (m *Map[K, V]) SetPruning(key K, value V, at time.Time, prune func(K,
+    V) bool)
+- file: common/expiringmap/expiringmap.go
+  kind: function
+  name: NewMap
+  signature: func NewMap[K comparable, V any](ttl time.Duration) *Map[K, V]
+requirements:
+- codeRefs:
+  - file:common/expiringmap/expiringmap_test.go
+  id: r.behaviour-covered-by-tests
+  level: SHOULD
+  text: The package's tests cover set-then-get, the exact-TTL boundary with the expired
+    entry dropped, the default TTL for zero and negative inputs, Delete and DeleteIf
+    counts, Expire sweeping only entries past their TTL, and Range visiting every
+    entry and leaving the map unchanged when the visitor stops.
+- codeRefs:
+  - method:82e839c35aabb06ef821933917ec63f0
+  id: r.delete-unconditional
+  level: MUST
+  text: Delete removes the key regardless of whether the entry is live or expired,
+    and does nothing when the key is absent.
+- codeRefs:
+  - method:7ec6b2c7bd76f63321cd3c4b190a603f
+  id: r.deleteif-predicate-count
+  level: MUST
+  text: DeleteIf drops every entry whose key and value satisfy the caller's predicate
+    and returns the number of entries dropped.
+- codeRefs:
+  - file:common/expiringmap/expiringmap.go
+  - struct:4591c45a4e14e38ecea0056987c4a802
+  id: r.entry-stores-value-and-write-time
+  level: MUST
+  text: An Entry holds the stored value together with the time it was written, so
+    expiry is decided against the write time and not against a value the caller supplies
+    later.
+- codeRefs:
+  - method:565f61a59f8a37b307e3fa936cd2346d
+  id: r.expire-sweeps-past-ttl
+  level: MUST
+  text: Expire drops every entry that is past its TTL as of the given time and returns
+    the number of entries dropped, leaving entries written more recently than the
+    TTL untouched.
+- codeRefs:
+  - file:common/expiringmap/expiringmap.go
+  - struct:0cf196f032937400c5ba73ab5c3d51ff
+  id: r.expiry-boundary-inclusive
+  level: MUST
+  text: An entry is expired when the elapsed time since its write time is greater
+    than or equal to the TTL, so an entry read at exactly `write + TTL` is already
+    gone.
+- codeRefs:
+  - method:b2e22247efe32229253f3fb18c64c607
+  id: r.get-drops-expired-and-reports-miss
+  level: MUST
+  text: Get returns the value and true for a live entry, and returns the zero value
+    and false for a missing key or an expired entry; an expired entry found on the
+    way is deleted from the map so the read leaves the map smaller.
+- codeRefs:
+  - method:17d4b8f64aa42e72ce9ddd19f369e46f
+  id: r.len-counts-stored-entries
+  level: MUST
+  text: Len returns the number of entries currently stored, so it counts entries that
+    have passed their TTL but have not yet been read or swept.
+- codeRefs:
+  - file:common/expiringmap/expiringmap.go
+  - struct:0cf196f032937400c5ba73ab5c3d51ff
+  id: r.map-type-parameters-and-ttl-field
+  level: MUST
+  text: Map is generic over a comparable key and any value, and carries its TTL as
+    an exported field alongside an unexported mutex and the entry map.
+- codeRefs:
+  - file:common/expiringmap/expiringmap.go
+  - struct:0cf196f032937400c5ba73ab5c3d51ff
+  id: r.mutex-guards-every-operation
+  level: MUST
+  text: Every map operation that touches the entry map holds the mutex, so concurrent
+    Set, Get, Delete, DeleteIf, Expire, Range, SetPruning and Len calls are safe.
+- codeRefs:
+  - file:common/expiringmap/expiringmap.go
+  - function:b650d97e85ca58be6eed757f0ef38420
+  id: r.newmap-defaults-non-positive-ttl
+  level: MUST
+  text: NewMap returns a Map with the given TTL, but any TTL that is zero or negative
+    falls back to defaultTTL; the returned map always has a non-nil entries map.
+- codeRefs:
+  - method:8f9103006c5e1c080fd378e749aabca6
+  id: r.range-snapshot-then-visit
+  level: MUST
+  text: Range copies the live keys and values under the lock, releases the lock, then
+    visits the snapshot; a nil-returning visitor stops the walk early, and stopping
+    or visiting never mutates the map.
+- codeRefs:
+  - method:833590fe505d58158e5ad88ed13ba9cc
+  id: r.set-records-write-time
+  level: MUST
+  text: Set stores the value under the key with the caller-supplied time as the entry's
+    write time, overwriting any previous entry for that key.
+- codeRefs:
+  - method:7b7c2151e545ad092e0d5272ef61b892
+  id: r.setpruning-sweeps-then-stores
+  level: MUST
+  text: SetPruning drops every entry that is either past its TTL as of the given time
+    or accepted by the non-nil prune predicate, then stores the new key and value
+    under the same lock, so the pruning and the insert are atomic.
 upstream: self
 ```
 

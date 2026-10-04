@@ -10,5 +10,12 @@ spec:
   systemContext: common-expiringmap
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing common-expiringmap
-  phase: Running
+  agentLog: common/expiringmap is a small generic, mutex-guarded map with per-entry
+    TTL. Each entry stores a value plus the time it was written, and every read or
+    sweep passes an explicit `at time.Time` so callers control the clock instead of
+    the package reading the wall clock. The map type carries its TTL, exposes Set/Get/Delete/DeleteIf/Expire/Range/SetPruning/Len,
+    and lazily drops an entry the moment it is past its TTL on Get, with bulk sweeps
+    available through Expire and SetPruning. A `defaultTTL` constant of 2 minutes
+    backs any non-positive TTL handed to the constructor.
+  message: wrote 14 requirement(s) and 12 interface(s) for common-expiringmap
+  phase: Succeeded
