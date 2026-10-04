@@ -10,5 +10,18 @@ spec:
   systemContext: internal-boundaries
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing internal-boundaries
-  phase: Running
+  agentLog: 'internal/boundaries holds a single Go test file that guards the repository''s
+    package layering. It shells out to `go list -json ./...` from the module root,
+    decodes every package into a listEntry (ImportPath, Imports, TestImports, Name),
+    and asserts four structural rules: production code outside internal/ and examples/
+    never imports internal/ test-support packages; every package outside internal/boundaries
+    sits in a recognised layer (common, abc, impl, factory, examples, cmd, internal);
+    module-local dependencies flow one way through the ranked layer order common (0)
+    <- abc (1) <- impl (2) <- factory (3) <- examples/cmd (4) <- internal (5), so
+    an importer''s rank must exceed the imported layer''s rank and a layer may not
+    import itself; the common layer stays leaf packages with no module-local imports;
+    and the abc layer imports common only. Two unexported helpers do the classification:
+    layerOf maps an import path to its first path segment when that segment is one
+    of the known layers, and rank maps a layer name to its numeric position.'
+  message: wrote 7 requirement(s) and 0 interface(s) for internal-boundaries
+  phase: Succeeded
