@@ -1,7 +1,8 @@
 conditions:
-- message: 'undeclared: Deadline, Effective, Expired, Expiry'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -43,6 +44,6 @@ observed:
     name: Deadline
     signature: (start *metav1.Time, seconds *int64, now time.Time) bool
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: 0c61b101a79a646ca67f8c0d360ef59cadc756ec79ff31737dc3bc512061d93b
+realizedSpecHash: d0ea5f2ceada2c1a5504eaa5ad9f6d3bc65999a10d0f215eaad1ae2c0f781b12
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: 1bbbebd686b542eb40b525e9155f001af945a2e02e2f267a990db213b67e592b

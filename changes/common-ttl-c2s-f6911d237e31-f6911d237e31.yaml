@@ -10,5 +10,14 @@ spec:
   systemContext: common-ttl
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing common-ttl
-  phase: Running
+  agentLog: common/ttl holds four small exported helpers that read a nullable TTL
+    duration (seconds) and turn it into expiry and deadline answers. Effective picks
+    the override duration when it is set, otherwise the fallback, and normalizes nil
+    or negative values to nil. Expiry adds the duration to a completion time and reports
+    whether an expiry is known at all. Expired wraps Expiry to answer, against a supplied
+    now, whether the deadline has passed and how long remains. Deadline applies the
+    same duration to a start time and reports whether it has been reached. A single
+    test file covers override preference, negative-value rejection, future and past
+    expiry, and reached deadlines.
+  message: wrote 6 requirement(s) and 4 interface(s) for common-ttl
+  phase: Succeeded
