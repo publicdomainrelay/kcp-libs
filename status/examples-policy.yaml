@@ -1,7 +1,8 @@
 conditions:
-- message: 'undeclared: Run, engine.Close, engine.ServeHTTP, engine.Submits, engine.URL'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -49,6 +50,6 @@ observed:
     name: Run
     signature: (ctx context.Context, out io.Writer) error
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: a3eca9ef0a1ce2e750ebdac146152eed430c2bfc79611fee51f10ba1e170e293
+realizedSpecHash: 3f1ff37cb56a332996f355bd3cacbf44f1d8b5dd38ac47d7e79c3396e563afe0
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: a5ba8b73b8afcca1d31b33f4a820321242c05c2651d15c166731aafd0c6f32ba

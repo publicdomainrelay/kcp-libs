@@ -10,5 +10,18 @@ spec:
   systemContext: examples-workloads
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing examples-workloads
-  phase: Running
+  agentLog: examples/workloads is a runnable Go example program that demonstrates
+    the workload-execution packages of kcp-libs end to end. Its single exported entry
+    point, Run(ctx context.Context, out io.Writer) error, materialises a stand-in
+    deno binary from an assets.Set into a temporary directory, builds an execrunner
+    pod, converts denospec.Permissions into command-line arguments, starts a greeter
+    run and reads the argv the process was launched with, waits for the run to finish,
+    runs a readiness probe against it, starts a second run that exits 7 to show failure
+    reporting, drives a probe.Tracker to the restart threshold, evaluates ttl.Expired
+    on a completion time, allocates job names with joballoc and reports which are
+    still owed, and finally replays the same workload through memoryrunner to show
+    the in-memory runner produces the same answer without a process. Every step writes
+    a human-readable line to the supplied io.Writer, and main wires that writer to
+    os.Stdout.
+  message: wrote 8 requirement(s) and 1 interface(s) for examples-workloads
+  phase: Succeeded

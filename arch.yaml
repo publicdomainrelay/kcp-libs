@@ -3144,13 +3144,149 @@ system_contexts:
   - examples/policy/main.go
   - examples/policy/main_test.go
   id: sc.examples-policy
+  intent: 'This context documents the examples/policy package: the runnable demonstration
+    of the policy engine surface. It exists so the exported behaviour of that example
+    — the engine''s URL accessor, its Close, its submitted-run counter, its HTTP handler,
+    and the Run entry point — is described and anchored to code, letting a reader
+    or a tool reason about what the example guarantees without reading every line.'
+  interfaces:
+  - file: examples/policy/main.go
+    kind: function
+    name: Run
+    signature: (ctx context.Context, out io.Writer) error
+  - file: examples/policy/engine.go
+    kind: method
+    name: engine.Close
+    signature: () error
+  - file: examples/policy/engine.go
+    kind: method
+    name: engine.ServeHTTP
+    signature: (w http.ResponseWriter, r *http.Request)
+  - file: examples/policy/engine.go
+    kind: method
+    name: engine.Submits
+    signature: () int
+  - file: examples/policy/engine.go
+    kind: method
+    name: engine.URL
+    signature: () string
   name: examples-policy
+  requirements:
+  - codeRefs:
+    - file:examples/policy/engine.go
+    - method:8efb924d3babc92148f8bda3b2d45469
+    id: r.engine-close
+    level: MUST
+    text: engine.Close must shut down the embedded HTTP server and must return the
+      error from that server's Close.
+  - codeRefs:
+    - file:examples/policy/engine.go
+    - method:dd19ad85f3bd4cb7b58e6d21d7d16180
+    id: r.engine-http-handler
+    level: MUST
+    text: engine.ServeHTTP must take an http.ResponseWriter and an *http.Request,
+      so the engine satisfies http.Handler and can be mounted on a net/http server.
+  - codeRefs:
+    - file:examples/policy/engine.go
+    - method:5e7dd0b9cb49339a8dce6360d81790ab
+    id: r.engine-submit-count
+    level: MUST
+    text: engine.Submits must return the recorded submit count, read while holding
+      the engine mutex, so concurrent callers see a consistent value.
+  - codeRefs:
+    - file:examples/policy/engine.go
+    - method:8adc047283ab850bffddf2fa6d30a23c
+    id: r.engine-url
+    level: MUST
+    text: engine.URL must return the address the engine's own HTTP server listens
+      on, so a caller can hand the endpoint to the policy client.
+  - codeRefs:
+    - file:examples/policy/main_test.go
+    id: r.example-tested
+    level: MAY
+    text: The example may carry a test file, main_test.go, exercising the Run entry
+      point and the engine.
+  - codeRefs:
+    - file:examples/policy/main.go
+    - function:4cf3070e763136f1251e403942485497
+    id: r.run-entry-point
+    level: MUST
+    text: Run must be the example's entry point, taking a context.Context and an io.Writer
+      and returning an error; it must use the engine's URL, Close and Submits methods
+      to drive and verify the run.
   upstream: self
 - code:
   - examples/workloads/main.go
   - examples/workloads/main_test.go
   id: sc.examples-workloads
+  intent: 'This context exists to prove the workload packages compose in one place
+    and to serve as living documentation for callers. It is an example, not a library:
+    it is a package main whose only exported symbol is Run, deliberately taking a
+    context and an io.Writer so the same code path can be driven by a test that captures
+    output instead of the terminal. The accompanying test asserts on the printed lines,
+    which makes the example double as an integration check that the deno permission
+    vocabulary, the exec runner''s argv layout, probe thresholds, ttl arithmetic,
+    job allocation bookkeeping and the memory runner all keep behaving as documented.'
+  interfaces:
+  - file: examples/workloads/main.go
+    kind: function
+    name: Run
+    signature: func Run(ctx context.Context, out io.Writer) error
   name: examples-workloads
+  requirements:
+  - codeRefs:
+    - file:examples/workloads/main.go
+    id: r.exec-pod-lifecycle
+    level: MUST
+    text: Run starts a workload through the execrunner pod, asserts it satisfies runner.PodRunner,
+      waits until the run leaves the running state, and reports the terminal state
+      and the answer output.
+  - codeRefs:
+    - file:examples/workloads/main.go
+    id: r.failure-and-probe-paths-shown
+    level: MUST
+    text: Run must also exercise a failing run that reports a non-zero exit code,
+      a readiness probe that passes, and a liveness tracker that requests a restart
+      once the failure threshold is reached.
+  - codeRefs:
+    - file:examples/workloads/main.go
+    id: r.memory-runner-parity
+    level: SHOULD
+    text: Run replays the greeting script through the in-memory runner and shows it
+      produces the same answer without starting a process.
+  - codeRefs:
+    - file:examples/workloads/main.go
+    id: r.permissions-become-argv
+    level: MUST
+    text: Run converts a denospec.Permissions value with a net allow-list and denied
+      env into argument strings via denospec.Args, and prints them.
+  - codeRefs:
+    - file:examples/workloads/main.go
+    - function:4f9e3c5199d0b48e53740bacffb4b9ac
+    id: r.run-is-the-entry-point
+    level: MUST
+    text: The example exposes Run(ctx context.Context, out io.Writer) error; it takes
+      the context and the output writer as parameters and returns an error rather
+      than terminating the process, so a caller other than main can drive it.
+  - codeRefs:
+    - file:examples/workloads/main.go
+    id: r.self-cleaning-temp-dir
+    level: MUST
+    text: Run creates a temporary directory and removes it on return, and places both
+      the materialised runtime binary and the runs directory underneath it.
+  - codeRefs:
+    - file:examples/workloads/main_test.go
+    id: r.test-pins-printed-output
+    level: MUST
+    text: The test drives Run with a captured buffer and fails unless the output contains
+      the expected runtime, permissions, argv, terminal states, probe, liveness, allocation
+      and in-memory-runner lines.
+  - codeRefs:
+    - file:examples/workloads/main.go
+    id: r.ttl-and-joballoc-shown
+    level: SHOULD
+    text: Run evaluates ttl.Expired for a past completion time and uses joballoc to
+      allocate a job's names and report the still-pending subset.
   upstream: self
 - code:
   - factory/admission/admission.go

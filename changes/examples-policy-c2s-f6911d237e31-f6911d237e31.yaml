@@ -10,5 +10,13 @@ spec:
   systemContext: examples-policy
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing examples-policy
-  phase: Running
+  agentLog: examples/policy is a small self-contained Go example in kcp-libs that
+    runs the policy path end to end. It holds an engine type in engine.go which embeds
+    an HTTP server, remembers the address it listens on, counts submissions under
+    a mutex, and serves HTTP through ServeHTTP. main.go holds Run(ctx context.Context,
+    out io.Writer) error, the example driver that builds the engine, exercises it
+    through the policy client, and tears it down. main_test.go covers the example.
+    The package exists to show, in runnable form, how a caller starts the policy engine,
+    submits work to it, and closes it again.
+  message: wrote 6 requirement(s) and 5 interface(s) for examples-policy
+  phase: Succeeded
