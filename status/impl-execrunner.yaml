@@ -102,5 +102,7 @@ observed:
     name: Pod.Probe
     signature: (ctx context.Context, runID string, command []string, timeout time.Duration)
       (bool, error)
+observedCommit: f9e2ef3cfa3a9ae4d984768e8fce97092fe179bf
 realizedSpecHash: 7fd087cb3d40fae91843441a0df0df6ab0026a2cc71625a1667949f912b0e66b
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 syncedFingerprint: ddb012159ae6fc554cda17e65875acbc07ad51ad8a54938b77924f79be028072

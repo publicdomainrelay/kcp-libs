@@ -1001,6 +1001,7 @@
 {"from":5073808800412646,"fromLabel":"SpecContext","to":2607943007992946,"toLabel":"SpecInterface","type":"DECLARES"}
 {"from":5073808800412646,"fromLabel":"SpecContext","to":3078616757717012,"toLabel":"CodeRef","type":"REFERENCES"}
 {"from":5073808800412646,"fromLabel":"SpecContext","to":3268923390388892,"toLabel":"SpecRequirement","type":"REQUIRES"}
+{"from":5073808800412646,"fromLabel":"SpecContext","to":3375443051495837,"toLabel":"SpecContext","type":"DEPENDS_ON"}
 {"from":5073808800412646,"fromLabel":"SpecContext","to":3797696442174138,"toLabel":"CodeRef","type":"REFERENCES"}
 {"from":5073808800412646,"fromLabel":"SpecContext","to":4032271443403629,"toLabel":"SpecInterface","type":"DECLARES"}
 {"from":5073808800412646,"fromLabel":"SpecContext","to":65005309523761,"toLabel":"SpecRequirement","type":"REQUIRES"}

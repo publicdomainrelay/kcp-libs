@@ -53,5 +53,7 @@ observed:
     line: 62
     name: FinalizersOf
     signature: (body []byte) ([]string, error)
+observedCommit: f9e2ef3cfa3a9ae4d984768e8fce97092fe179bf
 realizedSpecHash: cf5424b60990c5c197d26e985f1fe4858e811a248aab5262471c797e9b125118
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 syncedFingerprint: 3880676db9d454ba90560a536907e8c20ab24c597b49c4d98873746a617c520e

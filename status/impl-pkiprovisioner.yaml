@@ -71,5 +71,7 @@ observed:
     line: 252
     name: LeafChain
     signature: (cert pki.Cert) string
+observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 realizedSpecHash: fc95bf2e393d8c42145972e1fe47881ea1921d784dc9ab4f479fbf4b77077450
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 syncedFingerprint: bfd8b4c73c3f78a083ad4cac2aed4ab85da7bbe52bc6c4a12d8ef7f520e9d4d5

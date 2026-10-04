@@ -73,5 +73,7 @@ observed:
     line: 166
     name: Args
     signature: (p *Permissions) ([]string, error)
+observedCommit: f9e2ef3cfa3a9ae4d984768e8fce97092fe179bf
 realizedSpecHash: be51cda5782286f6d8ce82635599584af4fb4233ae6812fddd8cf5648e0f67c2
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 syncedFingerprint: 4f798ca4c98967ec7a6d2281a9580b8a04cbb3c3a0c5784b9c2c5325db499521

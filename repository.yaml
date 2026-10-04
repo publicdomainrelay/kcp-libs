@@ -18,8 +18,6 @@ status:
     failed: 0
     summarized: 44
     total: 44
-  headCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-  indexedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-  observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+  headCommit: f9e2ef3cfa3a9ae4d984768e8fce97092fe179bf
+  indexedCommit: f9e2ef3cfa3a9ae4d984768e8fce97092fe179bf
   phase: Populated
-  syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7

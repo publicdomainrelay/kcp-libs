@@ -34,5 +34,7 @@ observed:
     line: 28
     name: Discard
     signature: () *slog.Logger
+observedCommit: f9e2ef3cfa3a9ae4d984768e8fce97092fe179bf
 realizedSpecHash: e047c051da5d59000e16121d1a292cda587bfc00a98c760a9a5ace274e4968be
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 syncedFingerprint: d291177aa9649b3089a9ccef3f20d5605ccb1ef08e5415c915f5a58cf547de4d

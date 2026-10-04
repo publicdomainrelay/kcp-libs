@@ -49,5 +49,7 @@ observed:
     line: 18
     name: Run
     signature: (ctx context.Context, out io.Writer) error
+observedCommit: f9e2ef3cfa3a9ae4d984768e8fce97092fe179bf
 realizedSpecHash: 49a8d916dbe7aa179a0974f0dd040571bfac4777b23d6786bc6f8a42540efafc
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 syncedFingerprint: a5ba8b73b8afcca1d31b33f4a820321242c05c2651d15c166731aafd0c6f32ba

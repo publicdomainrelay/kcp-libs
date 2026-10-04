@@ -16,6 +16,8 @@ metadata:
   name: impl-assets
   namespace: default
 spec:
+  dependsOn:
+  - sc.common-denospec
   intent: This context exists so callers can hand a declarative set of asset files
     to one object and get back a stable name-to-path map, without caring when or how
     often the bytes hit disk. It separates one-shot materialisation, which is idempotent

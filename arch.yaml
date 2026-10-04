@@ -4255,6 +4255,8 @@ system_contexts:
   - method:621b8207809a46a163d2af9949761ea0 Set.Rewrite@impl/assets/assets.go:44
   - method:dfdb88e0a88513d22977521f62fadc3c Set.Path@impl/assets/assets.go:65
   - struct:6a6e6a1cca0d3f0928da5e266ee9e2da Set@impl/assets/assets.go:12
+  depends_on:
+  - sc.common-denospec
   id: sc.impl-assets
   intent: This context exists so callers can hand a declarative set of asset files
     to one object and get back a stable name-to-path map, without caring when or how

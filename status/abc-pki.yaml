@@ -163,5 +163,7 @@ observed:
     line: 127
     name: Provisioner.CachedRootPEM
     signature: () []byte
+observedCommit: f9e2ef3cfa3a9ae4d984768e8fce97092fe179bf
 realizedSpecHash: d301dc9c4597fa01f01ada6e53867776c338f31b061e11e59dfc9db97b47ee11
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 syncedFingerprint: 9a9beb8817f32ef2af001d30765cf57cb4080960f29c3cdfaa3a8f062b64464b
