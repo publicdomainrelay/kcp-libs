@@ -15,5 +15,40 @@ spec:
     - +r.dnsshim-discovers-a-name-absent-from-the-table-test
     - +r.dnsshim-token-key-matches-the-name
 status:
-  phase: Running
-  message: the agent is realizing impl-assets
+  phase: Succeeded
+  branch: spec/impl-assets/f81804cb
+  commit: d751fc24fe173328b35655af6ff32676f55d8b7a
+  filesTouched:
+  - impl/assets/dns_test.go
+  agentLog: |-
+    Implemented spec. Only gap was the discovery test; the token-key behaviour already held in `dnsshim.ts` (`TOKENS[parts.cluster]` with `parts.cluster` = `labelsToCluster` of the name's labels, `pds.default.alice.svc.kcp.local` → `root:alice`).
+
+    Added `TestTheShimDiscoversANameAbsentFromTheTable` in `impl/assets/dns_test.go`:
+    - Table that does not name target, token map `{"root:alice":"tok"}`, local listener serving the denopod object (`spec.env.SERVICE_ARGS` advertising its own address) → fetch of `pds.default.alice.svc.kcp.local/health` reaches the advertised address, returns 200.
+    - Same server/table, token map keyed by the label `{"alice":"tok"}` → shim reports `could not be discovered`, listener sees zero requests (no unauthenticated API call).
+
+    No change needed to `dnsshim.ts`.
+
+    Verify: `go test ./...` exit 0, 0 FAIL lines.
+
+    verify: exit 0, 246ms, 37 ok, 7 without tests
+  message: 'realized impl-assets on spec/impl-assets/f81804cb: 1 file(s) touched,
+    verify exit 0'
+  progress:
+    turns: 1
+    tools:
+    - tool: Edit
+      count: 1
+    - tool: Read
+      count: 7
+    files:
+    - common/kcp/kcp.go
+    - factory/servicenames/servicenames.go
+    - impl/assets/assets.go
+    - impl/assets/dns.go
+    - impl/assets/dns_test.go
+    - impl/assets/dnsprobe.ts
+    - impl/assets/dnsshim.ts
+    notes: 2
+    first: "2026-10-04T23:18:15Z"
+    last: "2026-10-04T23:19:35Z"

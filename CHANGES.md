@@ -655,4 +655,4 @@ The requirement-level delta against `open-architecture/kcp-libs`, and what this 
 | factory-servicenames-s2c-d6893cea853e | SpecToCode | Pending |  | 0 | - |
 | impl-assets-s2c-f45702016a1d | SpecToCode | Failed |  | 1 | - |
 | impl-assets-s2c-f45702016a1d-a2 | SpecToCode | Succeeded | f9e2ef3c | 0 | - |
-| impl-assets-s2c-f81804cbe021 | SpecToCode | Running |  | 0 | - |
+| impl-assets-s2c-f81804cbe021 | SpecToCode | Succeeded | d751fc24 | 0 | - |
