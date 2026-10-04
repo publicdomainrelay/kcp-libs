@@ -1,7 +1,8 @@
 conditions:
-- message: 'undeclared: Apply'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -24,6 +25,6 @@ observed:
     name: Apply
     signature: (cfg *rest.Config, qps float32, burst int) *rest.Config
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: 3415f1e3bb152ff7ed5f7f0d08db658e1cf0ef30ecd3f7c38d6d7308dad8cf64
+realizedSpecHash: 2a8a01ef2c15c5fb1a3a73fad49a8bf99703fa3a5e4eefe04a8653b9a67b1707
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: 716b8dee84234787d3493b101d1d71e70c6765f5df72112d5870cbbb783a9ee5

@@ -10,5 +10,18 @@ spec:
   systemContext: common-clientlimit
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing common-clientlimit
-  phase: Running
+  agentLog: 'common/clientlimit is a small helper package that raises the client rate
+    limits of a Kubernetes rest.Config before a controller uses it. Its single exported
+    entry point, Apply, takes an existing *rest.Config plus a qps and burst option,
+    copies the config with rest.CopyConfig, substitutes package defaults (DefaultQPS,
+    DefaultBurst) for any non-positive option, and fills in out.QPS and out.Burst
+    only when the copied config left them non-positive, so a caller-supplied value
+    survives untouched. The original config is never mutated. The package tests cover
+    both directions: TestApplyRaisesTheClientRateLimit asserts an empty config comes
+    back tuned to the defaults and that DefaultQPS is above client-go''s default of
+    5, while TestApplyKeepsWhatTheCallerSet asserts the caller''s QPS 7 and Burst
+    9 are preserved, the source struct is not written to, and explicit options 11
+    and 12 override an empty config. Callers are the controller plumbing: Client in
+    impl/exportwatch, factoryClient in impl/informerwatch, and tuned in impl/kcpstore.'
+  message: wrote 6 requirement(s) and 1 interface(s) for common-clientlimit
+  phase: Succeeded
