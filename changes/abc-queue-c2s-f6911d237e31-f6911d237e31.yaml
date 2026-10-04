@@ -10,5 +10,16 @@ spec:
   systemContext: abc-queue
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing abc-queue
-  phase: Running
+  agentLog: 'abc/queue holds the admission and lease layer of kcp-libs: two Go files
+    of production code, abc/queue/queue.go and abc/queue/leases.go, plus their table
+    tests. queue.go defines the vocabulary of scheduling (Run, Capacity, Blocker,
+    Admission, Lifecycle, the Policy alias and its EffectivePolicy defaulting) and
+    the pure functions that turn that vocabulary into decisions — Limit and Decision
+    for the concurrency verdict, Order for run ordering, Plan and PlanIndex for the
+    full admission pass, and WakeList for the refs that should be woken. leases.go
+    defines Lease, the Leases struct backed by an expiring map keyed by ref.Ref, its
+    constructor NewLeases(ttl), and the four methods Grant, Forget, Count and Len
+    that hold and release per-parent slots. The tests exercise parent-scoped counting,
+    release once a run is observed running or terminal, TTL expiry, and Forget.'
+  message: wrote 12 requirement(s) and 21 interface(s) for abc-queue
+  phase: Succeeded

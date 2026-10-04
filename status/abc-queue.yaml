@@ -1,9 +1,8 @@
 conditions:
-- message: 'undeclared: Admission, Admission.Waiting, Blocker, Capacity, Decision,
-    EffectivePolicy, Lease, Leases, Leases.Count, Leases.Forget, Leases.Grant, Leases.Len,
-    Lifecycle, Limit, NewLeases, Order, Plan, PlanIndex, Policy, Run, WakeList'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -144,6 +143,6 @@ observed:
     name: WakeList
     signature: (runs []Run, lifecycle Lifecycle, limit int32, unlimited bool) []ref.Ref
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: caf9079c1b73c0198859b73ee69fc8024cdba3be83dcdfcd31405b45bea82712
+realizedSpecHash: cafda2642eaae247fdfd007eaffbc760c6d7617b4dbb06dd51f5ebb45cb00fa2
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: f2d774bdc38d3397173f5829a1b29b0f40eec73062fe6ed3c6621a7c06c92c49
