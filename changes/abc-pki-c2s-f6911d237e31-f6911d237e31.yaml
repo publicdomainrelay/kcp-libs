@@ -10,5 +10,15 @@ spec:
   systemContext: abc-pki
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing abc-pki
-  phase: Running
+  agentLog: 'abc/pki/pki.go is the abstract contract layer for certificate authority
+    operations in kcp-libs. It declares plain data carriers (Cert, RootCA, IntermediateCSR,
+    Role, CertRequest, Authority, Health), package-level defaults (DefaultMount, DefaultRole,
+    DefaultRootCommonName, DefaultRootTTL, DefaultIntermediateTTL, DefaultLeafTTL)
+    and the sentinel error ErrNoAuthority. Two interfaces carry the behavior: Client
+    is the low-level store-facing surface that manages namespaces and mounts, generates
+    roots and intermediates, writes roles and issues certificates; Provisioner is
+    the higher-level, idempotent surface that ensures a root and an authority per
+    path, issues leaves, deletes a path and exposes a cached root PEM. Implementations
+    live outside this package, for example impl/openbaoclient and impl/pkiprovisioner.'
+  message: wrote 18 requirement(s) and 25 interface(s) for abc-pki
+  phase: Succeeded

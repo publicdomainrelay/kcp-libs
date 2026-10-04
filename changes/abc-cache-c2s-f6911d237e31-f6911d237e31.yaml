@@ -10,5 +10,15 @@ spec:
   systemContext: abc-cache
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing abc-cache
-  phase: Running
+  agentLog: 'abc/cache is the object cache layer of kcp-libs. It defines the Indexer
+    interface (GetByKey, ByIndex, List) and a Set that holds many indexers per object
+    kind. Callers register an Indexer under a kind with Set.Add; Set.Get asks each
+    indexer in turn and returns the first hit, Set.List concatenates every indexer''s
+    objects for a kind, Set.ByIndex concatenates the results of one named index across
+    the indexers, and Set.Names maps those objects to names. Helper functions read
+    common fields off unstructured objects: ClusterOf, RefOf, NameOf, PhaseOf and
+    the generic NestedString field walker. IndexersFor builds the standard indexer
+    set from a parent label, a job label and a trigger pod field. A test file exercises
+    the Set against a fakeIndexer built on IndexersFor.'
+  message: wrote 11 requirement(s) and 20 interface(s) for abc-cache
+  phase: Succeeded

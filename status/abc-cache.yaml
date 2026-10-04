@@ -1,9 +1,8 @@
 conditions:
-- message: 'undeclared: ClusterOf, Decode, IndexFunc, Indexer, Indexer.ByIndex, Indexer.GetByKey,
-    Indexer.List, Indexers, IndexersFor, NameOf, NestedString, NewSet, PhaseOf, RefOf,
-    Set, Set.Add, Set.ByIndex, Set.Get, Set.List, Set.Names'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -136,6 +135,6 @@ observed:
     name: IndexersFor
     signature: (parentLabel, jobLabel, triggerPodField string) Indexers
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: 41089167ac88f2b304672e0f2d6f7a14d4d21b3d5515f60db2830b54dfad0813
+realizedSpecHash: 1a70376892bd7aeb55463ea7d8c0d4bfd33ad21a476afb64f9f8b23e55afe27c
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: adc057336d7bf089ee08e328e96fd89802bc9e8dece56c6c92d24adde498b1aa

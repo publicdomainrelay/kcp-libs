@@ -1,12 +1,8 @@
 conditions:
-- message: 'undeclared: Authority, Cert, CertRequest, Client, Client.CAChain, Client.CASerial,
-    Client.DeleteNamespace, Client.EnsureMount, Client.EnsureNamespace, Client.GenerateIntermediate,
-    Client.GenerateRoot, Client.Issue, Client.SetSignedIntermediate, Client.SignIntermediate,
-    Client.WriteRole, Health, IntermediateCSR, Provisioner, Provisioner.CachedRootPEM,
-    Provisioner.Delete, Provisioner.EnsureAuthority, Provisioner.EnsureRoot, Provisioner.Issue,
-    Role, RootCA'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -168,6 +164,6 @@ observed:
     name: Provisioner.CachedRootPEM
     signature: () []byte
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: 25d1af638d3056930d486c0ddd85d75bde52394d914a534019b0ee93042f1b67
+realizedSpecHash: d301dc9c4597fa01f01ada6e53867776c338f31b061e11e59dfc9db97b47ee11
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: 9a9beb8817f32ef2af001d30765cf57cb4080960f29c3cdfaa3a8f062b64464b
