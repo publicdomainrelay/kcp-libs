@@ -3889,7 +3889,181 @@ system_contexts:
   - impl/execrunner/pod_test.go
   - impl/execrunner/supervisor.go
   id: sc.impl-execrunner
+  intent: 'This context exists so the execrunner package has a written specification
+    of the process-execution engine and pod: what the two option structs and their
+    constructors require and default, and what the four lifecycle operations on each
+    runner (Start, Observe, Stop, Probe) must do. It anchors the contract that the
+    runner types implement the generic runner interfaces without knowing about Deno
+    specifics beyond launching a binary, and it records the invariants that the tests
+    in pod_test.go pin down: required directories, path resolution, timeout handling,
+    and non-interference with caller-supplied environment.'
+  interfaces:
+  - file: impl/execrunner/engine.go
+    kind: struct
+    name: Engine
+    signature: type Engine struct
+  - file: impl/execrunner/engine.go
+    kind: method
+    name: Engine.Observe
+    signature: func (e *Engine) Observe(_ context.Context, runID string) (runner.EngineStatus,
+      error)
+  - file: impl/execrunner/engine.go
+    kind: method
+    name: Engine.Probe
+    signature: func (e *Engine) Probe(ctx context.Context, runID string, command []string,
+      timeout time.Duration) (bool, error)
+  - file: impl/execrunner/engine.go
+    kind: method
+    name: Engine.Start
+    signature: func (e *Engine) Start(_ context.Context, req runner.EngineRequest)
+      (string, error)
+  - file: impl/execrunner/engine.go
+    kind: method
+    name: Engine.Stop
+    signature: func (e *Engine) Stop(_ context.Context, runID string) error
+  - file: impl/execrunner/engine.go
+    kind: struct
+    name: EngineOptions
+    signature: type EngineOptions struct
+  - file: impl/execrunner/engine.go
+    kind: function
+    name: NewEngine
+    signature: func NewEngine(opts EngineOptions) (*Engine, error)
+  - file: impl/execrunner/pod.go
+    kind: function
+    name: NewPod
+    signature: func NewPod(opts PodOptions) (*Pod, error)
+  - file: impl/execrunner/pod.go
+    kind: struct
+    name: Pod
+    signature: type Pod struct
+  - file: impl/execrunner/pod.go
+    kind: method
+    name: Pod.Observe
+    signature: func (p *Pod) Observe(_ context.Context, runID string) (runner.PodStatus,
+      error)
+  - file: impl/execrunner/pod.go
+    kind: method
+    name: Pod.Probe
+    signature: func (p *Pod) Probe(ctx context.Context, runID string, command []string,
+      timeout time.Duration) (bool, error)
+  - file: impl/execrunner/pod.go
+    kind: method
+    name: Pod.Start
+    signature: func (p *Pod) Start(_ context.Context, req runner.PodRequest) (string,
+      error)
+  - file: impl/execrunner/pod.go
+    kind: method
+    name: Pod.Stop
+    signature: func (p *Pod) Stop(_ context.Context, runID string) error
+  - file: impl/execrunner/pod.go
+    kind: struct
+    name: PodOptions
+    signature: type PodOptions struct
   name: impl-execrunner
+  requirements:
+  - codeRefs:
+    - function:4c978aedd11952f3ee6365eb5898c321
+    - struct:6aef5701957707ea4bef629407cabc37
+    id: r.engine-denobin-default
+    level: MUST
+    text: NewEngine defaults EngineOptions.DenoBin to "deno" when the caller leaves
+      it empty.
+  - codeRefs:
+    - function:4c978aedd11952f3ee6365eb5898c321
+    id: r.engine-paths-absolute
+    level: MUST
+    text: NewEngine resolves ServerDir and RunsDir to absolute paths before storing
+      them in the engine options.
+  - codeRefs:
+    - method:2beee7604d9afe94ca0951259ecada45
+    - method:42a8aeb02623810d653a714732142368
+    - method:53d6600d1f29a1f604f9fe12de4fe3df
+    - method:e837684e27d5363ecf736c655e7e5b24
+    id: r.engine-runs-server
+    level: MUST
+    text: Engine.Start must run the server file inside the server directory under
+      the runs directory and return a run identifier that Engine.Observe, Engine.Stop
+      and Engine.Probe accept.
+  - codeRefs:
+    - function:4c978aedd11952f3ee6365eb5898c321
+    id: r.engine-runsdir-required
+    level: MUST
+    text: NewEngine returns an error when EngineOptions.RunsDir is empty.
+  - codeRefs:
+    - function:4c978aedd11952f3ee6365eb5898c321
+    id: r.engine-serverdir-required
+    level: MUST
+    text: NewEngine returns an error when EngineOptions.ServerDir is empty.
+  - codeRefs:
+    - function:4c978aedd11952f3ee6365eb5898c321
+    - struct:6aef5701957707ea4bef629407cabc37
+    id: r.engine-serverfile-default
+    level: MUST
+    text: NewEngine defaults EngineOptions.ServerFile to "main.ts" when the caller
+      leaves it empty.
+  - codeRefs:
+    - method:53d6600d1f29a1f604f9fe12de4fe3df
+    - method:e4363e67372d0067b655391e57db53ed
+    id: r.namespace-left-alone
+    level: MUST
+    text: The pod must not set an environment variable for the namespace that overrides
+      the one the caller supplied in the pod request.
+  - codeRefs:
+    - struct:5a9b7da405a97b69724f6f93d52cf4ab
+    - struct:6aef5701957707ea4bef629407cabc37
+    id: r.no-deadline-never-reaped
+    level: MUST
+    text: A run started without a deadline must never be reaped by the timeout machinery.
+  - codeRefs:
+    - struct:c617bd87489adfc74952ca77d12f02ae
+    id: r.pod-result-and-tls-options
+    level: MAY
+    text: PodOptions may carry a result file path, CA data and a trust bundle function
+      for pods that need to talk to TLS endpoints or publish a result.
+  - codeRefs:
+    - method:0cfcac9db3f96294b49ce881bee14d93
+    - method:55c0a5d0dd6cf0808dd2503822444b65
+    - method:e4363e67372d0067b655391e57db53ed
+    - method:ef6ab966433b9776496a384adb8cf1e1
+    id: r.pod-runs-script
+    level: MUST
+    text: Pod.Start must run the request script in the pod's run directory and return
+      a run identifier that Pod.Observe, Pod.Stop and Pod.Probe accept.
+  - codeRefs:
+    - function:00b074a7109347b2daa577f4bdc75467
+    - struct:c617bd87489adfc74952ca77d12f02ae
+    id: r.pod-runsdir-required
+    level: MUST
+    text: NewPod returns an error when PodOptions.RunsDir is empty, since the pod
+      has no run directory to work in.
+  - codeRefs:
+    - method:53d6600d1f29a1f604f9fe12de4fe3df
+    - method:ef6ab966433b9776496a384adb8cf1e1
+    id: r.probe-runs-command
+    level: SHOULD
+    text: Probe should run the supplied command against the run under the supplied
+      timeout and report whether it succeeded.
+  - codeRefs:
+    - file:impl/execrunner/supervisor.go
+    - struct:5a9b7da405a97b69724f6f93d52cf4ab
+    - struct:aa3532720785693eda3016d5bd68272c
+    id: r.shared-supervisor
+    level: SHOULD
+    text: Engine and Pod should share the supervisor in impl/execrunner/supervisor.go
+      for run directories, process lifetime and timeouts rather than each managing
+      processes themselves.
+  - codeRefs:
+    - method:42a8aeb02623810d653a714732142368
+    id: r.stop-reports-wait-error
+    level: MUST
+    text: Engine.Stop must report the wait error observed when the process is stopped.
+  - codeRefs:
+    - struct:5a9b7da405a97b69724f6f93d52cf4ab
+    id: r.timeout-enforced
+    level: MUST
+    text: When a timeout is configured, the engine must enforce it against the running
+      process.
   upstream: self
 - code:
   - impl/exportwatch/exportwatch.go
