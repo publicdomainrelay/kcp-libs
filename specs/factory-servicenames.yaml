@@ -30,7 +30,7 @@ spec:
       HOSTNAME, returns the empty string when no port is found, and substitutes 127.0.0.1
       when the host is empty, "0.0.0.0" or "::"; the result is host:port.
     codeRefs:
-    - function:8a334a3b9191ecba1125496302619eef
+    - function:07389965e6b38ea0b3612bdad786929e
   - id: r.behaviour-is-tested
     level: MUST
     text: The package behaviour is covered by tests in the same package, including
@@ -47,7 +47,7 @@ spec:
       target's own advertised address into the table and the workspace list when that
       address is non-empty.
     codeRefs:
-    - method:bfae8f5500472858636c6d1c013433aa
+    - method:ad5afdbf8721ab5ce7a03ba3ddcd30e4
   - id: r.name-uses-path
     level: MUST
     text: Resolver.Name routes the logical cluster through the PathResolver when one
@@ -55,26 +55,26 @@ spec:
       unchanged, then returns kcp.ServiceFQDN of name, namespace and cluster under
       the configured domain.
     codeRefs:
-    - method:fde6488c215fafdc9b615405664720f8
+    - method:4278b3fe1612ff604bfe889cf282fc0d
   - id: r.new-defaults
     level: MUST
     text: New fills Options.Domain with kcp.DefaultServiceDomain and Options.ServiceAccountNamespace
       with "default" when either is empty, and returns a Resolver holding the resulting
       options.
     codeRefs:
-    - function:37ab5725bd1c20dbfd19a629daa2966c
-    - struct:6a9fe9f2761d8754abd4ba3af073a35f
-    - struct:dd81ce362a0aa33a9ebf018c6e22efaa
+    - function:b19b27cc115a548b83269276a58c99fc
+    - struct:3112320f513f73cfe648eedde3b1fdc4
+    - struct:cea2d734e279f4a25d0548390b498f77
   - id: r.path-resolver-lookup
     level: MUST
     text: A PathResolver maps a logical cluster to a path, returning the empty string
       when it has no answer, and PathResolverFunc adapts a function with the same
       signature.
     codeRefs:
-    - interface:c70a17259fae28f88b3e1922fd769641
-    - method:9fac36ee8b8d24e43bbc4732929d149c
-    - method:cae3fb88acdade71c05e6f034630da80
-    - type_alias:18970bc4f4801584a91a93a1396a18a1
+    - interface:519ba0a5dc01e2e03c8ae8130b661f15
+    - method:3bf4a3c644a5c736a402c5c943469567
+    - method:ccfd372e76badab8463bd241875ea2cd
+    - type_alias:d0b47bece9defe5890614e1e7fd29a77
   - id: r.source-provides-pods
     level: MUST
     text: A Source returns the observed pods as a slice of unstructured objects, and
@@ -92,7 +92,7 @@ spec:
       whose advertised address is empty, and maps each remaining pod's resolved name
       to its advertised address.
     codeRefs:
-    - method:edee24a98f35bb7511a0389d67d2ebbf
+    - method:af52145174fd9601d169c4b0b89a4a1a
   - id: r.token-keys-agree-with-the-service-name
     level: MUST
     text: Every key in the token JSON is the same cluster string Resolver.Name builds
@@ -103,7 +103,7 @@ spec:
       cluster id, or a cluster named any other way, is a lookup the workload can never
       hit and a peer it can never discover.
     codeRefs:
-    - method:21dae96a0de0787a3171d9b273266bc6
+    - method:1d9eaefc92217c5a7cc9fcb25ad6cf14
   - id: r.tokens-per-workspace
     level: MUST
     text: Resolver.Tokens mints one service account token per workspace against the
@@ -112,13 +112,14 @@ spec:
       result as a JSON object string, or "{}" when marshalling fails. It mints nothing
       when the account is nil or no Minter is set.
     codeRefs:
-    - method:21dae96a0de0787a3171d9b273266bc6
+    - method:1d9eaefc92217c5a7cc9fcb25ad6cf14
   - id: r.workspace-source-tests
     level: MUST
     text: Tests cover it. Naming a cluster that has no pod still mints a token under
       the key the service name for that cluster implies, the target's own cluster
       is always in the set, a nil source adds nothing, and a cluster named twice is
-      minted once.
+      minted once. Every file the change touches is gofmt-clean, as every change to
+      this repository must be.
     codeRefs:
     - file:factory/servicenames/servicenames_test.go
   - id: r.workspace-source-widens-the-token-set
@@ -132,7 +133,7 @@ spec:
       by name; a nil source leaves the set exactly as the table and the target make
       it.
     codeRefs:
-    - struct:6a9fe9f2761d8754abd4ba3af073a35f
+    - struct:cea2d734e279f4a25d0548390b498f77
   interfaces:
   - name: AdvertisedAddress
     kind: function
@@ -209,19 +210,7 @@ spec:
 codeRefIndex:
 - file:factory/servicenames/servicenames.go servicenames.go@factory/servicenames/servicenames.go
 - file:factory/servicenames/servicenames_test.go servicenames_test.go@factory/servicenames/servicenames_test.go
-- function:37ab5725bd1c20dbfd19a629daa2966c New@factory/servicenames/servicenames.go:85
-- function:8a334a3b9191ecba1125496302619eef AdvertisedAddress@factory/servicenames/servicenames.go:192
 - interface:3f1bd9500073f2f4d05118ef71f4e7fa Source@factory/servicenames/servicenames.go:33
-- interface:c70a17259fae28f88b3e1922fd769641 PathResolver@factory/servicenames/servicenames.go:53
-- method:21dae96a0de0787a3171d9b273266bc6 Resolver.Tokens@factory/servicenames/servicenames.go:133
 - method:9f382eff81d8cc14c42263ff6cc96655 SourceFunc.Pods@factory/servicenames/servicenames.go:39
-- method:9fac36ee8b8d24e43bbc4732929d149c PathResolver.Lookup@factory/servicenames/servicenames.go:54
-- method:bfae8f5500472858636c6d1c013433aa Resolver.Env@factory/servicenames/servicenames.go:159
-- method:cae3fb88acdade71c05e6f034630da80 PathResolverFunc.Lookup@factory/servicenames/servicenames.go:59
 - method:ec3d149f59e5f08d064d8abb43c7b47e Source.Pods@factory/servicenames/servicenames.go:34
-- method:edee24a98f35bb7511a0389d67d2ebbf Resolver.Table@factory/servicenames/servicenames.go:108
-- method:fde6488c215fafdc9b615405664720f8 Resolver.Name@factory/servicenames/servicenames.go:104
-- struct:6a9fe9f2761d8754abd4ba3af073a35f Options@factory/servicenames/servicenames.go:63
-- struct:dd81ce362a0aa33a9ebf018c6e22efaa Resolver@factory/servicenames/servicenames.go:81
-- type_alias:18970bc4f4801584a91a93a1396a18a1 PathResolverFunc@factory/servicenames/servicenames.go:57
 - type_alias:3403f9a23dfea8c2fabcfb5d23057f58 SourceFunc@factory/servicenames/servicenames.go:37

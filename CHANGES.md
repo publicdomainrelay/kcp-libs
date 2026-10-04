@@ -411,7 +411,7 @@ The requirement-level delta against `open-architecture/kcp-libs`, and what this 
 - added `r.table-skips-unlabelled-and-unadvertised` (MUST): "Resolver.Table returns an empty table and no workspaces when no Source is set; it skips pods lacking the kcp.ClusterAnnotation, records each distinct cluster once in the returned workspace list in first-seen order, skips pods whose advertised address is empty, and maps each remaining pod's resolved name to its advertised address."
 - added `r.token-keys-agree-with-the-service-name` (MUST): "Every key in the token JSON is the same cluster string Resolver.Name builds the service name from for that cluster -- the path the PathResolver answers when it answers a non-empty path, and the cluster unchanged otherwise. A workload parses a service name back to that cluster (pds.default.alice.svc.kcp.local to root:alice) and looks its token up by it, so a key that is an unresolved cluster id, or a cluster named any other way, is a lookup the workload can never hit and a peer it can never discover."
 - added `r.tokens-per-workspace` (MUST): "Resolver.Tokens mints one service account token per workspace against the account's namespace, falling back to Options.ServiceAccountNamespace when the account namespace is empty, skips workspaces whose mint fails, and returns the result as a JSON object string, or "{}" when marshalling fails. It mints nothing when the account is nil or no Minter is set."
-- added `r.workspace-source-tests` (MUST): "Tests cover it. Naming a cluster that has no pod still mints a token under the key the service name for that cluster implies, the target's own cluster is always in the set, a nil source adds nothing, and a cluster named twice is minted once."
+- added `r.workspace-source-tests` (MUST): "Tests cover it. Naming a cluster that has no pod still mints a token under the key the service name for that cluster implies, the target's own cluster is always in the set, a nil source adds nothing, and a cluster named twice is minted once. Every file the change touches is gofmt-clean, as every change to this repository must be."
 - added `r.workspace-source-widens-the-token-set` (MUST): "Options carries a workspace source -- an interface whose Clusters method returns the logical clusters a workload may address, and no clusters when it has no answer. The set of workspaces a token is minted for is the union of the clusters the table names, the target's own cluster, and the clusters that source returns, deduplicated. A cluster with no pod yet is therefore still given a token, which is what lets a workload discover a service created after it started by name; a nil source leaves the set exactly as the table and the target make it."
 
 ### impl-assets
@@ -652,6 +652,7 @@ The requirement-level delta against `open-architecture/kcp-libs`, and what this 
 
 | change | direction | phase | commit | verify | acceptance |
 | --- | --- | --- | --- | --- | --- |
+| factory-servicenames-s2c-c614db344601 | SpecToCode | Pending |  | 0 | - |
 | factory-servicenames-s2c-d6893cea853e | SpecToCode | Succeeded | 14dcfd78 | 0 | - |
 | impl-assets-s2c-f45702016a1d | SpecToCode | Failed |  | 1 | - |
 | impl-assets-s2c-f45702016a1d-a2 | SpecToCode | Succeeded | f9e2ef3c | 0 | - |

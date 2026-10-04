@@ -5,7 +5,16 @@ conditions:
 - type: CodeSynced
   status: "False"
   reason: InterfacesMissing
-  message: 'undeclared: Workspaces, Workspaces.Clusters, WorkspacesFunc, WorkspacesFunc.Clusters'
+  message: 'undeclared: Workspaces, Workspaces.Clusters, WorkspacesFunc, WorkspacesFunc.Clusters;
+    unresolved: r.advertised-address: function:07389965e6b38ea0b3612bdad786929e, r.env-bundle:
+    method:ad5afdbf8721ab5ce7a03ba3ddcd30e4, r.name-uses-path: method:4278b3fe1612ff604bfe889cf282fc0d,
+    r.new-defaults: function:b19b27cc115a548b83269276a58c99fc, r.new-defaults: struct:3112320f513f73cfe648eedde3b1fdc4,
+    r.new-defaults: struct:cea2d734e279f4a25d0548390b498f77, r.path-resolver-lookup:
+    interface:519ba0a5dc01e2e03c8ae8130b661f15, r.path-resolver-lookup: method:3bf4a3c644a5c736a402c5c943469567,
+    r.path-resolver-lookup: method:ccfd372e76badab8463bd241875ea2cd, r.path-resolver-lookup:
+    type_alias:d0b47bece9defe5890614e1e7fd29a77, r.table-skips-unlabelled-and-unadvertised:
+    method:af52145174fd9601d169c4b0b89a4a1a, r.token-keys-agree-with-the-service-name:
+    method:1d9eaefc92217c5a7cc9fcb25ad6cf14'
 - type: Drifted
   status: "False"
   reason: FingerprintEqual
