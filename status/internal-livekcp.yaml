@@ -1,9 +1,8 @@
 conditions:
-- message: 'undeclared: Cluster, Cluster.Get, Cluster.Kubectl, Cluster.Logs, Cluster.Phases,
-    Cluster.Stop, Cluster.Trace, Metadata, Missing, NewObject, Object, Phase, Resolve,
-    Seed, Start, WaitFor'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -117,6 +116,6 @@ observed:
     signature: (ctx context.Context, cluster string, resource store.Reader[T], namespace,
       name string, reached func(T) bool) (*T, error)
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: 99e5f058141cf0cb8a181e2c6ee6ff0c952a09ecdc813375a994b6f9e372f4b6
+realizedSpecHash: 6c3d735554e12997ac194e4659462e75ab3f805198e2e47a06570a25ee7a94a9
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: 2a84b83b92729f40da9d97a14782d86144e781d079b0b9521804be2b5bcf2440

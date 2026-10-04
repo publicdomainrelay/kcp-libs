@@ -10,5 +10,14 @@ spec:
   systemContext: internal-livekcp
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing internal-livekcp
-  phase: Running
+  agentLog: 'The internal/livekcp package is the live-tier harness for kcp-libs tests.
+    It starts a real kcp server and kubectl-driven workspaces, then exposes them to
+    tests as a Cluster with method access to phases, traces, logs, kubectl apply,
+    and kubectl get. Helper functions Resolve and Missing handle binary discovery
+    and environment overrides (KCP_BIN, KUBECTL), so the live tier can be skipped
+    when the tools are absent. The widget.go file adds a small generic object layer
+    over the store: Metadata and Object types, NewObject construction, Seed to write
+    an object into a resource store, and WaitFor to poll a store reader until a caller-supplied
+    predicate holds.'
+  message: wrote 14 requirement(s) and 16 interface(s) for internal-livekcp
+  phase: Succeeded
