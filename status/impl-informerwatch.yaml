@@ -1,8 +1,8 @@
 conditions:
-- message: 'undeclared: Enqueue, Options, Reactor, Reactor.Added, Reactor.Updated,
-    Resource, Run, Source'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -62,6 +62,6 @@ observed:
     name: Run
     signature: (ctx context.Context, opts Options) error
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: c7a2db934d43ec01ef4ea37abfa082b3397202ae6c20c1d04534b4b60246cf61
+realizedSpecHash: 95e8d88c295c78834b502c574a4961a0fcf7959d93e24794b8f9bd45b8366f0b
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: 006894dcb1008d7837bc2fb76ebe03b9850ac3237017ff6194b6e42cb05c0183

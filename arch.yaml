@@ -4199,7 +4199,158 @@ system_contexts:
   - impl/informerwatch/informerwatch.go
   - impl/informerwatch/informerwatch_test.go
   id: sc.impl-informerwatch
+  intent: 'This context exists so the kcp-libs dynamic watching layer is described
+    as it is written: a runtime-neutral informer bootstrap that turns kcp object events
+    into enqueue calls and optional reactor callbacks, with the indexer, cache set
+    and reactor hooks injected by the caller. It names no workload runtime and is
+    reusable without the deno packages.'
+  interfaces:
+  - file: impl/informerwatch/informerwatch.go
+    kind: type_alias
+    name: Enqueue
+    signature: type Enqueue func(kind string, r ref.Ref)
+  - file: impl/informerwatch/informerwatch.go
+    kind: struct
+    name: Options
+    signature: "type Options struct {\n\tConfig *rest.Config\n\n\tSources []Source\n\n\tIndexers
+      cache.Indexers\n\n\tSet *cache.Set\n\n\tReactor Reactor\n\n\tEnqueue Enqueue\n\n\tOnEvent
+      func()\n}"
+  - file: impl/informerwatch/informerwatch.go
+    kind: interface
+    name: Reactor
+    signature: "type Reactor interface {\n\tAdded(kind string, obj *unstructured.Unstructured,
+      enqueue Enqueue)\n\n\tUpdated(kind string, old, obj *unstructured.Unstructured,
+      enqueue Enqueue)\n}"
+  - file: impl/informerwatch/informerwatch.go
+    kind: method
+    name: Reactor.Added
+    signature: Added(kind string, obj *unstructured.Unstructured, enqueue Enqueue)
+  - file: impl/informerwatch/informerwatch.go
+    kind: method
+    name: Reactor.Updated
+    signature: Updated(kind string, old, obj *unstructured.Unstructured, enqueue Enqueue)
+  - file: impl/informerwatch/informerwatch.go
+    kind: struct
+    name: Resource
+    signature: "type Resource struct {\n\tKind string\n\n\tGVR schema.GroupVersionResource\n}"
+  - file: impl/informerwatch/informerwatch.go
+    kind: function
+    name: Run
+    signature: func Run(ctx context.Context, opts Options) error
+  - file: impl/informerwatch/informerwatch.go
+    kind: struct
+    name: Source
+    signature: "type Source struct {\n\tBase string\n\n\tResources []Resource\n}"
   name: impl-informerwatch
+  requirements:
+  - codeRefs:
+    - function:e7b0c39be09f14cf5d6e760c26e08195
+    id: r.block-until-done
+    level: MUST
+    text: After all caches sync, Run must block on the context's Done channel and
+      return nil when the context is cancelled.
+  - codeRefs:
+    - function:e7b0c39be09f14cf5d6e760c26e08195
+    id: r.client-per-source
+    level: MUST
+    text: Run must build one dynamic client per Source, with the client host set to
+      the source Base (trailing slash trimmed) plus ref.APIPathPrefix and a wildcard,
+      and must apply common/clientlimit to the rest config.
+  - codeRefs:
+    - function:e7b0c39be09f14cf5d6e760c26e08195
+    - type_alias:922cbb149aec17f0c3fd708c19ebcc25
+    id: r.enqueue-own-object
+    level: MUST
+    text: 'Add and update events must enqueue the changed object itself: the handler
+      resolves the object with cache.RefOf and calls Enqueue with the resource Kind
+      and the resolved ref, doing nothing when the object yields no ref.'
+  - codeRefs:
+    - function:e7b0c39be09f14cf5d6e760c26e08195
+    - struct:591bf69eb781348c20c82bf16173a503
+    id: r.indexers-applied
+    level: MUST
+    text: Registration must add Options.Indexers to the informer indexer when they
+      are non-nil, and must fail with an error naming the Kind when the indexer cannot
+      be added.
+  - codeRefs:
+    - function:e7b0c39be09f14cf5d6e760c26e08195
+    - struct:f606eb0070d5227633ed9759d17ac235
+    id: r.kind-watched-once
+    level: MUST
+    text: Run must refuse a Kind that appears in more than one Resource, because the
+      second watcher would replace the first one's index; the error names the Kind
+      and says it is watched twice.
+  - codeRefs:
+    - function:e7b0c39be09f14cf5d6e760c26e08195
+    - struct:591bf69eb781348c20c82bf16173a503
+    id: r.on-event-hook
+    level: SHOULD
+    text: The add and update handlers should call Options.OnEvent when it is non-nil,
+      before any enqueue or reactor work.
+  - codeRefs:
+    - interface:69ae3bee91c7100683df536ca4bee1f1
+    - method:19895db5d0e36b28d57bf850b23b04ad
+    id: r.reactor-added
+    level: MUST
+    text: On an add event with Options.Reactor set, the handler must call Reactor.Added
+      with the Kind, the object as *unstructured.Unstructured, and the enqueue function,
+      but only when the object is an *unstructured.Unstructured.
+  - codeRefs:
+    - interface:69ae3bee91c7100683df536ca4bee1f1
+    - method:965fbef5d03cd976d93d50b7588840e0
+    id: r.reactor-updated
+    level: MUST
+    text: On an update event with Options.Reactor set, the handler must call Reactor.Updated
+      with the Kind, the old object (as *unstructured.Unstructured when it converts,
+      otherwise nil), the new object as *unstructured.Unstructured, and the enqueue
+      function.
+  - codeRefs:
+    - function:e7b0c39be09f14cf5d6e760c26e08195
+    - struct:f606eb0070d5227633ed9759d17ac235
+    id: r.register-per-resource
+    level: MUST
+    text: Run must register an event handler for every Resource of every Source on
+      a filtered dynamic shared informer factory started with the context's Done channel.
+  - codeRefs:
+    - function:e7b0c39be09f14cf5d6e760c26e08195
+    id: r.run-requires-enqueue
+    level: MUST
+    text: 'Run must return the error "informerwatch: an enqueue function is required"
+      when Options.Enqueue is nil.'
+  - codeRefs:
+    - function:e7b0c39be09f14cf5d6e760c26e08195
+    id: r.run-requires-rest-config
+    level: MUST
+    text: 'Run must return the error "informerwatch: a rest config is required" when
+      Options.Config is nil.'
+  - codeRefs:
+    - function:e7b0c39be09f14cf5d6e760c26e08195
+    - struct:591bf69eb781348c20c82bf16173a503
+    id: r.set-populated
+    level: SHOULD
+    text: Registration should add the informer indexer to Options.Set under the resource
+      Kind when Set is non-nil.
+  - codeRefs:
+    - function:e7b0c39be09f14cf5d6e760c26e08195
+    - struct:ff54a13981e71b687c7ac0015b595ed9
+    id: r.source-needs-base
+    level: MUST
+    text: 'Run must reject a Source whose Base is empty with the error "informerwatch:
+      every source needs a base URL".'
+  - codeRefs:
+    - function:e7b0c39be09f14cf5d6e760c26e08195
+    - struct:ff54a13981e71b687c7ac0015b595ed9
+    id: r.source-needs-resource
+    level: MUST
+    text: 'Run must reject a Source with no Resources with the error "informerwatch:
+      every source needs at least one resource".'
+  - codeRefs:
+    - function:e7b0c39be09f14cf5d6e760c26e08195
+    id: r.wait-for-sync
+    level: MUST
+    text: 'Run must wait for every started factory''s cache to sync; when a cache
+      fails to sync it must return nil if the context is already done, and otherwise
+      the error "informerwatch: the cache for %s did not sync" naming the resource.'
   upstream: self
 - code:
   - impl/kcpstore/kcpstore.go
