@@ -1,0 +1,18 @@
+apiVersion: specs.publicdomainrelay.dev/v1alpha1
+kind: SpecChange
+metadata:
+  name: impl-assets-s2c-f81804cbe021
+  namespace: default
+spec:
+  systemContext: impl-assets
+  direction: SpecToCode
+  fromSpecHash: aa8079cbba85fb3bcd8b341dbb93e4ecd9ad3ac52aa43bf37fe672c88693f9bd
+  toSpecHash: f81804cbe0214887fc44fc483d9047ee23e6c2fdf255c7f8ffe77be6cbdc6f01
+  delta:
+    counts:
+      added: 2
+    requirements:
+    - +r.dnsshim-discovers-a-name-absent-from-the-table-test
+    - +r.dnsshim-token-key-matches-the-name
+status:
+  phase: Pending

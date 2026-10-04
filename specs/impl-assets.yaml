@@ -29,6 +29,18 @@ spec:
     codeRefs:
     - file:impl/assets/dns.go
     - function:d3ebda2faf6210986c5ca5687c578339
+  - id: r.dnsshim-discovers-a-name-absent-from-the-table-test
+    level: MUST
+    text: A deno test covers discovery, in the way the shim's other behaviour is covered.
+      With a table that does not name the target, a token map that carries the target's
+      cluster, and a local API server answering the target's denopod object, a fetch
+      of the target's service name reaches the object's advertised address. With the
+      same server and table but a token map keyed by the cluster id instead, the fetch
+      reports that the name could not be discovered -- the key mismatch this guards
+      against -- and no request is sent.
+    codeRefs:
+    - file:impl/assets/dns_test.go
+    - file:impl/assets/dnsshim.ts
   - id: r.dnsshim-fetch-preserves-the-request
     level: MUST
     text: 'The shim replaces globalThis.fetch, and when the name it is given is in
@@ -53,6 +65,16 @@ spec:
       and that body, and it must fail against the shim before this requirement.
     codeRefs:
     - file:impl/assets/dns_test.go
+    - file:impl/assets/dnsshim.ts
+  - id: r.dnsshim-token-key-matches-the-name
+    level: MUST
+    text: When a name is absent from the table the shim falls back to discovery, and
+      it reads the token for the target from the injected token map under the cluster
+      it derives from the service name itself (pds.default.alice.svc.kcp.local to
+      root:alice) -- the same cluster the provider keyed that token by. It must not
+      read it under the raw cluster id or any other key, and when the map holds no
+      token for that cluster it gives up instead of sending an unauthenticated request.
+    codeRefs:
     - file:impl/assets/dnsshim.ts
   - id: r.materialise-failure-retried
     level: MUST

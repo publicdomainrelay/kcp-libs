@@ -1188,9 +1188,13 @@ system_contexts:
     level: MUST
   - id: r.dnsset-builds-run-dir-set
     level: MUST
+  - id: r.dnsshim-discovers-a-name-absent-from-the-table-test
+    level: MUST
   - id: r.dnsshim-fetch-preserves-the-request
     level: MUST
   - id: r.dnsshim-fetch-preserves-the-request-test
+    level: MUST
+  - id: r.dnsshim-token-key-matches-the-name
     level: MUST
   - id: r.materialise-failure-retried
     level: MUST
