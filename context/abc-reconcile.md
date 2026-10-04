@@ -2,13 +2,225 @@
 
 Repository: `kcp-libs`
 
-_(empty: write what this context is for)_
+This context exists to separate the decision half of a controller from the transport and runtime half. A Reconciler is pure: given the observed object it returns what it wants to happen, with no client, no workqueue and no dependency on any workload runtime. A Handler wraps the other direction, owning retries and terminality so the reconcile loop can be scheduled; Policy centralises the backoff arithmetic instead of scattering it through call sites, and Bridge is the piece that actually reads, decides and applies against a cluster. Result and Patch exist so the decided outcome can be accumulated, interrogated and emitted as a patch without the reconciler having to know how the write is performed. The package names no workload runtime so the generic layers of the library stay usable without the deno packages.
 
 _Write the prose above and the fields in the spec block. `codeRefs` and the resolved references below are maintained by the tool; an edit there is lost._
 
 ## spec
 
 ```yaml spec
+interfaces:
+- file: abc/reconcile/handler.go
+  kind: struct
+  name: Bridge
+  signature: type Bridge struct
+- file: abc/reconcile/handler.go
+  kind: method
+  name: Bridge.Process
+  signature: func (b Bridge) Process(ctx context.Context, key Key) (time.Duration,
+    bool, error)
+- file: abc/reconcile/handler.go
+  kind: interface
+  name: Handler
+  signature: type Handler interface { Process(ctx context.Context, key Key) (after
+    time.Duration, terminal bool, err error) }
+- file: abc/reconcile/handler.go
+  kind: method
+  name: Handler.Process
+  signature: Process(ctx context.Context, key Key) (after time.Duration, terminal
+    bool, err error)
+- file: abc/reconcile/handler.go
+  kind: type_alias
+  name: HandlerFunc
+  signature: type HandlerFunc func(ctx context.Context, key Key) (time.Duration, bool,
+    error)
+- file: abc/reconcile/handler.go
+  kind: method
+  name: HandlerFunc.Process
+  signature: func (f HandlerFunc) Process(ctx context.Context, key Key) (time.Duration,
+    bool, error)
+- file: abc/reconcile/handler.go
+  kind: struct
+  name: Key
+  signature: type Key struct
+- file: abc/reconcile/handler.go
+  kind: method
+  name: Key.String
+  signature: func (k Key) String() string
+- file: abc/reconcile/reconcile.go
+  kind: type_alias
+  name: Kind
+  signature: type Kind string
+- file: abc/reconcile/reconcile.go
+  kind: struct
+  name: Operation
+  signature: type Operation struct
+- file: abc/reconcile/reconcile.go
+  kind: function
+  name: Patch
+  signature: func Patch(result Result[Status]) ([]byte, error)
+- file: abc/reconcile/handler.go
+  kind: struct
+  name: Policy
+  signature: type Policy struct
+- file: abc/reconcile/handler.go
+  kind: method
+  name: Policy.Clamp
+  signature: func (p Policy) Clamp(time.Duration) time.Duration
+- file: abc/reconcile/handler.go
+  kind: method
+  name: Policy.ConflictAfter
+  signature: func (p Policy) ConflictAfter() time.Duration
+- file: abc/reconcile/handler.go
+  kind: method
+  name: Policy.Default
+  signature: func (p Policy) Default() time.Duration
+- file: abc/reconcile/handler.go
+  kind: method
+  name: Policy.Next
+  signature: func (p Policy) Next(key Key, after time.Duration, terminal bool) (time.Duration,
+    bool)
+- file: abc/reconcile/reconcile.go
+  kind: interface
+  name: Reconciler
+  signature: type Reconciler interface { Reconcile(ctx context.Context, observed Observed)
+    (Result[Status], error) }
+- file: abc/reconcile/reconcile.go
+  kind: method
+  name: Reconciler.Reconcile
+  signature: Reconcile(ctx context.Context, observed Observed) (Result[Status], error)
+- file: abc/reconcile/reconcile.go
+  kind: type_alias
+  name: ReconcilerFunc
+  signature: type ReconcilerFunc func(ctx context.Context, observed Observed) (Result[Status],
+    error)
+- file: abc/reconcile/reconcile.go
+  kind: method
+  name: ReconcilerFunc.Reconcile
+  signature: func (f ReconcilerFunc) Reconcile(ctx context.Context, observed Observed)
+    (Result[Status], error)
+- file: abc/reconcile/reconcile.go
+  kind: struct
+  name: Result
+  signature: type Result[Status any] struct
+- file: abc/reconcile/reconcile.go
+  kind: method
+  name: Result.Add
+  signature: func (r Result[Status]) Add(kind Kind)
+- file: abc/reconcile/reconcile.go
+  kind: method
+  name: Result.AddFor
+  signature: func (r Result[Status]) AddFor(kind Kind, target ref.Ref)
+- file: abc/reconcile/reconcile.go
+  kind: method
+  name: Result.Deletes
+  signature: func (r Result[Status]) Deletes() bool
+- file: abc/reconcile/reconcile.go
+  kind: method
+  name: Result.Has
+  signature: func (r Result[Status]) Has(kind Kind) bool
+- file: abc/reconcile/reconcile.go
+  kind: method
+  name: Result.IsCleared
+  signature: func (r Result[Status]) IsCleared(field string) bool
+- file: abc/reconcile/reconcile.go
+  kind: method
+  name: Result.ReleasesFinalizer
+  signature: func (r Result[Status]) ReleasesFinalizer() bool
+requirements:
+- codeRefs:
+  - file:abc/reconcile/handler.go
+  - method:b160656aa87cd0cfed9c4da489da5d55
+  - struct:4d372b9ebd4367461eb8d9017af139b9
+  id: r.bridge-drives-a-handler
+  level: SHOULD
+  text: Bridge must present the Handler shape so a caller can read, decide and apply
+    against a cluster through one Process call.
+- codeRefs:
+  - file:abc/reconcile/handler.go
+  - interface:b487203a74df196c4e2c24e2b4285338
+  - method:9224182fbfdfdef452b5728e17d9ae4b
+  id: r.handler-reports-outcome
+  level: MUST
+  text: Handler.Process must take a context and a Key and report the delay before
+    the next attempt, whether the key is terminal, and any error, so the reconcile
+    loop can schedule the next run.
+- codeRefs:
+  - file:abc/reconcile/handler.go
+  - method:ca917977c112da3e838bc72e2e3a876a
+  - type_alias:f54cc75d5b03ae26342301628d11db2a
+  id: r.handlerfunc-adapts-a-function
+  level: MUST
+  text: HandlerFunc must adapt a plain function with the Process shape to the Handler
+    interface.
+- codeRefs:
+  - file:abc/reconcile/handler.go
+  - method:9b7c06346e0708f14275e224237b1311
+  - struct:311077d3b54038c2cab46c936ad32911
+  id: r.key-identifies-an-object
+  level: MUST
+  text: Key must carry a Kind string and a ref.Ref, and Key.String must render as
+    Kind joined by "/" to Ref.Key().
+- codeRefs:
+  - file:abc/reconcile/reconcile.go
+  - function:a28981cbe7cb44daf4d0bad5e126a5dd
+  id: r.patch-renders-a-result
+  level: SHOULD
+  text: Patch must turn a Result[Status] into a merge patch, so a decided outcome
+    can be emitted without the reconciler knowing how the write happens.
+- codeRefs:
+  - file:abc/reconcile/handler.go
+  - method:38de4d26da42bde321cbbf51907e4d63
+  - method:6b92208396da893648d337e25d5511de
+  - method:c71227b4698175d8155a30f4dc3044c5
+  - method:ef9418fe4b597f6af3ccdc81706f3418
+  - struct:ff932dc480705dcd5cdfaddc8173a33d
+  id: r.policy-owns-backoff
+  level: MUST
+  text: 'Policy must own the retry arithmetic: Default gives the starting delay, Clamp
+    bounds a delay to the policy range, Next combines the current delay, the key and
+    terminality into the next delay and whether to continue, and ConflictAfter gives
+    the delay used after a conflict.'
+- codeRefs:
+  - file:abc/reconcile/reconcile.go
+  - interface:acc76b971252c6bdba6da6e46cec7cdd
+  - method:169f5c0dc59cff9f1c05e87da663b5ce
+  id: r.reconciler-decides-from-observed
+  level: MUST
+  text: Reconciler.Reconcile must take a context and the observed object and return
+    a Result[Status] with an error, keeping the decision free of any client or runtime
+    dependency.
+- codeRefs:
+  - file:abc/reconcile/reconcile.go
+  - method:3141eb8d60a3d8ca6bae7f985285e762
+  - type_alias:d32f5b88a1070a50862dbe142558d9c4
+  id: r.reconcilerfunc-adapts-a-function
+  level: MUST
+  text: ReconcilerFunc must adapt a plain function with the Reconcile shape to the
+    Reconciler interface.
+- codeRefs:
+  - file:abc/reconcile/reconcile.go
+  - method:255c7ada4931d84cece692ee65f65dfc
+  - method:8d872cd3fe248f9c368a23eac9ee0b39
+  - method:b1bc8546c9c8172b30083faf2e5c9f41
+  - struct:8aa75e5f31cd8916db4202af768a91df
+  - struct:d87af6ffc4b07f462a71cc788c1cd06b
+  - type_alias:64c437b8143c22c0f14b5d784db5af07
+  id: r.result-accumulates-operations
+  level: MUST
+  text: 'Result must record the decided operations by Kind: Add records a kind without
+    a target, AddFor records a kind against a ref.Ref target, and Has reports whether
+    a kind was recorded.'
+- codeRefs:
+  - file:abc/reconcile/reconcile.go
+  - method:05d31eb2f71b4cd30406111a8bab5e42
+  - method:9f9066b546ded29a0050478bc6b96283
+  - method:c38c6e41af7aa850b3556c64dd441f00
+  id: r.result-exposes-cleanup-obligations
+  level: MUST
+  text: 'Result must expose the cleanup side of the decision: Deletes reports whether
+    the object is being deleted, ReleasesFinalizer reports whether the finalizer can
+    be removed, and IsCleared reports whether a named status field was cleared.'
 upstream: self
 ```
 

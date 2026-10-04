@@ -10,5 +10,15 @@ spec:
   systemContext: abc-reconcile
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing abc-reconcile
-  phase: Running
+  agentLog: 'abc/reconcile holds the runtime-free reconciliation kernel of kcp-libs:
+    a Key that names one object by Kind plus ref.Ref, a Handler interface (plus HandlerFunc
+    adapter) whose Process returns the next delay, whether the work is terminal, and
+    an error, a Policy struct that turns that outcome into a backoff decision through
+    Default, Clamp, Next and ConflictAfter, and a Bridge that drives a Handler against
+    a live cluster. The second file defines the decision vocabulary: Kind, Operation,
+    and a generic Result that accumulates which kinds were added (Add, AddFor, Has)
+    and which cleanup obligations follow (Deletes, ReleasesFinalizer, IsCleared),
+    a Patch helper that renders a Result into a merge patch, and the Reconciler interface
+    with its ReconcilerFunc adapter that maps an Observed object onto a Result[Status].'
+  message: wrote 10 requirement(s) and 27 interface(s) for abc-reconcile
+  phase: Succeeded

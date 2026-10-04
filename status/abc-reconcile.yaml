@@ -1,11 +1,8 @@
 conditions:
-- message: 'undeclared: Bridge, Bridge.Process, Handler, Handler.Process, HandlerFunc,
-    HandlerFunc.Process, Key, Key.String, Kind, Operation, Patch, Policy, Policy.Clamp,
-    Policy.ConflictAfter, Policy.Default, Policy.Next, Reconciler, Reconciler.Reconcile,
-    ReconcilerFunc, ReconcilerFunc.Reconcile, Result, Result.Add, Result.AddFor, Result.Deletes,
-    Result.Has, Result.IsCleared, Result.ReleasesFinalizer'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -176,6 +173,6 @@ observed:
     name: ReconcilerFunc.Reconcile
     signature: (ctx context.Context, observed Observed) (Result[Status], error)
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: 2b22e8669e5b26b1639fe255adcffc7fd88aa2b71683d83b2ebd96a787c81e0d
+realizedSpecHash: 4bd663f4f13039532305be7bc37127b70cc62306df9caf0690b267e42a068666
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: 7c683198c743c51ac982ede698fa067db256417452c9a127d93da74ad792438a
