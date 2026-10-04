@@ -2,13 +2,96 @@
 
 Repository: `kcp-libs`
 
-_(empty: write what this context is for)_
+This context exists so that the admission example can be described and regenerated as a compile-checked demonstration of the admission Source interface. It documents the exact contract an implementer must satisfy: how a parent is discovered from a run (a label lookup that may legitimately find nothing), how child runs are enumerated and filtered by that same label, and how capacity is derived from the parent batch, including the not-found case which must surface as a Blocker rather than an error. Keeping the spec anchored to these methods lets changes to the queue capacity and blocker types be validated against a real consumer.
 
 _Write the prose above and the fields in the spec block. `codeRefs` and the resolved references below are maintained by the tool; an edit there is lost._
 
 ## spec
 
 ```yaml spec
+interfaces:
+- file: examples/admission/main.go
+  kind: function
+  name: Run
+  signature: func Run(ctx context.Context, out io.Writer) error
+- file: examples/admission/main.go
+  kind: method
+  name: source.Capacity
+  signature: func (s source) Capacity(ctx context.Context, parent ref.Ref) (queue.Capacity,
+    *queue.Blocker, error)
+- file: examples/admission/main.go
+  kind: method
+  name: source.Parent
+  signature: func (s source) Parent(ctx context.Context, run queue.Run) (ref.Ref,
+    bool, error)
+- file: examples/admission/main.go
+  kind: method
+  name: source.Runs
+  signature: func (s source) Runs(ctx context.Context, parent ref.Ref) ([]queue.Run,
+    error)
+requirements:
+- codeRefs:
+  - method:4b1c829db1dd2db486e75edae8ec99f8
+  id: r.capacity-from-batch-spec
+  level: MUST
+  text: source.Capacity must read the parent batch object and return a queue.Capacity
+    carrying the batch spec concurrency policy and max concurrent value.
+- codeRefs:
+  - file:examples/admission/main.go
+  - method:4b1c829db1dd2db486e75edae8ec99f8
+  id: r.capacity-missing-batch-is-blocker
+  level: MUST
+  text: source.Capacity must return a queue.Blocker with reason BatchMissing and message
+    "the parent batch does not exist" when the batch lookup reports not found via
+    kcpstore.IsNotFound, and must return any other lookup error unchanged instead.
+- codeRefs:
+  - file:examples/admission/main.go
+  - file:examples/admission/main_test.go
+  id: r.example-implements-admission-source
+  level: MUST
+  text: The example source type must satisfy the factory/admission Source interface,
+    whose Parent, Runs and Capacity methods match the example's signatures.
+- codeRefs:
+  - file:examples/admission/main.go
+  - method:9391ce08b0aaa1ca190f09656b2de077
+  id: r.parent-lookup-by-label
+  level: MUST
+  text: source.Parent must fetch the run object by its ref, read the parent label
+    from the object metadata, and return false with a zero ref when the label is empty,
+    so a run without a parent is not an error.
+- codeRefs:
+  - method:9391ce08b0aaa1ca190f09656b2de077
+  id: r.parent-ref-preserves-cluster-and-namespace
+  level: MUST
+  text: source.Parent must build the parent ref from the run's own logical cluster
+    and namespace, using the label value as the name.
+- codeRefs:
+  - file:examples/admission/main.go
+  - function:382c144be35e7a3b04857018760f4c2b
+  id: r.run-entrypoint-writes-to-writer
+  level: MUST
+  text: Run must accept a context and an io.Writer and return an error, using the
+    writer for the example's output so the example can be driven from a test.
+- codeRefs:
+  - file:examples/admission/main.go
+  - method:e222d2ede890130c86294ba108430575
+  id: r.runs-filter-by-parent-label
+  level: MUST
+  text: source.Runs must skip objects whose parent label does not equal the parent
+    name, and emit one queue.Run per remaining object carrying its ref, status phase
+    and creation timestamp.
+- codeRefs:
+  - method:e222d2ede890130c86294ba108430575
+  id: r.runs-lists-within-cluster
+  level: MUST
+  text: source.Runs must list items in the parent's logical cluster and return the
+    error unchanged when the list fails.
+- codeRefs:
+  - method:e222d2ede890130c86294ba108430575
+  id: r.runs-parse-creation-timestamp
+  level: MUST
+  text: source.Runs must parse the object creation timestamp with time.RFC3339Nano
+    and leave the zero time when parsing fails rather than returning an error.
 upstream: self
 ```
 

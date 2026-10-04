@@ -10,5 +10,14 @@ spec:
   systemContext: examples-admission
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing examples-admission
-  phase: Running
+  agentLog: 'examples/admission is a runnable Go example that wires the queue admission
+    machinery to an in-memory or store-backed item set. The unexported type source
+    implements the three-method admission Source contract from factory/admission:
+    Parent resolves the parent reference of a run from a label on the run object,
+    Runs lists the runs that name a given parent, and Capacity reads the parent batch
+    object to produce a concurrency policy and max-concurrent limit. The exported
+    Run function is the example entrypoint: it takes a context and an io.Writer and
+    drives the example end to end, printing its output to that writer. main_test.go
+    exercises the same code.'
+  message: wrote 9 requirement(s) and 4 interface(s) for examples-admission
+  phase: Succeeded
