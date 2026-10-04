@@ -10,5 +10,15 @@ spec:
   systemContext: common-logging
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing common-logging
-  phase: Running
+  agentLog: 'common/logging holds the small adapter that turns a plain io.Writer into
+    a structured *slog.Logger for the rest of kcp-libs. Options carries three fields:
+    Service (a label attached to every record), Writer (the destination), and Level
+    (a slog.Level). New builds a slog.Logger over a JSON handler writing to Writer,
+    defaulting Level to slog.LevelInfo when it is left at zero, and adds a "service"
+    attribute when Service is set. Discard returns a logger that writes to io.Discard
+    at slog.LevelError, for tests and code paths that must stay silent. Consumers
+    such as examples/controller and the live controller test call these; factory/controller
+    defaults to slog.Default() when no logger is supplied, so this package is the
+    only place that decides how JSON logging is shaped when one is.'
+  message: wrote 5 requirement(s) and 3 interface(s) for common-logging
+  phase: Succeeded

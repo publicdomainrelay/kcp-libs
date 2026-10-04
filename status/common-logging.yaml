@@ -1,7 +1,8 @@
 conditions:
-- message: 'undeclared: Discard, New, Options'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -34,6 +35,6 @@ observed:
     name: Discard
     signature: () *slog.Logger
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: a57eb0e45ca66f347c51046418e53d23d38cf950c4e0f88421c7f58b417de68e
+realizedSpecHash: e047c051da5d59000e16121d1a292cda587bfc00a98c760a9a5ace274e4968be
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: d291177aa9649b3089a9ccef3f20d5605ccb1ef08e5415c915f5a58cf547de4d
