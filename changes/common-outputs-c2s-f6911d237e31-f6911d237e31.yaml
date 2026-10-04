@@ -10,5 +10,16 @@ spec:
   systemContext: common-outputs
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing common-outputs
-  phase: Running
+  agentLog: 'common/outputs is a tiny leaf package in kcp-libs that turns arbitrary
+    Go values into strings. common/outputs/outputs.go exports two functions: StringifyValue
+    converts one value to a string, returning strings untouched and JSON-encoding
+    everything else, with fmt.Sprint as the fallback when marshalling fails; Stringify
+    walks a map[string]any and applies StringifyValue to every value, returning nil
+    for empty or nil input so callers can treat an absent result as an absent map.
+    The package is used when Kubernetes-style outputs must be flattened into a plain
+    string map: impl/execrunner/pod.go readOutputs calls Stringify, and impl/policyclient/policyclient.go
+    Outputs calls StringifyValue per entry. common/outputs/outputs_test.go pins the
+    behavior with TestStringify, which checks nil input, plain strings, numbers, booleans,
+    and lists.'
+  message: wrote 6 requirement(s) and 2 interface(s) for common-outputs
+  phase: Succeeded

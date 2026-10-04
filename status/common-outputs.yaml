@@ -1,7 +1,8 @@
 conditions:
-- message: 'undeclared: Stringify, StringifyValue'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -30,6 +31,6 @@ observed:
     name: StringifyValue
     signature: (value any) string
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: b259b97c49f84e7f0c0ecb7b6a6401fc7c6ef8c461597462ba84dd9cdf5b38a4
+realizedSpecHash: 685f62702bbe9771dfb7e842576cf9e23e3e81e34468fe713eac80beb8dccabe
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: 809bb4812e9604f8788b4fb1b33547079186dd90a7b3de8f52275b2ff7746b23
