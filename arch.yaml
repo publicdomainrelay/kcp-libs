@@ -5202,7 +5202,195 @@ system_contexts:
   - impl/pkiprovisioner/pkiprovisioner.go
   - impl/pkiprovisioner/pkiprovisioner_test.go
   id: sc.impl-pkiprovisioner
+  intent: This context exists so that callers can ask for a root CA, a per-namespace
+    intermediate authority, and leaf certificates without knowing the underlying PKI
+    store's call sequence. It owns the ordering rules — mount the root, generate or
+    read back the root, create the namespace, mount PKI there, sign and install an
+    intermediate, write the role — and it owns the caching that keeps those steps
+    from running on every request. It is the implementation behind the pki.Provisioner
+    interface declared in abc/pki.
+  interfaces:
+  - file: impl/pkiprovisioner/pkiprovisioner.go
+    kind: function
+    name: LeafChain
+    signature: func LeafChain(cert pki.Cert) string
+  - file: impl/pkiprovisioner/pkiprovisioner.go
+    kind: function
+    name: New
+    signature: func New(opts Options) (*Provisioner, error)
+  - file: impl/pkiprovisioner/pkiprovisioner.go
+    kind: struct
+    name: Options
+    signature: type Options struct
+  - file: impl/pkiprovisioner/pkiprovisioner.go
+    kind: struct
+    name: Provisioner
+    signature: type Provisioner struct
+  - file: impl/pkiprovisioner/pkiprovisioner.go
+    kind: method
+    name: Provisioner.CachedRootPEM
+    signature: func (p *Provisioner) CachedRootPEM() []byte
+  - file: impl/pkiprovisioner/pkiprovisioner.go
+    kind: method
+    name: Provisioner.Delete
+    signature: func (p *Provisioner) Delete(ctx context.Context, path string) error
+  - file: impl/pkiprovisioner/pkiprovisioner.go
+    kind: method
+    name: Provisioner.EnsureAuthority
+    signature: func (p *Provisioner) EnsureAuthority(ctx context.Context, path string)
+      (pki.Authority, error)
+  - file: impl/pkiprovisioner/pkiprovisioner.go
+    kind: method
+    name: Provisioner.EnsureRoot
+    signature: func (p *Provisioner) EnsureRoot(ctx context.Context) (pki.RootCA,
+      error)
+  - file: impl/pkiprovisioner/pkiprovisioner.go
+    kind: method
+    name: Provisioner.Issue
+    signature: func (p *Provisioner) Issue(ctx context.Context, path, commonName string,
+      altNames, ips []string) (pki.Cert, error)
   name: impl-pkiprovisioner
+  requirements:
+  - codeRefs:
+    - file:impl/pkiprovisioner/pkiprovisioner.go
+    - method:dbce55e518a5f94002a8102e3348772c
+    id: r.authority-carries-trimmed-chain
+    level: MUST
+    text: The returned pki.Authority must carry the namespace path, the intermediate
+      common name formed as path plus ".intermediate", the serial, and the CA chain
+      with leading and trailing whitespace trimmed.
+  - codeRefs:
+    - method:7aaa1b393f6662ecc89ab29299cbea68
+    id: r.cached-root-pem-nil-until-ensured
+    level: MUST
+    text: CachedRootPEM must lock the mutex and return nil when no root has been cached
+      yet, otherwise return the cached root certificate bytes.
+  - codeRefs:
+    - method:d5967140fe7eb80411ee9ed7cc877c96
+    - struct:85d52f39514274817830fa863a880ebb
+    id: r.delete-drops-cache-then-namespace
+    level: MUST
+    text: Delete must hold the mutex, drop the path from the namespace cache, and
+      then delete the namespace through the client.
+  - codeRefs:
+    - method:d5967140fe7eb80411ee9ed7cc877c96
+    id: r.delete-requires-path
+    level: MUST
+    text: Delete must reject an empty path with an error.
+  - codeRefs:
+    - method:dbce55e518a5f94002a8102e3348772c
+    - struct:85d52f39514274817830fa863a880ebb
+    id: r.ensure-authority-cached
+    level: MUST
+    text: EnsureAuthority must return the cached pki.Authority for the path when the
+      expiring cache holds one at the current time, and must store a freshly provisioned
+      authority in the cache on success.
+  - codeRefs:
+    - file:impl/pkiprovisioner/pkiprovisioner.go
+    - method:dbce55e518a5f94002a8102e3348772c
+    id: r.ensure-authority-ordering
+    level: MUST
+    text: Provisioning an authority must first ensure the root, then ensure the namespace,
+      then ensure the pki mount in that namespace, and must reuse an existing intermediate
+      serial when the namespace already has an authority, signing one only when the
+      serial is empty.
+  - codeRefs:
+    - method:dbce55e518a5f94002a8102e3348772c
+    id: r.ensure-authority-requires-path
+    level: MUST
+    text: EnsureAuthority must reject an empty path with an error before taking the
+      lock.
+  - codeRefs:
+    - method:4195ab23df62ee1db3840769986974c8
+    - struct:85d52f39514274817830fa863a880ebb
+    id: r.ensure-root-memoized-under-mutex
+    level: MUST
+    text: EnsureRoot must lock the Provisioner mutex and return the already cached
+      root when one is held, so the root is read or generated only once.
+  - codeRefs:
+    - file:impl/pkiprovisioner/pkiprovisioner.go
+    - method:4195ab23df62ee1db3840769986974c8
+    id: r.ensure-root-mount-then-read-or-generate
+    level: MUST
+    text: Root provisioning must ensure the pki mount in the root namespace, read
+      the CA serial, and treat pki.ErrNoAuthority as the absence of an authority rather
+      than a failure; when a serial exists it must return the CA chain with that serial,
+      otherwise it must generate a new root with the configured common name and TTL.
+  - codeRefs:
+    - file:impl/pkiprovisioner/pkiprovisioner.go
+    - method:dbce55e518a5f94002a8102e3348772c
+    id: r.intermediate-signed-by-root
+    level: MUST
+    text: A new intermediate must be generated in the target namespace, signed by
+      the root namespace's mount with the configured intermediate TTL, installed back
+      into the target namespace, and its resulting serial read back.
+  - codeRefs:
+    - method:4e00b7939435016777ed505a3c634185
+    id: r.issue-defaults-loopback-ips
+    level: MUST
+    text: Issue must substitute the loopback IP SANs 127.0.0.1 and ::1 when the caller
+      passes no IPs.
+  - codeRefs:
+    - method:4e00b7939435016777ed505a3c634185
+    - method:dbce55e518a5f94002a8102e3348772c
+    id: r.issue-ensures-authority
+    level: MUST
+    text: Issue must call EnsureAuthority for the path before requesting a certificate,
+      so no leaf is issued against a missing intermediate.
+  - codeRefs:
+    - method:4e00b7939435016777ed505a3c634185
+    - struct:d27d806e5c22258e2ce7cad7037a9dda
+    id: r.issue-uses-configured-role-and-ttl
+    level: MUST
+    text: Issue must request the certificate through the client with the configured
+      mount, role and leaf TTL, passing the common name, alternative names and IP
+      SANs.
+  - codeRefs:
+    - function:d3c3c16dc7874b597b0ada7624dae197
+    id: r.leaf-chain-joins-cert-and-ca-chain
+    level: MUST
+    text: LeafChain must build a string containing the leaf certificate followed by
+      each CA chain entry on its own newline-separated line, and must return just
+      the certificate when the chain is empty.
+  - codeRefs:
+    - function:30364e141ea2faa4b4234973c4a19b7f
+    - struct:d27d806e5c22258e2ce7cad7037a9dda
+    id: r.new-fills-defaults
+    level: MUST
+    text: 'New must fill empty Options fields with the pki package defaults: Mount,
+      Role, RootCommonName, RootTTL, IntermediateTTL and LeafTTL, and must set AuthorityTTL
+      to DefaultAuthorityTTL when it is not greater than zero and Now to time.Now
+      when nil.'
+  - codeRefs:
+    - function:30364e141ea2faa4b4234973c4a19b7f
+    - struct:85d52f39514274817830fa863a880ebb
+    id: r.new-provides-namespace-cache
+    level: MUST
+    text: New must construct the Provisioner with an expiring namespace map keyed
+      by path and bounded by the resolved AuthorityTTL.
+  - codeRefs:
+    - file:impl/pkiprovisioner/pkiprovisioner.go
+    - function:30364e141ea2faa4b4234973c4a19b7f
+    id: r.new-requires-a-client
+    level: MUST
+    text: New must return ErrNoClient when Options.Client is nil, so no Provisioner
+      exists without a backing pki.Client.
+  - codeRefs:
+    - file:impl/pkiprovisioner/pkiprovisioner.go
+    - struct:85d52f39514274817830fa863a880ebb
+    id: r.provisioner-satisfies-interface
+    level: MUST
+    text: Provisioner must satisfy pki.Provisioner, which is asserted at compile time
+      by a blank assignment.
+  - codeRefs:
+    - method:dbce55e518a5f94002a8102e3348772c
+    - struct:d27d806e5c22258e2ce7cad7037a9dda
+    id: r.role-policy
+    level: MUST
+    text: The leaf role written into each namespace must allow subdomains, forbid
+      bare domains, enforce hostnames, use EC keys of 256 bits, and cap TTL at the
+      configured leaf TTL; it must set AllowedDomains to the configured Domain only
+      when the Domain is not empty.
   upstream: self
 - code:
   - impl/policyclient/policyclient.go

@@ -1,8 +1,8 @@
 conditions:
-- message: 'undeclared: LeafChain, New, Options, Provisioner, Provisioner.CachedRootPEM,
-    Provisioner.Delete, Provisioner.EnsureAuthority, Provisioner.EnsureRoot, Provisioner.Issue'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -72,6 +72,6 @@ observed:
     name: LeafChain
     signature: (cert pki.Cert) string
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: b7ba8347e2a8750cc18bdd6f320b3ffd69270f375d18ae78973c788adf8beb71
+realizedSpecHash: 9cf38b059fb74f2eaa37d6a04604247f44fdaa3e6cafda24568ee506883453f6
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: bfd8b4c73c3f78a083ad4cac2aed4ab85da7bbe52bc6c4a12d8ef7f520e9d4d5

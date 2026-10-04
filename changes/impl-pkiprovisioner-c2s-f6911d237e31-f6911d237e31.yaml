@@ -10,5 +10,16 @@ spec:
   systemContext: impl-pkiprovisioner
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing impl-pkiprovisioner
-  phase: Running
+  agentLog: impl/pkiprovisioner holds the concrete provisioning layer that turns a
+    pki.Client (an OpenBao PKI backend) into a usable certificate authority hierarchy.
+    New validates and defaults an Options struct into a Provisioner that satisfies
+    the pki.Provisioner interface. The Provisioner lazily ensures a shared root CA
+    in the root namespace, lazily creates and caches a per-namespace intermediate
+    authority signed by that root, writes a leaf-issuing role in each namespace, issues
+    leaf certificates, deletes namespaces, and exposes the cached root PEM. A package-level
+    LeafChain helper concatenates a leaf certificate with its CA chain. The package
+    caches the root under a mutex and per-namespace authorities in an expiring map
+    so repeated calls do not re-provision, and it takes a Now function to make that
+    expiry testable.
+  message: wrote 19 requirement(s) and 9 interface(s) for impl-pkiprovisioner
+  phase: Succeeded
