@@ -10,5 +10,22 @@ spec:
   systemContext: factory-admission
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing factory-admission
-  phase: Running
+  agentLog: 'factory/admission holds the concurrency-admission component that decides
+    whether a queued run may start. The Source interface (factory/admission/admission.go:11)
+    supplies the three facts an admission decision needs: the parent of a run, the
+    runs that already exist under that parent, and the capacity and blocker of that
+    parent. Options carries the Source plus lease bookkeeping (Leases, LeaseTTL),
+    a clock (Now), the Lifecycle, a Wake callback and the run/parent kind names. New
+    fills in defaults for Leases (queue.NewLeases with LeaseTTL) and Now (time.Now)
+    and returns an Admitter wrapping the options. Admitter.Admit asks the Source for
+    the parent and returns an empty admission when the run has none, then gathers
+    the sibling runs and the capacity, counts currently-held leases against the observed
+    sibling phases, appends the candidate run to the sibling list when it is not already
+    present, and returns the queue.PlanIndex decision for that run, granting a lease
+    when the decision is both gated and allowed. Admitter.Wake re-reads the runs and
+    capacity for a parent, computes the free slots from the policy limit minus the
+    running count, and fires the Wake callback for each run returned by queue.WakeList,
+    then for the parent itself when ParentKind is set; it is a no-op when no Wake
+    callback is configured. Admitter.Leases exposes the underlying lease table.'
+  message: wrote 14 requirement(s) and 10 interface(s) for factory-admission
+  phase: Succeeded

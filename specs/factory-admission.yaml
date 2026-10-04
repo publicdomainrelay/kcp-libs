@@ -4,5 +4,165 @@ metadata:
   name: factory-admission
   namespace: default
 spec:
+  intent: This context exists to describe the admission gate that sits between a queue
+    and the workloads it schedules. It defines the Source port through which the gate
+    reads cluster state (parent, siblings, capacity) without knowing any workload
+    runtime, and the Admitter that turns those reads plus a lease table into a queue.Admission
+    decision and into wake notifications for runs that have become eligible. It is
+    the piece that enforces per-parent concurrency policy, so callers can ask whether
+    a specific run may proceed and can be told which runs to wake once capacity frees
+    up.
+  interfaces:
+  - file: factory/admission/admission.go
+    kind: struct
+    name: Admitter
+    signature: type Admitter struct { opts Options }
+  - file: factory/admission/admission.go
+    kind: method
+    name: Admitter.Admit
+    signature: func (a *Admitter) Admit(ctx context.Context, run queue.Run) (queue.Admission,
+      error)
+  - file: factory/admission/admission.go
+    kind: method
+    name: Admitter.Leases
+    signature: func (a *Admitter) Leases() *queue.Leases
+  - file: factory/admission/admission.go
+    kind: method
+    name: Admitter.Wake
+    signature: func (a *Admitter) Wake(ctx context.Context, parent ref.Ref) error
+  - file: factory/admission/admission.go
+    kind: function
+    name: New
+    signature: func New(opts Options) *Admitter
+  - file: factory/admission/admission.go
+    kind: struct
+    name: Options
+    signature: type Options struct { Source Source; Leases *queue.Leases; LeaseTTL
+      time.Duration; Now func() time.Time; Lifecycle queue.Lifecycle; Wake func(kind
+      string, r ref.Ref); RunKind string; ParentKind string }
+  - file: factory/admission/admission.go
+    kind: interface
+    name: Source
+    signature: type Source interface { Parent(ctx context.Context, run queue.Run)
+      (ref.Ref, bool, error); Runs(ctx context.Context, parent ref.Ref) ([]queue.Run,
+      error); Capacity(ctx context.Context, parent ref.Ref) (queue.Capacity, *queue.Blocker,
+      error) }
+  - file: factory/admission/admission.go
+    kind: method
+    name: Source.Capacity
+    signature: func (Source) Capacity(ctx context.Context, parent ref.Ref) (queue.Capacity,
+      *queue.Blocker, error)
+  - file: factory/admission/admission.go
+    kind: method
+    name: Source.Parent
+    signature: func (Source) Parent(ctx context.Context, run queue.Run) (ref.Ref,
+      bool, error)
+  - file: factory/admission/admission.go
+    kind: method
+    name: Source.Runs
+    signature: func (Source) Runs(ctx context.Context, parent ref.Ref) ([]queue.Run,
+      error)
   repository: kcp-libs
+  requirements:
+  - codeRefs:
+    - interface:9c23d5af968c6dcd87d996b5fb785c81
+    - method:9b26f8dc3db4f420718a3ae685d15ea8
+    id: r.admit-grant
+    level: MUST
+    text: Admit must grant a lease for the run on the parent at the current time only
+      when the resulting admission is both Gated and Allowed.
+  - codeRefs:
+    - function:4204d25ce951cefafd1bb89729e7bd03
+    - method:9b26f8dc3db4f420718a3ae685d15ea8
+    id: r.admit-no-parent
+    level: MUST
+    text: Admit must return an empty queue.Admission and a nil error when Source.Parent
+      reports the run has no parent, and must propagate any error from Parent, Runs
+      or Capacity without deciding.
+  - codeRefs:
+    - method:9b26f8dc3db4f420718a3ae685d15ea8
+    - struct:c62339005d8ea8281d87db8bcb56a638
+    id: r.admit-plan
+    level: MUST
+    text: Admit must build the observed phase map from the sibling runs, count reserved
+      leases for the parent at the current time, add the candidate run to the sibling
+      list only when it is absent, and return the queue.PlanIndex entry for that run's
+      ref.
+  - codeRefs:
+    - method:e452266abf564c3d1e61f18fb3d426f6
+    - struct:c62339005d8ea8281d87db8bcb56a638
+    id: r.leases-accessor
+    level: MUST
+    text: Admitter.Leases must return the lease table held in the options.
+  - codeRefs:
+    - function:4204d25ce951cefafd1bb89729e7bd03
+    - struct:3aede7d4f92074172612567f434a4408
+    id: r.new-defaults
+    level: MUST
+    text: New must default Leases to queue.NewLeases(LeaseTTL) when nil and Now to
+      time.Now when nil, and return an Admitter holding the resulting Options.
+  - codeRefs:
+    - struct:3aede7d4f92074172612567f434a4408
+    - struct:c62339005d8ea8281d87db8bcb56a638
+    id: r.options-shape
+    level: MUST
+    text: Options must carry Source, Leases, LeaseTTL, Now, Lifecycle, Wake, RunKind
+      and ParentKind, and Admitter must hold those options unexported.
+  - codeRefs:
+    - interface:9c23d5af968c6dcd87d996b5fb785c81
+    - method:d3904e1762452936d94101cc4cfc4bbe
+    id: r.source-capacity
+    level: MUST
+    text: Source.Capacity must report the parent's capacity together with the blocker
+      that limits it, so the plan can be computed and the limit derived.
+  - codeRefs:
+    - interface:9c23d5af968c6dcd87d996b5fb785c81
+    - method:596d1d41bb4565e406b326020ce25a82
+    id: r.source-parent
+    level: MUST
+    text: Source.Parent must report the parent of a run, with a boolean that is false
+      when the run has no parent and an error that aborts the decision.
+  - codeRefs:
+    - file:factory/admission/admission.go
+    - interface:9c23d5af968c6dcd87d996b5fb785c81
+    id: r.source-port
+    level: MUST
+    text: Admission state must be read through the Source interface only, which exposes
+      Parent, Runs and Capacity and names no workload runtime.
+  - codeRefs:
+    - interface:9c23d5af968c6dcd87d996b5fb785c81
+    - method:0d37cff2d12a3e38aa4393696696d4c5
+    id: r.source-runs
+    level: MUST
+    text: Source.Runs must list the runs already present under a parent, which the
+      admitter uses to build the observed phase map and to size wake lists.
+  - codeRefs:
+    - file:factory/admission/admission_test.go
+    id: r.test-coverage
+    level: SHOULD
+    text: The package should be exercised through a stub Source in tests, as factory/admission/admission_test.go
+      does.
+  - codeRefs:
+    - method:fb3c595a96a98de51678ad45702f4519
+    - struct:3aede7d4f92074172612567f434a4408
+    id: r.wake-noop
+    level: MUST
+    text: Wake must return nil without touching the Source when no Wake callback is
+      configured.
+  - codeRefs:
+    - method:fb3c595a96a98de51678ad45702f4519
+    - struct:c62339005d8ea8281d87db8bcb56a638
+    id: r.wake-parent
+    level: SHOULD
+    text: Wake should fire the Wake callback with ParentKind and the parent ref after
+      the per-run wakes, and only when ParentKind is non-empty.
+  - codeRefs:
+    - method:d3904e1762452936d94101cc4cfc4bbe
+    - method:fb3c595a96a98de51678ad45702f4519
+    id: r.wake-runs
+    level: MUST
+    text: Wake must re-read the parent's runs and capacity, derive the limit from
+      the capacity policy and max concurrency, and fire the Wake callback with RunKind
+      for each run returned by queue.WakeList for the free slot count, where free
+      is the limit minus the running count and is clamped at zero.
   upstream: self
