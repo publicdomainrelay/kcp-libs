@@ -10,5 +10,19 @@ spec:
   systemContext: impl-memoryrunner
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing impl-memoryrunner
-  phase: Running
+  agentLog: impl/memoryrunner is an in-memory, dependency-free implementation of the
+    kcp-libs runner interfaces used for tests and examples. It defines a Pod that
+    satisfies runner.PodRunner and an Engine that satisfies runner.EngineRunner, each
+    holding runs in a mutex-guarded map keyed by a monotonically increasing id (mempod-N
+    and mengine-N). A Pod run starts in StateRunning, counts Observe calls, and after
+    PollsBeforeDone polls flips to the caller-supplied PodStatus Outcome; Pod.Stop
+    marks a still-running pod StateFailed with message "stopped". An Engine run starts
+    in StateRunning and becomes StateFailed with message "exited" once polls reach
+    ExitsAfterPolls (when that value is greater than zero); Engine.Stop behaves like
+    Pod.Stop. Observe on an unknown run id returns an error, and Stop on an unknown
+    id is a no-op returning nil. Probe is a stub that returns the configured ProbeResult
+    for a pod and always true for an engine. The package has no runtime dependency
+    and no side effects, so it is a deterministic stand-in for real pod and engine
+    runners.
+  message: wrote 16 requirement(s) and 14 interface(s) for impl-memoryrunner
+  phase: Succeeded

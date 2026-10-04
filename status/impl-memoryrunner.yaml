@@ -1,9 +1,8 @@
 conditions:
-- message: 'undeclared: Engine, Engine.Observe, Engine.Probe, Engine.Start, Engine.Stop,
-    EngineOptions, NewEngine, NewPod, Pod, Pod.Observe, Pod.Probe, Pod.Start, Pod.Stop,
-    PodOptions'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -100,6 +99,6 @@ observed:
     name: Engine.Probe
     signature: (_ context.Context, _ string, _ []string, _ time.Duration) (bool, error)
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: 5c4919719638ce9c9cc6b9082072ab3ae68b7e0708e0cdc4ef9ba16c29eee316
+realizedSpecHash: 99586c2f3df44cfa64858835c7bbd580d710d69bab78f30d443bd8f3c2bd756c
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: f3ba58fab141e24d3435bfe73fbe29c5fcf88daaf6fbb478abb508b912b68ec8

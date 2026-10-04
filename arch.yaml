@@ -4682,7 +4682,201 @@ system_contexts:
   - impl/memoryrunner/memoryrunner.go
   - impl/memoryrunner/memoryrunner_test.go
   id: sc.impl-memoryrunner
+  intent: 'This context exists to give the rest of kcp-libs a controllable, in-memory
+    fake for the runner contracts (abc/runner), so controllers, reconcile loops and
+    tests can drive pod and engine lifecycles through Start/Observe/Stop/Probe without
+    spawning real processes. It carries the observed tests, which pin the observable
+    behavior: a pod runs for PollsBeforeDone polls before reporting the configured
+    outcome, Stop on a running pod yields StateFailed "stopped", an unknown pod run
+    is an error, and an engine exits after ExitsAfterPolls polls or when stopped with
+    message "stopped". It is deliberately minimal and lives in its own package so
+    the generic layers stay free of any workload-runtime assumption.'
+  interfaces:
+  - file: impl/memoryrunner/memoryrunner.go
+    kind: struct
+    name: Engine
+    signature: type Engine struct { opts EngineOptions; mu sync.Mutex; runs map[string]*engineRun;
+      seq atomic.Int64 }
+  - file: impl/memoryrunner/memoryrunner.go
+    kind: method
+    name: Engine.Observe
+    signature: func (e *Engine) Observe(_ context.Context, runID string) (runner.EngineStatus,
+      error)
+  - file: impl/memoryrunner/memoryrunner.go
+    kind: method
+    name: Engine.Probe
+    signature: func (e *Engine) Probe(_ context.Context, _ string, _ []string, _ time.Duration)
+      (bool, error)
+  - file: impl/memoryrunner/memoryrunner.go
+    kind: method
+    name: Engine.Start
+    signature: func (e *Engine) Start(_ context.Context, _ runner.EngineRequest) (string,
+      error)
+  - file: impl/memoryrunner/memoryrunner.go
+    kind: method
+    name: Engine.Stop
+    signature: func (e *Engine) Stop(_ context.Context, runID string) error
+  - file: impl/memoryrunner/memoryrunner.go
+    kind: struct
+    name: EngineOptions
+    signature: type EngineOptions struct { ExitsAfterPolls int }
+  - file: impl/memoryrunner/memoryrunner.go
+    kind: function
+    name: NewEngine
+    signature: func NewEngine(opts EngineOptions) *Engine
+  - file: impl/memoryrunner/memoryrunner.go
+    kind: function
+    name: NewPod
+    signature: func NewPod(opts PodOptions) *Pod
+  - file: impl/memoryrunner/memoryrunner.go
+    kind: struct
+    name: Pod
+    signature: type Pod struct { opts PodOptions; mu sync.Mutex; runs map[string]*podRun;
+      seq atomic.Int64 }
+  - file: impl/memoryrunner/memoryrunner.go
+    kind: method
+    name: Pod.Observe
+    signature: func (p *Pod) Observe(_ context.Context, runID string) (runner.PodStatus,
+      error)
+  - file: impl/memoryrunner/memoryrunner.go
+    kind: method
+    name: Pod.Probe
+    signature: func (p *Pod) Probe(_ context.Context, _ string, _ []string, _ time.Duration)
+      (bool, error)
+  - file: impl/memoryrunner/memoryrunner.go
+    kind: method
+    name: Pod.Start
+    signature: func (p *Pod) Start(_ context.Context, req runner.PodRequest) (string,
+      error)
+  - file: impl/memoryrunner/memoryrunner.go
+    kind: method
+    name: Pod.Stop
+    signature: func (p *Pod) Stop(_ context.Context, runID string) error
+  - file: impl/memoryrunner/memoryrunner.go
+    kind: struct
+    name: PodOptions
+    signature: type PodOptions struct { Outcome runner.PodStatus; PollsBeforeDone
+      int; ProbeResult bool }
   name: impl-memoryrunner
+  requirements:
+  - codeRefs:
+    - file:impl/memoryrunner/memoryrunner.go
+    - function:e2306bd41881382147eaf8b3069895ee
+    id: r.engine-construction
+    level: MUST
+    text: NewEngine must initialise the run map and store the given EngineOptions
+      without applying defaults.
+  - codeRefs:
+    - file:impl/memoryrunner/memoryrunner_test.go
+    - method:098390ace6e69e0022deef1529cb656b
+    - struct:ee18afe6dcdfa47419c426a3dd83071d
+    id: r.engine-exits-after-polls
+    level: MUST
+    text: 'Engine.Observe must increment the run''s poll counter and, when EngineOptions.ExitsAfterPolls
+      is greater than zero and the run is StateRunning with polls greater than or
+      equal to it, replace the status with runner.EngineStatus{State: runner.StateFailed,
+      Message: "exited"}.'
+  - codeRefs:
+    - file:impl/memoryrunner/memoryrunner.go
+    - method:098390ace6e69e0022deef1529cb656b
+    id: r.engine-observe-unknown-run-errors
+    level: MUST
+    text: 'Engine.Observe must return an error when the run id is unknown, formatted
+      as "memoryrunner: unknown engine run %s".'
+  - codeRefs:
+    - file:impl/memoryrunner/memoryrunner.go
+    - method:49f3a507847759e15ebe12029f4d7ab6
+    id: r.engine-probe-always-true
+    level: MUST
+    text: Engine.Probe must ignore its arguments and return true with a nil error.
+  - codeRefs:
+    - file:impl/memoryrunner/memoryrunner.go
+    - struct:9d329f0ad839a867f04ada3209850157
+    id: r.engine-satisfies-enginerunner
+    level: MUST
+    text: Engine must satisfy runner.EngineRunner, asserted at compile time with var
+      _ runner.EngineRunner = (*Engine)(nil).
+  - codeRefs:
+    - file:impl/memoryrunner/memoryrunner.go
+    - method:48226f7f64a37307caf8965bccf68855
+    id: r.engine-start-running
+    level: MUST
+    text: Engine.Start must allocate an id formatted as mengine-<n> from an atomic
+      sequence and record the run in StateRunning, returning the id and a nil error.
+  - codeRefs:
+    - file:impl/memoryrunner/memoryrunner_test.go
+    - method:ee1b796b776a0010bd5381e7774de163
+    id: r.engine-stop-marks-failure
+    level: MUST
+    text: 'Engine.Stop must set a known, still-running run to runner.EngineStatus{State:
+      runner.StateFailed, Message: "stopped"} and return nil in every case.'
+  - codeRefs:
+    - file:impl/memoryrunner/memoryrunner.go
+    id: r.no-runtime-dependency
+    level: SHOULD
+    text: The package should stay free of process spawning, filesystem or network
+      effects and depend only on abc/runner, so it remains a deterministic stand-in
+      for real runners.
+  - codeRefs:
+    - file:impl/memoryrunner/memoryrunner_test.go
+    - method:d13dc67d5b49f32d887748200e8e6880
+    id: r.pod-observe-transitions-on-polls
+    level: MUST
+    text: Pod.Observe must increment the run's poll counter and, while the run is
+      StateRunning and polls are greater than or equal to PodOptions.PollsBeforeDone,
+      replace the status with PodOptions.Outcome; earlier observes report StateRunning.
+  - codeRefs:
+    - file:impl/memoryrunner/memoryrunner.go
+    - method:d13dc67d5b49f32d887748200e8e6880
+    id: r.pod-observe-unknown-run-errors
+    level: MUST
+    text: 'Pod.Observe must return an error when the run id is unknown, formatted
+      as "memoryrunner: unknown pod run %s".'
+  - codeRefs:
+    - file:impl/memoryrunner/memoryrunner.go
+    - function:e28103a134b3e9ac6daaf0bb72e41005
+    - struct:ac6c667397cefb3293ada1d745b0df58
+    id: r.pod-option-defaults
+    level: MUST
+    text: 'NewPod must default Outcome to runner.PodStatus{State: runner.StateSucceeded}
+      when Outcome.State is empty, and default PollsBeforeDone to 1 when it is zero.'
+  - codeRefs:
+    - file:impl/memoryrunner/memoryrunner.go
+    - method:7a9767b282a97214edbe56a9c367cbf9
+    id: r.pod-probe-returns-configured-result
+    level: MUST
+    text: Pod.Probe must ignore its arguments and return PodOptions.ProbeResult with
+      a nil error.
+  - codeRefs:
+    - file:impl/memoryrunner/memoryrunner.go
+    - struct:f1cb1d1b9762a5263f685d1b1a57baa4
+    id: r.pod-satisfies-podrunner
+    level: MUST
+    text: Pod must satisfy runner.PodRunner, asserted at compile time with var _ runner.PodRunner
+      = (*Pod)(nil).
+  - codeRefs:
+    - file:impl/memoryrunner/memoryrunner.go
+    - method:806b7d8c875ce7fdb1779fc6b3eb84f8
+    id: r.pod-start-running
+    level: MUST
+    text: Pod.Start must allocate an id formatted as mempod-<n> from an atomic sequence
+      and record the run in StateRunning, returning the id and a nil error.
+  - codeRefs:
+    - file:impl/memoryrunner/memoryrunner_test.go
+    - method:e9fd6d2481d5bc0aad2f394f8ba186eb
+    id: r.pod-stop-marks-failure
+    level: MUST
+    text: 'Pod.Stop must set a still-running run to runner.PodStatus{State: runner.StateFailed,
+      Message: "stopped"}, must return nil for an unknown run id, and must return
+      nil always.'
+  - codeRefs:
+    - file:impl/memoryrunner/memoryrunner.go
+    - struct:9d329f0ad839a867f04ada3209850157
+    - struct:f1cb1d1b9762a5263f685d1b1a57baa4
+    id: r.runs-guarded-by-mutex
+    level: MUST
+    text: Both Pod and Engine must guard their run maps with their own sync.Mutex,
+      locking in Start, Observe and Stop so the fakes are safe for concurrent use.
   upstream: self
 - code:
   - impl/metrics/metrics.go
