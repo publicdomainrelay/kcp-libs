@@ -1,0 +1,14 @@
+apiVersion: specs.publicdomainrelay.dev/v1alpha1
+kind: SpecChange
+metadata:
+  name: examples-admission-c2s-f6911d237e31-f6911d237e31
+  namespace: default
+spec:
+  delta: {}
+  direction: CodeToSpec
+  fromCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+  systemContext: examples-admission
+  toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+status:
+  message: the agent is summarizing examples-admission
+  phase: Running
