@@ -1,9 +1,8 @@
 conditions:
-- message: 'undeclared: Controller, Controller.CacheAge, Controller.Conflicts, Controller.Enqueue,
-    Controller.Errors, Controller.QueueDepth, Controller.Reconciles, Controller.Run,
-    DefaultWorkers, New, Options'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -86,6 +85,6 @@ observed:
     name: Controller.CacheAge
     signature: () time.Duration
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: def133951a553a9573ae4cdc30eee92b5c812e1118d8f4674d04905620d3430d
+realizedSpecHash: a401661337bd2502024040cbdcce80b9aa436581eb003dabb8f9e69b7e4c41c6
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: a3b8b1bf4c8a97461206db33d56851c9b5ff8ddcdfe37452cda512f7637bcb8e

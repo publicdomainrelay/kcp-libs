@@ -10,5 +10,28 @@ spec:
   systemContext: factory-controller
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing factory-controller
-  phase: Running
+  agentLog: factory/controller builds a rate-limited reconcile controller over kcp
+    watch sources. Options carries the rest config, the informerwatch sources, indexers,
+    a shared cache.Set, optional reactor, the reconcile.Handler, a reconcile.Policy,
+    worker count, metrics registry, logger, clock and conflict predicate. New validates
+    that a rest config, a handler and at least one source are present, then fills
+    every remaining option with a default (Policy intervals from reconcile.DefaultRequeueAfter
+    and reconcile.DefaultMinTransitionPoll, Workers from DefaultWorkers, Now from
+    time.Now, Log from slog.Default, IsConflict from apierrors.IsConflict, Metrics
+    from metrics.New("controller"), Set from cache.NewSet) before registering metrics.
+    Controller owns a typed rate limiting workqueue keyed by reconcile.Key, atomic
+    counters for reconciles, conflicts and errors, the last informer event timestamp,
+    and four prometheus collectors (reconcile_seconds summary, conflicts_total counter,
+    queue_depth gauge function, cache_age_seconds gauge function that reports NaN
+    before the first event). Enqueue converts a ref.Ref plus kind into a queue key;
+    QueueDepth, Reconciles, Conflicts, Errors and CacheAge read the queue length,
+    the counters and the elapsed time since the last informer event. Run starts informerwatch.Run
+    in a goroutine with Enqueue and onEvent wired in, starts Workers worker goroutines,
+    then waits for the context to be done or the watch to fail, shuts the queue down
+    and waits for the workers; a watch error is returned unless it is context.Canceled.
+    Each worker loops on queue.Get, counts the reconcile, times the handler call into
+    reconcile_seconds, and on error either counts and re-queues a conflict after Policy.ConflictAfter()
+    (not an error) or counts an error, logs it and re-queues rate limited; on success
+    it forgets the key and asks Policy.Next whether to re-queue after a delay.
+  message: wrote 12 requirement(s) and 11 interface(s) for factory-controller
+  phase: Succeeded
