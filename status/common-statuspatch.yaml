@@ -1,8 +1,8 @@
 conditions:
-- message: 'undeclared: FinalizerAdd, FinalizerRemove, FinalizersOf, Merge, Metadata,
-    WithResourceVersion'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -54,6 +54,6 @@ observed:
     name: FinalizersOf
     signature: (body []byte) ([]string, error)
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: 69034002f26bf7f25ee137ee76eb9ee3791e662a43aa3ef3732dc9be28f05e66
+realizedSpecHash: cf5424b60990c5c197d26e985f1fe4858e811a248aab5262471c797e9b125118
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: 3880676db9d454ba90560a536907e8c20ab24c597b49c4d98873746a617c520e

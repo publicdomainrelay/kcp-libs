@@ -10,5 +10,16 @@ spec:
   systemContext: common-statuspatch
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing common-statuspatch
-  phase: Running
+  agentLog: The common/statuspatch package holds small, dependency-free helpers that
+    build and read JSON merge-patch bodies for Kubernetes-style objects. Merge wraps
+    a status map under a top-level "status" key; WithResourceVersion stamps metadata.resourceVersion
+    onto an existing patch body unless the version is empty; FinalizerAdd and FinalizerRemove
+    build RFC-6902 JSON patch operation lists against /metadata/finalizers, with FinalizerRemove
+    emitting a test-then-add pair only when the named finalizer is actually present;
+    and FinalizersOf reads the finalizers list back out of an object body through
+    the Metadata struct. Every helper reports failure with a wrapped error string
+    prefixed "statuspatch:", and the package is tested directly in statuspatch_test.go.
+    It is consumed by higher layers such as abc/reconcile Patch and impl/kcpstore
+    status and finalizer writes.
+  message: wrote 11 requirement(s) and 6 interface(s) for common-statuspatch
+  phase: Succeeded

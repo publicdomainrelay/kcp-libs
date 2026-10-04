@@ -2,13 +2,121 @@
 
 Repository: `kcp-libs`
 
-_(empty: write what this context is for)_
+This context exists to specify the reusable patch-construction vocabulary shared by every reconcile and store layer in kcp-libs. It keeps the generic JSON-patch byte shapes in one place so controllers do not hand-roll status envelopes, resourceVersion stamps, or finalizer patches, and so the exact wire shape of those patches is pinned by unit tests rather than duplicated per consumer.
 
 _Write the prose above and the fields in the spec block. `codeRefs` and the resolved references below are maintained by the tool; an edit there is lost._
 
 ## spec
 
 ```yaml spec
+interfaces:
+- file: common/statuspatch/statuspatch.go
+  kind: function
+  name: FinalizerAdd
+  signature: func FinalizerAdd(finalizers []string) ([]byte, error)
+- file: common/statuspatch/statuspatch.go
+  kind: function
+  name: FinalizerRemove
+  signature: func FinalizerRemove(current []string, dropped string) ([]byte, error)
+- file: common/statuspatch/statuspatch.go
+  kind: function
+  name: FinalizersOf
+  signature: func FinalizersOf(body []byte) ([]string, error)
+- file: common/statuspatch/statuspatch.go
+  kind: function
+  name: Merge
+  signature: func Merge(status map[string]any) ([]byte, error)
+- file: common/statuspatch/statuspatch.go
+  kind: struct
+  name: Metadata
+  signature: type Metadata struct { Finalizers []string `json:"finalizers"` }
+- file: common/statuspatch/statuspatch.go
+  kind: function
+  name: WithResourceVersion
+  signature: func WithResourceVersion(body []byte, version string) ([]byte, error)
+requirements:
+- codeRefs:
+  - file:common/statuspatch/statuspatch.go
+  - function:973dee6f0664f3fb6b8b0860b5ec3a25
+  id: r.finalizer-add-single-op
+  level: MUST
+  text: 'FinalizerAdd MUST encode a single-op JSON patch with op "add" at path /metadata/finalizers
+    and the given finalizers as value, and MUST return a wrapped error prefixed "statuspatch:
+    encode the finalizer patch:" on failure.'
+- codeRefs:
+  - file:common/statuspatch/statuspatch.go
+  - function:e6682cb9b4a0a03a95c84fedefb98805
+  id: r.finalizer-remove-absent-no-patch
+  level: MUST
+  text: FinalizerRemove MUST return a nil body and nil error when the dropped finalizer
+    is not present in current, so that no patch is sent.
+- codeRefs:
+  - function:e6682cb9b4a0a03a95c84fedefb98805
+  id: r.finalizer-remove-test-and-replace
+  level: MUST
+  text: 'FinalizerRemove MUST, when the finalizer is present, encode a two-operation
+    JSON patch: first a "test" op on /metadata/finalizers with the original current
+    list as value, then an "add" op on /metadata/finalizers with the remaining finalizers
+    in their original order.'
+- codeRefs:
+  - file:common/statuspatch/statuspatch.go
+  - function:a0ef10c6d57cf09c7ea23871b9b2c059
+  id: r.finalizers-of-reads-metadata
+  level: MUST
+  text: 'FinalizersOf MUST decode the body''s "metadata" member into Metadata and
+    return its Finalizers list, returning a wrapped error prefixed "statuspatch: decode
+    object metadata:" when decoding fails.'
+- codeRefs:
+  - file:common/statuspatch/statuspatch.go
+  - function:146b92aee570e1cccf066680c85a4988
+  id: r.merge-wraps-status
+  level: MUST
+  text: 'Merge MUST encode the given status map as a JSON object under the top-level
+    key "status", returning the encoded bytes, and MUST return a wrapped error prefixed
+    "statuspatch: encode status:" if encoding fails.'
+- codeRefs:
+  - file:common/statuspatch/statuspatch.go
+  - struct:9ddae76e6ab972a834ddad24d5320169
+  id: r.metadata-decodes-finalizers
+  level: MUST
+  text: Metadata MUST be an exported struct whose Finalizers field is a []string decoded
+    from the JSON key "finalizers".
+- codeRefs:
+  - file:common/statuspatch/statuspatch.go
+  id: r.no-external-dependencies
+  level: SHOULD
+  text: The package SHOULD depend only on the standard library (encoding/json and
+    fmt), keeping the generic patch layer usable without any workload runtime.
+- codeRefs:
+  - function:e490ecee35ab297d47aa943e045c98b3
+  id: r.resourceversion-decode-errors
+  level: MUST
+  text: 'WithResourceVersion MUST return a wrapped error prefixed "statuspatch: decode
+    patch to stamp a resource version:" when the body is not a JSON object, and "statuspatch:
+    encode patch with a resource version:" when re-encoding fails.'
+- codeRefs:
+  - file:common/statuspatch/statuspatch.go
+  - function:e490ecee35ab297d47aa943e045c98b3
+  id: r.resourceversion-empty-passthrough
+  level: MUST
+  text: WithResourceVersion MUST return the input body unchanged when version is the
+    empty string, without decoding or re-encoding it.
+- codeRefs:
+  - file:common/statuspatch/statuspatch.go
+  - function:e490ecee35ab297d47aa943e045c98b3
+  id: r.resourceversion-stamps-metadata
+  level: MUST
+  text: WithResourceVersion MUST decode the body as a JSON object and replace its
+    "metadata" member with an object carrying exactly the resourceVersion key set
+    to the given version, then re-encode it.
+- codeRefs:
+  - file:common/statuspatch/statuspatch_test.go
+  id: r.tests-pin-wire-shape
+  level: SHOULD
+  text: The package's behaviour SHOULD be pinned by direct unit tests covering the
+    status envelope, the resourceVersion stamp including the empty-version case, the
+    test-and-replace finalizer patch, the absent-finalizer nil patch, the single add
+    op, and reading finalizers from an object body.
 upstream: self
 ```
 
