@@ -1,0 +1,49 @@
+apiVersion: specs.publicdomainrelay.dev/v1alpha1
+kind: SpecChange
+metadata:
+  name: impl-assets-s2c-f45702016a1d
+  namespace: default
+spec:
+  delta:
+    dependsOn:
+      removed:
+      - sc.common-denospec
+    requirements:
+    - id: r.dnsshim-fetch-preserves-the-request
+      op: added
+      to:
+        codeRefs:
+        - file:impl/assets/dnsshim.ts
+        id: r.dnsshim-fetch-preserves-the-request
+        level: MUST
+        text: 'The shim replaces globalThis.fetch, and when the name it is given is
+          in the table it must forward the caller''s request unchanged apart from
+          the connection target. A caller that passes a Request object must reach
+          the real fetch as that same request aimed at the table address: its method,
+          body, headers, redirect mode, credentials, signal and cache mode are preserved.
+          It must not be forwarded as a bare URL with an empty init, which drops the
+          Request and turns a POST into a GET -- a service that routes by method then
+          answers 404 for a write that was meant to create a resource, which is what
+          a DID registration did. A caller that passes a URL and an init keeps working
+          exactly as before, the Host header the shim adds carries the original name,
+          and a name outside the table is still passed through untouched.'
+    - id: r.dnsshim-fetch-preserves-the-request-test
+      op: added
+      to:
+        codeRefs:
+        - file:impl/assets/dns_test.go
+        - file:impl/assets/dnsshim.ts
+        id: r.dnsshim-fetch-preserves-the-request-test
+        level: MUST
+        text: A test covers it, in the way the shim's other behaviour is covered --
+          deno runs the shim with the table pointed at a local listener, a driver
+          calls fetch with a Request object whose method is not GET and whose body
+          is known, and the listener records what it received. The test asserts the
+          listener saw that method and that body, and it must fail against the shim
+          before this requirement.
+  direction: SpecToCode
+  fromSpecHash: 5475713109c2863c512d868ce02434d4f3fca33732304ddf5dda88cc9d201e00
+  systemContext: impl-assets
+  toSpecHash: f45702016a1d1789a4c04b989bb4f2b2a633e2fb99916a479bdfeed52e1508da
+status:
+  phase: Pending

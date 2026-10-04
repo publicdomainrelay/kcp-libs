@@ -416,6 +416,8 @@ The requirement-level delta against `open-architecture/kcp-libs`, and what this 
 - intent: "" -> "This context exists so callers can hand a declarative set of asset files to one object and get back a stable name-to-path map, without caring when or how often the bytes hit disk. It separates one-shot materialisation, which is idempotent and retried after failure, from explicit rewriting, which always writes, and it gives the DNS workload a ready-made set for its shim and probe scripts."
 - added `r.dns-assets-embedded` (MUST): "The shim and probe scripts shipped for the DNS workload live in the package as dnsshim.ts and dnsprobe.ts and are the bytes written by DNSSet."
 - added `r.dnsset-builds-run-dir-set` (MUST): "DNSSet builds a Set whose Dir is the DNS directory under the given runs directory and whose Files carry the shim source under ShimName and the probe source under ProbeName."
+- added `r.dnsshim-fetch-preserves-the-request` (MUST): "The shim replaces globalThis.fetch, and when the name it is given is in the table it must forward the caller's request unchanged apart from the connection target. A caller that passes a Request object must reach the real fetch as that same request aimed at the table address: its method, body, headers, redirect mode, credentials, signal and cache mode are preserved. It must not be forwarded as a bare URL with an empty init, which drops the Request and turns a POST into a GET -- a service that routes by method then answers 404 for a write that was meant to create a resource, which is what a DID registration did. A caller that passes a URL and an init keeps working exactly as before, the Host header the shim adds carries the original name, and a name outside the table is still passed through untouched."
+- added `r.dnsshim-fetch-preserves-the-request-test` (MUST): "A test covers it, in the way the shim's other behaviour is covered -- deno runs the shim with the table pointed at a local listener, a driver calls fetch with a Request object whose method is not GET and whose body is known, and the listener records what it received. The test asserts the listener saw that method and that body, and it must fail against the shim before this requirement."
 - added `r.materialise-failure-retried` (MUST): "A failed Materialise leaves the set unwritten and stores the error, so a later Materialise attempt writes again instead of returning the cached failure."
 - added `r.materialise-writes-once` (MUST): "Set.Materialise writes the files only when the set has not already been written, records success in written, and returns the published name-to-path map with the recorded error."
 - added `r.path-resolves-one-file` (MUST): "Set.Path returns the on-disk path of the named asset, materialising the set first, and reports an error for a name the set does not carry."
@@ -643,4 +645,6 @@ The requirement-level delta against `open-architecture/kcp-libs`, and what this 
 
 ## Realization
 
-_None: no SpecChange landed on this branch yet._
+| change | direction | phase | commit | verify | acceptance |
+| --- | --- | --- | --- | --- | --- |
+| impl-assets-s2c-f45702016a1d | SpecToCode | Pending |  | 0 | - |
