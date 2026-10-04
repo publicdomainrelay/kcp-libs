@@ -60,8 +60,31 @@ spec:
   systemContext: impl-openbaoclient
   toSpecHash: 024f19fa6e145862872bf79ff90782bc7bb6e0d4c3d7ee43236a36f794204f92
 status:
-  message: the agent is realizing impl-openbaoclient
-  phase: Running
+  agentLog: "...-libs/common/kcp\t(cached)\n?   \tgithub.com/publicdomainrelay/kcp-libs/common/logging\t[no
+    test files]\nok  \tgithub.com/publicdomainrelay/kcp-libs/common/outputs\t(cached)\nok
+    \ \tgithub.com/publicdomainrelay/kcp-libs/common/ref\t(cached)\nok  \tgithub.com/publicdomainrelay/kcp-libs/common/statuspatch\t(cached)\nok
+    \ \tgithub.com/publicdomainrelay/kcp-libs/common/ttl\t(cached)\nok  \tgithub.com/publicdomainrelay/kcp-libs/examples/admission\t(cached)\nok
+    \ \tgithub.com/publicdomainrelay/kcp-libs/examples/controller\t(cached)\nok  \tgithub.com/publicdomainrelay/kcp-libs/examples/dns\t(cached)\nok
+    \ \tgithub.com/publicdomainrelay/kcp-libs/examples/pki\t(cached)\nok  \tgithub.com/publicdomainrelay/kcp-libs/examples/policy\t(cached)\nok
+    \ \tgithub.com/publicdomainrelay/kcp-libs/examples/workloads\t(cached)\nok  \tgithub.com/publicdomainrelay/kcp-libs/factory/admission\t(cached)\nok
+    \ \tgithub.com/publicdomainrelay/kcp-libs/factory/controller\t(cached)\nok  \tgithub.com/publicdomainrelay/kcp-libs/factory/servicenames\t(cached)\nok
+    \ \tgithub.com/publicdomainrelay/kcp-libs/impl/assets\t(cached)\nok  \tgithub.com/publicdomainrelay/kcp-libs/impl/execrunner\t(cached)\n?
+    \  \tgithub.com/publicdomainrelay/kcp-libs/impl/exportwatch\t[no test files]\nok
+    \ \tgithub.com/publicdomainrelay/kcp-libs/impl/informerwatch\t(cached)\nok  \tgithub.com/publicdomainrelay/kcp-libs/impl/kcpstore\t(cached)\nok
+    \ \tgithub.com/publicdomainrelay/kcp-libs/impl/memoryrunner\t(cached)\nok  \tgithub.com/publicdomainrelay/kcp-libs/impl/metrics\t(cached)\nok
+    \ \tgithub.com/publicdomainrelay/kcp-libs/impl/openbaoclient\t(cached)\nok  \tgithub.com/publicdomainrelay/kcp-libs/impl/pkiprovisioner\t(cached)\nok
+    \ \tgithub.com/publicdomainrelay/kcp-libs/impl/policyclient\t(cached)\nok  \tgithub.com/publicdomainrelay/kcp-libs/internal/boundaries\t(cached)\nok
+    \ \tgithub.com/publicdomainrelay/kcp-libs/internal/livekcp\t(cached)\n?   \tgithub.com/publicdomainrelay/kcp-libs/internal/livekcp/cmd/livecluster\t[no
+    test files]\n?   \tgithub.com/publicdomainrelay/kcp-libs/internal/livekcp/livetest\t[no
+    test files]"
+  branch: spec/impl-openbaoclient/024f19fa
+  commit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+  filesTouched:
+  - impl/openbaoclient/openbaoclient.go
+  - impl/openbaoclient/openbaoclient_test.go
+  message: 'realized impl-openbaoclient on spec/impl-openbaoclient/024f19fa: 2 file(s)
+    touched, verify exit 0'
+  phase: Succeeded
   progress:
   - at: "2026-10-04T19:52:56Z"
     files:
