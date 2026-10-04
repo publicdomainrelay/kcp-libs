@@ -10,5 +10,16 @@ spec:
   systemContext: impl-kcpstore
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing impl-kcpstore
-  phase: Running
+  agentLog: impl/kcpstore is the Go package that talks to a kcp shard on behalf of
+    the rest of the library. It holds a Store built from Options (host, rest config,
+    transport, QPS/burst), which caches one rest.Interface per logical cluster and
+    group-version and hands out namespaced clients whose API path is rewritten to
+    the kcp virtual-workspace shape (/clusters/<id>/apis or /api). On top of that
+    sits a generic Resource[T] obtained through Of[T], offering raw and decoded reads,
+    lists scoped to a cluster or a namespace, create, delete, merge-patch of the status
+    subresource, JSON patch, and finalizer add/remove helpers. Store also resolves
+    a logical cluster's kcp.io/path annotation (ClusterPath) and mints service account
+    tokens. paths.go adds a small PathCache over ClusterPath that remembers only definitive
+    answers and asks again for anything that could heal.
+  message: wrote 26 requirement(s) and 27 interface(s) for impl-kcpstore
+  phase: Succeeded

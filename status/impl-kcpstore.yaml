@@ -1,12 +1,8 @@
 conditions:
-- message: 'undeclared: IsNotFound, New, NewPathCache, Of, Options, PathCache, PathCache.Forget,
-    PathCache.Len, PathCache.Lookup, Resource, Resource.AddFinalizer, Resource.Create,
-    Resource.Delete, Resource.Finalizers, Resource.Get, Resource.GetRaw, Resource.List,
-    Resource.ListIn, Resource.PatchJSON, Resource.PatchStatus, Resource.RemoveFinalizer,
-    Resource.RemoveKnownFinalizer, Store, Store.ClientFor, Store.ClusterPath, Store.Config,
-    Store.MintServiceAccountToken'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -185,6 +181,6 @@ observed:
     name: PathCache.Len
     signature: () int
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: 0dda1d03b26c56c5d61e30efd26659aae9f33a551f1d84c5e5a1960366c02025
+realizedSpecHash: 6d848b84f087ba5014700ad43eb46adb2e5e7af3c32fff3075a64d53fc72e595
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: 532259b74f5b4d7136549d0d78bb3b1fd29270c16ea0372772873515fda3e588
