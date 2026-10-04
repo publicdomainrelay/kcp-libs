@@ -1,7 +1,8 @@
 conditions:
-- message: 'undeclared: Run, vault.CallCount, vault.Close, vault.ServeHTTP, vault.URL'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -50,6 +51,6 @@ observed:
     name: vault.ServeHTTP
     signature: (w http.ResponseWriter, r *http.Request)
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: 8d5996e1fe2d6513001ad964afc66a7e327000f975b0fbbf3a08d2e5824b2812
+realizedSpecHash: ac2f5b921359e1539b0c3e059e981f08c42f68cbf665db5706f0483ebc8e701a
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: 2c9a1a4809273ff4f2a3b77ce1469b2dd208c8ef304c5f0aa4177ee28de97729

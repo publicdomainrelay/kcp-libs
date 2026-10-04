@@ -10,5 +10,24 @@ spec:
   systemContext: examples-dns
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing examples-dns
-  phase: Running
+  agentLog: 'This context is the `examples/dns` example of kcp-libs. It is a single
+    Go `main` package whose exported entry point is `Run(ctx context.Context, out
+    io.Writer) error` in `examples/dns/main.go`. `Run` starts a live kcp cluster through
+    `internal/livekcp`, opens a `kcpstore` against it, and seeds three pods: `pds`
+    and `api` into the consumer workspace and `pds` into a second consumer workspace,
+    each carrying either service args or an environment block that names a port and
+    hostname. It then builds a service-name resolver (`factory/servicenames`) whose
+    source lists pods across both workspaces and decorates each object with the kcp
+    cluster annotation, mints tokens through the store, materialises the DNS shim
+    and probe assets from `impl/assets` into a temporary directory, and uses `kcpstore.NewPathCache`
+    as the path cache. The resolver produces a name table and a set of covered workspaces,
+    which `Run` prints sorted by name, then calls `resolver.Env` for the first pod
+    to show the injected table, the minted tokens, the pod''s own address, the shim
+    and probe file placement, the preload of the shim, the readiness probe grants,
+    the advertised address of a service bound to 0.0.0.0, and the label form of the
+    workspace path. `examples/dns/main_test.go` drives the example through `livetest.Require`
+    and asserts that the printed output contains twelve exact substrings covering
+    the table entries, workspace count, token count, self-name resolution, token minting,
+    asset paths, probe grants, advertised address, and workspace labels.'
+  message: wrote 11 requirement(s) and 1 interface(s) for examples-dns
+  phase: Succeeded

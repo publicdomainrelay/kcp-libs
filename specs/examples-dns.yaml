@@ -4,5 +4,93 @@ metadata:
   name: examples-dns
   namespace: default
 spec:
+  intent: 'This context exists to demonstrate and verify the DNS and service-name
+    resolution behaviour of kcp-libs end to end. It is an executable example rather
+    than library code: it shows a consumer of `servicenames` how to assemble a resolver
+    over several logical clusters, how tokens for the kcp server are minted and injected
+    into a pod environment, and how the DNS shim and readiness probe assets are placed
+    on disk so a workload can resolve sibling services. The test in `main_test.go`
+    pins the observable output of that flow, so a change in table contents, token
+    minting, asset placement, advertised address, or label rendering fails the example.'
+  interfaces:
+  - file: examples/dns/main.go
+    kind: function
+    name: Run
+    signature: func Run(ctx context.Context, out io.Writer) error
   repository: kcp-libs
+  requirements:
+  - codeRefs:
+    - file:examples/dns/main.go
+    id: r.advertised-address
+    level: SHOULD
+    text: A service that binds to the wildcard host must advertise a reachable loopback
+      address derived from its environment block.
+  - codeRefs:
+    - file:examples/dns/main.go
+    id: r.asset-materialisation
+    level: MUST
+    text: '`Run` must materialise the DNS shim and probe assets into a temporary directory,
+      use the shim path as the resolver shim, and use `kcpstore.NewPathCache` as the
+      resolver path cache.'
+  - codeRefs:
+    - file:examples/dns/main.go
+    id: r.label-rendering
+    level: SHOULD
+    text: The example must render the workspace path in its label form through the
+      kcp service labels helper.
+  - codeRefs:
+    - file:examples/dns/main_test.go
+    id: r.output-pinned-by-test
+    level: MUST
+    text: 'The example output must contain the exact substrings asserted by `TestRunBuildsTheTableAndTheTokens`:
+      the three name resolutions, the workspace count, the injected name and token
+      counts, the self name resolution, the minted token line, the asset directory
+      and file names, the preload line, the probe grant list, the advertised address,
+      and the label rendering.'
+  - codeRefs:
+    - file:examples/dns/main.go
+    id: r.probe-grants
+    level: MUST
+    text: The readiness probe must preload the same shim file as the workload and
+      be granted the DNS probe environment variables.
+  - codeRefs:
+    - file:examples/dns/main.go
+    - function:91d47a59cae63290c441f196217cef7e
+    id: r.run-entry-point
+    level: MUST
+    text: The example package must expose `Run(ctx context.Context, out io.Writer)
+      error` and write all of its reporting to `out` rather than to the process standard
+      output.
+  - codeRefs:
+    - file:examples/dns/main.go
+    id: r.seeded-workspaces
+    level: MUST
+    text: '`Run` must seed a pod named `pds` and a pod named `api` into the first
+      consumer cluster and a pod named `pds` into the second consumer cluster, each
+      with an environment map that names a port or an args list.'
+  - codeRefs:
+    - file:examples/dns/main.go
+    id: r.self-name-first-moment
+    level: MUST
+    text: A pod's own name must already appear in the injected table at the moment
+      its environment is built, resolving to the address of its own deployment.
+  - codeRefs:
+    - file:examples/dns/main.go
+    id: r.table-across-workspaces
+    level: MUST
+    text: The resolver source must list pods from both consumer workspaces and annotate
+      each object with its logical cluster, so the resulting table covers both workspaces.
+  - codeRefs:
+    - file:examples/dns/main_test.go
+    id: r.test-requires-live-cluster
+    level: MUST
+    text: The test must call the live cluster requirement guard before running the
+      example so it skips when no live kcp environment is available, and must bound
+      the run with a five minute context.
+  - codeRefs:
+    - file:examples/dns/main.go
+    id: r.token-minting
+    level: MUST
+    text: The resolver must mint tokens through the kcp store with a one hour TTL,
+      and its environment output must carry a token for each covered workspace.
   upstream: self

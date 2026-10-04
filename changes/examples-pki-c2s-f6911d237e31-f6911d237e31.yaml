@@ -10,5 +10,13 @@ spec:
   systemContext: examples-pki
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing examples-pki
-  phase: Running
+  agentLog: 'examples/pki is a runnable example in the kcp-libs repository that demonstrates
+    PKI provisioning and certificate issuance against a KCP cluster. It is made of
+    four Go files: main.go holds the Run entry point that drives the example, vault.go
+    holds a fake Vault HTTP server that answers the HashiCorp Vault API paths the
+    example exercises, certs.go holds certificate helpers, and main_test.go covers
+    the run. The vault type exposes URL, Close, CallCount and ServeHTTP, so a test
+    can start the server, point the example at it, count the calls it received, and
+    shut it down.'
+  message: wrote 7 requirement(s) and 5 interface(s) for examples-pki
+  phase: Succeeded
