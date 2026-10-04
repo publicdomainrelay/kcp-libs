@@ -10,5 +10,13 @@ spec:
   systemContext: internal-livekcp-livetest
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing internal-livekcp-livetest
-  phase: Running
+  agentLog: internal/livekcp/livetest holds one tiny helper package that gates the
+    repository's live test tier. Its single exported function, Require, takes a *testing.T,
+    asks livekcp.Missing() which of the external binaries (kcp, kubectl) are absent
+    from PATH, and then either fails, skips, or returns based on the KCP_LIBS_REQUIRE_LIVE
+    environment variable. When that variable equals "1" a missing binary is a fatal
+    error; otherwise the test skips with a message naming the missing tools or telling
+    the caller to set the variable. Every live test in the repo calls this helper
+    first, so the behaviour of the live tier is decided in this one place.
+  message: wrote 5 requirement(s) and 1 interface(s) for internal-livekcp-livetest
+  phase: Succeeded
