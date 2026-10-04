@@ -137,6 +137,11 @@ func consumerMentions(t *testing.T, needle string) bool {
 	if root == "" {
 		return false
 	}
+	// The consumer checkout sits behind a symlink in some layouts, and Walk
+	// starts from an Lstat, which stops at one and reads nothing.
+	if resolved, err := filepath.EvalSymlinks(root); err == nil {
+		root = resolved
+	}
 	found := false
 	_ = filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil || info.IsDir() || !strings.HasSuffix(path, ".go") {

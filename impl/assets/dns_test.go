@@ -2,6 +2,9 @@ package assets
 
 import (
 	"context"
+	"io"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -128,5 +131,77 @@ func TestTheShimResolvesANameFromTheTable(t *testing.T) {
 	}
 	if got := strings.TrimSpace(string(out)); got != "127.0.0.1" {
 		t.Fatalf("the shim resolved the name to %q, the table says 127.0.0.1:8080", got)
+	}
+}
+
+// A Request object is not a URL: it carries its own method and body. The shim
+// used to forward the rewritten address with an empty init, which dropped the
+// Request and sent a POST as a bodiless GET, so a service that routes by method
+// answered 404 to a write meant to create a resource. The listener records what
+// actually arrived, which is the only thing that tells the two apart.
+func TestTheShimForwardsARequestWithItsMethodAndBody(t *testing.T) {
+	deno, err := exec.LookPath("deno")
+	if err != nil {
+		t.Skip("deno is not on PATH, so the shim cannot be run")
+	}
+	const payload = "did=did:web:alice"
+	seen := make(chan [2]string, 1)
+	listener := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, readErr := io.ReadAll(r.Body)
+		if readErr != nil {
+			t.Errorf("reading the request body: %v", readErr)
+		}
+		select {
+		case seen <- [2]string{r.Method, string(body)}:
+		default:
+		}
+		_, _ = w.Write([]byte(r.Method + " " + string(body)))
+	}))
+	defer listener.Close()
+	addr := strings.TrimPrefix(listener.URL, "http://")
+
+	dir := t.TempDir()
+	paths, err := DNSSet(dir).Materialise()
+	if err != nil {
+		t.Fatal(err)
+	}
+	driver := filepath.Join(dir, "driver.ts")
+	body := `const request = new Request("http://pds.default.svc.kcp.local/register", {` + "\n" +
+		`  method: "POST",` + "\n" +
+		`  body: "` + payload + `",` + "\n" +
+		`});` + "\n" +
+		`const res = await fetch(request);` + "\n" +
+		`console.log(await res.text());` + "\n"
+	if err := os.WriteFile(driver, []byte(body), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, deno, "run",
+		"--allow-env="+strings.Join(DNSProbeEnv, ","),
+		"--allow-net",
+		"--preload", paths[ShimName],
+		driver,
+	)
+	cmd.Dir = dir
+	cmd.Env = append(os.Environ(),
+		"KCP_SERVICE_DOMAIN=kcp.local",
+		`KCP_DNS_TABLE={"pds.default.svc.kcp.local":"`+addr+`"}`,
+	)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("deno run: %v\n%s", err, out)
+	}
+	if got := strings.TrimSpace(string(out)); got != "POST "+payload {
+		t.Fatalf("the shim forwarded the request as %q, the caller sent a POST with the body %q", got, payload)
+	}
+	var got [2]string
+	select {
+	case got = <-seen:
+	case <-time.After(5 * time.Second):
+		t.Fatalf("the listener saw no request, so the shim never reached it")
+	}
+	if got[0] != "POST" || got[1] != payload {
+		t.Fatalf("the listener saw %s with body %q, the caller sent a POST with body %q", got[0], got[1], payload)
 	}
 }

@@ -123,14 +123,22 @@ globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
   // inside it that cannot be resolved: swallowing that would turn a name we own
   // into an opaque DNS failure.
   const target = host ? await addressFor(host) : null;
-  if (!target) return realFetch(input as RequestInfo, init);
-  const next = rewrite(raw, target);
+  const next = target ? rewrite(raw, target) : null;
   if (!next) return realFetch(input as RequestInfo, init);
   const headers = new Headers(
     init?.headers ?? (typeof input === "object" && "headers" in input ? input.headers : undefined),
   );
   if (!headers.has("host")) headers.set("host", host);
-  return realFetch(next, { ...(init ?? {}), headers });
+  // A Request carries the caller's method, body, redirect mode, credentials,
+  // signal and cache mode. Forwarding it as a bare URL would drop all of that:
+  // the init is empty in the common `fetch(request)` case, so a POST would go
+  // out as a GET with no payload and a write meant to create a resource would
+  // come back 404. Rebuilding the Request at the table address and letting the
+  // caller's init override it keeps every field -- exactly what `fetch(input,
+  // init)` would have done itself. The URL form keeps its init untouched,
+  // because only there does fetch supply the POST default for a bare body.
+  const outgoing = input instanceof Request ? new Request(next, input) : next;
+  return realFetch(outgoing as RequestInfo, { ...(init ?? {}), headers });
 }) as typeof fetch;
 
 for (const name of ["connect", "connectTls"] as const) {
