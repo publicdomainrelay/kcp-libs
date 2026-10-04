@@ -10,5 +10,13 @@ spec:
   systemContext: impl-exportwatch
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing impl-exportwatch
-  phase: Running
+  agentLog: impl/exportwatch watches KCP endpoint slices for a provider workspace
+    and reports when every exported service has at least one address. The package
+    defines the Endpoints map type (export name to URL list), an Options struct carrying
+    the rest config, provider workspace, exports and host, and functions that build
+    a dynamic client, list endpoint slices once (Discover), project an unstructured
+    list into Endpoints (FromList), test readiness (Endpoints.Ready), wait for readiness
+    with a polling Await and an event-driven WatchEndpointSlices that returns ErrReady,
+    and render addresses for one export (Paths).
+  message: wrote 11 requirement(s) and 9 interface(s) for impl-exportwatch
+  phase: Succeeded

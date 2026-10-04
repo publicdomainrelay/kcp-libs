@@ -1,8 +1,8 @@
 conditions:
-- message: 'undeclared: Await, Client, Discover, Endpoints, Endpoints.Ready, FromList,
-    Options, Paths, WatchEndpointSlices'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -70,6 +70,6 @@ observed:
     name: Paths
     signature: (endpoints Endpoints, export string) []string
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: dd7508ec293f6d6e5e6f11f9a32997b9bb6140d74a74e6e95635df729d7a007b
+realizedSpecHash: 9301cec75b954c4221cd573ad32c06718f36c374bce5eb0a7e3ca007af18efb8
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: defbb3cd65e176b025a937894473fa6859e92a80e3fdf30891082e604ed10f3b
