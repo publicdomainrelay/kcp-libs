@@ -1,0 +1,186 @@
+conditions:
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
+  type: CodeSynced
+- message: no synced fingerprint has been recorded yet
+  reason: NotSyncedYet
+  status: "False"
+  type: Drifted
+- message: the spec passes the validator
+  reason: ValidatorPassed
+  status: "True"
+  type: SpecValid
+observed:
+  files:
+  - impl/kcpstore/kcpstore.go
+  - impl/kcpstore/kcpstore_test.go
+  - impl/kcpstore/live_test.go
+  - impl/kcpstore/paths.go
+  fingerprint: 532259b74f5b4d7136549d0d78bb3b1fd29270c16ea0372772873515fda3e588
+  interfaces:
+  - codegraphId: function:d7d93064d1945db238404c68788f971f
+    file: impl/kcpstore/kcpstore.go
+    kind: function
+    line: 32
+    name: IsNotFound
+    signature: (err error) bool
+  - codegraphId: struct:be2a24917d7a285dc53d560ba36c744a
+    file: impl/kcpstore/kcpstore.go
+    kind: struct
+    line: 38
+    name: Options
+  - codegraphId: struct:432c046ab7a1ce292d7fa0372790eed7
+    file: impl/kcpstore/kcpstore.go
+    kind: struct
+    line: 54
+    name: Store
+  - codegraphId: function:41b4ccba5b43f3162c43c6569fe3adaf
+    file: impl/kcpstore/kcpstore.go
+    kind: function
+    line: 66
+    name: New
+    signature: (opts Options) (*Store, error)
+  - codegraphId: method:c00fe3e383047902bea23ff36069e91f
+    file: impl/kcpstore/kcpstore.go
+    kind: method
+    line: 92
+    name: Store.Config
+    signature: () *rest.Config
+  - codegraphId: method:c311b4200adb69d996ac127afb62ed56
+    file: impl/kcpstore/kcpstore.go
+    kind: method
+    line: 96
+    name: Store.ClientFor
+    signature: (logicalCluster string, gv schema.GroupVersion) (rest.Interface, error)
+  - codegraphId: struct:dafdd052ffecc9d0a327766098dc06f3
+    file: impl/kcpstore/kcpstore.go
+    kind: struct
+    line: 123
+    name: Resource
+  - codegraphId: function:96752734b0a49c97d1a14ee1329189da
+    file: impl/kcpstore/kcpstore.go
+    kind: function
+    line: 129
+    name: Of
+    signature: (s *Store, gvr schema.GroupVersionResource) *Resource[T]
+  - codegraphId: method:6647c7478f971106b8507d72f97f9d9a
+    file: impl/kcpstore/kcpstore.go
+    kind: method
+    line: 137
+    name: Resource.GetRaw
+    signature: (ctx context.Context, target ref.Ref) ([]byte, error)
+  - codegraphId: method:28c264fe91c941c628570295cc91bcea
+    file: impl/kcpstore/kcpstore.go
+    kind: method
+    line: 149
+    name: Resource.Get
+    signature: (ctx context.Context, target ref.Ref) (*T, error)
+  - codegraphId: method:708cca7ea762c4eac4f03c27a2e78121
+    file: impl/kcpstore/kcpstore.go
+    kind: method
+    line: 157
+    name: Resource.List
+    signature: (ctx context.Context, logicalCluster string) ([]T, error)
+  - codegraphId: method:08d58c09d0e2e942a57a5d0cd38b26bf
+    file: impl/kcpstore/kcpstore.go
+    kind: method
+    line: 169
+    name: Resource.ListIn
+    signature: (ctx context.Context, logicalCluster, namespace string) ([]T, error)
+  - codegraphId: method:e54d2aabb8486cab3ffb3fccd9e528b4
+    file: impl/kcpstore/kcpstore.go
+    kind: method
+    line: 181
+    name: Resource.Create
+    signature: (ctx context.Context, logicalCluster string, obj *T) error
+  - codegraphId: method:0adeb1384568f6dec86b61baf285da43
+    file: impl/kcpstore/kcpstore.go
+    kind: method
+    line: 208
+    name: Resource.Delete
+    signature: (ctx context.Context, target ref.Ref) error
+  - codegraphId: method:060eafce6e59dd5e79f3672d53ae6d3b
+    file: impl/kcpstore/kcpstore.go
+    kind: method
+    line: 221
+    name: Resource.PatchStatus
+    signature: (ctx context.Context, target ref.Ref, patch []byte) error
+  - codegraphId: method:c256b1a18aecee599f7d008d7300042e
+    file: impl/kcpstore/kcpstore.go
+    kind: method
+    line: 238
+    name: Resource.PatchJSON
+    signature: (ctx context.Context, target ref.Ref, patch []byte) error
+  - codegraphId: method:cfd282c2aae4ed3dd3a523783c18bc20
+    file: impl/kcpstore/kcpstore.go
+    kind: method
+    line: 251
+    name: Resource.Finalizers
+    signature: (ctx context.Context, target ref.Ref) ([]string, error)
+  - codegraphId: method:b590040c169d2610823c037f9e6acc73
+    file: impl/kcpstore/kcpstore.go
+    kind: method
+    line: 263
+    name: Resource.RemoveFinalizer
+    signature: (ctx context.Context, target ref.Ref, finalizer string) error
+  - codegraphId: method:b56020606bf6fc9651ef87cd37dbe904
+    file: impl/kcpstore/kcpstore.go
+    kind: method
+    line: 274
+    name: Resource.RemoveKnownFinalizer
+    signature: (ctx context.Context, target ref.Ref, current []string, finalizer string)
+      error
+  - codegraphId: method:5763969969c0f4e887f1c499a7fccf73
+    file: impl/kcpstore/kcpstore.go
+    kind: method
+    line: 285
+    name: Resource.AddFinalizer
+    signature: (ctx context.Context, target ref.Ref, finalizers []string) error
+  - codegraphId: method:22f545280ed249562e9ca742d5a77c44
+    file: impl/kcpstore/kcpstore.go
+    kind: method
+    line: 333
+    name: Store.ClusterPath
+    signature: (ctx context.Context, logicalCluster string) (string, error)
+  - codegraphId: method:2da1765147db771d09748666fa261d52
+    file: impl/kcpstore/kcpstore.go
+    kind: method
+    line: 357
+    name: Store.MintServiceAccountToken
+    signature: (ctx context.Context, logicalCluster, namespace, name string, ttl time.Duration)
+      (string, error)
+  - codegraphId: struct:bd87c7e07b92542841411a9474f66987
+    file: impl/kcpstore/paths.go
+    kind: struct
+    line: 28
+    name: PathCache
+  - codegraphId: function:260af476e14d0dff1cfd24e6619437a0
+    file: impl/kcpstore/paths.go
+    kind: function
+    line: 36
+    name: NewPathCache
+    signature: (store *Store) *PathCache
+  - codegraphId: method:67159703f7d37d59b1fec3d3fe2613b0
+    file: impl/kcpstore/paths.go
+    kind: method
+    line: 40
+    name: PathCache.Lookup
+    signature: (ctx context.Context, logicalCluster string) string
+  - codegraphId: method:f26fdfbd10d0713dc8243504308be1dc
+    file: impl/kcpstore/paths.go
+    kind: method
+    line: 62
+    name: PathCache.Forget
+    signature: (logicalCluster string)
+  - codegraphId: method:2124e46883b2f5ba56788dc76b299726
+    file: impl/kcpstore/paths.go
+    kind: method
+    line: 68
+    name: PathCache.Len
+    signature: () int
+observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+realizedSpecHash: 0dda1d03b26c56c5d61e30efd26659aae9f33a551f1d84c5e5a1960366c02025
+syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+syncedFingerprint: 532259b74f5b4d7136549d0d78bb3b1fd29270c16ea0372772873515fda3e588

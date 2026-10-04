@@ -1,0 +1,8 @@
+apiVersion: specs.publicdomainrelay.dev/v1alpha1
+kind: SystemContext
+metadata:
+  name: impl-kcpstore
+  namespace: default
+spec:
+  repository: kcp-libs
+  upstream: self

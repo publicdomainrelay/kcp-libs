@@ -199,3 +199,30 @@ system_contexts:
   id: sc.impl-assets
   name: impl-assets
   upstream: self
+- code:
+  - impl/execrunner/engine.go
+  - impl/execrunner/pod.go
+  - impl/execrunner/pod_test.go
+  - impl/execrunner/supervisor.go
+  id: sc.impl-execrunner
+  name: impl-execrunner
+  upstream: self
+- code:
+  - impl/exportwatch/exportwatch.go
+  id: sc.impl-exportwatch
+  name: impl-exportwatch
+  upstream: self
+- code:
+  - impl/informerwatch/informerwatch.go
+  - impl/informerwatch/informerwatch_test.go
+  id: sc.impl-informerwatch
+  name: impl-informerwatch
+  upstream: self
+- code:
+  - impl/kcpstore/kcpstore.go
+  - impl/kcpstore/kcpstore_test.go
+  - impl/kcpstore/live_test.go
+  - impl/kcpstore/paths.go
+  id: sc.impl-kcpstore
+  name: impl-kcpstore
+  upstream: self
