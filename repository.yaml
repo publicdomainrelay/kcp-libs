@@ -14,9 +14,8 @@ spec:
     partition: directory
     summarize: true
 status:
-  headCommit: f9e2ef3cfa3a9ae4d984768e8fce97092fe179bf
-  indexedCommit: f9e2ef3cfa3a9ae4d984768e8fce97092fe179bf
-  observedCommit: f9e2ef3cfa3a9ae4d984768e8fce97092fe179bf
+  headCommit: d751fc24fe173328b35655af6ff32676f55d8b7a
+  indexedCommit: d751fc24fe173328b35655af6ff32676f55d8b7a
   phase: Populated
   contexts:
     total: 44
