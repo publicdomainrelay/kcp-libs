@@ -1,0 +1,22 @@
+conditions:
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
+  type: CodeSynced
+- message: observed facts match the synced fingerprint
+  reason: FingerprintEqual
+  status: "False"
+  type: Drifted
+- message: the spec passes the validator
+  reason: ValidatorPassed
+  status: "True"
+  type: SpecValid
+observed:
+  files:
+  - internal/boundaries/boundaries_test.go
+  fingerprint: ed9589d584219f9a35ec4448c4e32da0822f34b99a429fa282ba7e4065d95dd1
+observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+realizedSpecHash: 670b10c303772574d20f432484c87f8f74a8c5017ed76ed8183f1a6d1aa04e84
+syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+syncedFingerprint: ed9589d584219f9a35ec4448c4e32da0822f34b99a429fa282ba7e4065d95dd1

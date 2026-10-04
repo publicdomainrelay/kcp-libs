@@ -251,3 +251,25 @@ system_contexts:
   id: sc.impl-pkiprovisioner
   name: impl-pkiprovisioner
   upstream: self
+- code:
+  - impl/policyclient/policyclient.go
+  - impl/policyclient/policyclient_test.go
+  id: sc.impl-policyclient
+  name: impl-policyclient
+  upstream: self
+- code:
+  - internal/boundaries/boundaries_test.go
+  id: sc.internal-boundaries
+  name: internal-boundaries
+  upstream: self
+- code:
+  - internal/livekcp/livekcp.go
+  - internal/livekcp/manifests.go
+  - internal/livekcp/trace_test.go
+  - internal/livekcp/widget.go
+  id: sc.internal-livekcp
+  name: internal-livekcp
+  upstream: self
+- id: sc.internal-livekcp-cmd-livecluster
+  name: internal-livekcp-cmd-livecluster
+  upstream: self
