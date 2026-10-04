@@ -4,11 +4,45 @@ codeRefIndex:
 - file:impl/kcpstore/kcpstore_test.go kcpstore_test.go@impl/kcpstore/kcpstore_test.go
 - file:impl/kcpstore/live_test.go live_test.go@impl/kcpstore/live_test.go
 - file:impl/kcpstore/paths.go paths.go@impl/kcpstore/paths.go
+- function:41b4ccba5b43f3162c43c6569fe3adaf New@impl/kcpstore/kcpstore.go:66
+- function:96752734b0a49c97d1a14ee1329189da Of@impl/kcpstore/kcpstore.go:129
+- function:d7d93064d1945db238404c68788f971f IsNotFound@impl/kcpstore/kcpstore.go:32
+- method:060eafce6e59dd5e79f3672d53ae6d3b Resource.PatchStatus@impl/kcpstore/kcpstore.go:221
+- method:08d58c09d0e2e942a57a5d0cd38b26bf Resource.ListIn@impl/kcpstore/kcpstore.go:169
+- method:0adeb1384568f6dec86b61baf285da43 Resource.Delete@impl/kcpstore/kcpstore.go:208
+- method:2124e46883b2f5ba56788dc76b299726 PathCache.Len@impl/kcpstore/paths.go:68
+- method:22f545280ed249562e9ca742d5a77c44 Store.ClusterPath@impl/kcpstore/kcpstore.go:333
+- method:28c264fe91c941c628570295cc91bcea Resource.Get@impl/kcpstore/kcpstore.go:149
+- method:2da1765147db771d09748666fa261d52 Store.MintServiceAccountToken@impl/kcpstore/kcpstore.go:357
+- method:5763969969c0f4e887f1c499a7fccf73 Resource.AddFinalizer@impl/kcpstore/kcpstore.go:285
+- method:6647c7478f971106b8507d72f97f9d9a Resource.GetRaw@impl/kcpstore/kcpstore.go:137
+- method:67159703f7d37d59b1fec3d3fe2613b0 PathCache.Lookup@impl/kcpstore/paths.go:40
+- method:708cca7ea762c4eac4f03c27a2e78121 Resource.List@impl/kcpstore/kcpstore.go:157
+- method:b56020606bf6fc9651ef87cd37dbe904 Resource.RemoveKnownFinalizer@impl/kcpstore/kcpstore.go:274
+- method:b590040c169d2610823c037f9e6acc73 Resource.RemoveFinalizer@impl/kcpstore/kcpstore.go:263
+- method:c00fe3e383047902bea23ff36069e91f Store.Config@impl/kcpstore/kcpstore.go:92
+- method:c256b1a18aecee599f7d008d7300042e Resource.PatchJSON@impl/kcpstore/kcpstore.go:238
+- method:c311b4200adb69d996ac127afb62ed56 Store.ClientFor@impl/kcpstore/kcpstore.go:96
+- method:cfd282c2aae4ed3dd3a523783c18bc20 Resource.Finalizers@impl/kcpstore/kcpstore.go:251
+- method:e54d2aabb8486cab3ffb3fccd9e528b4 Resource.Create@impl/kcpstore/kcpstore.go:181
+- method:f26fdfbd10d0713dc8243504308be1dc PathCache.Forget@impl/kcpstore/paths.go:62
+- struct:432c046ab7a1ce292d7fa0372790eed7 Store@impl/kcpstore/kcpstore.go:54
+- struct:bd87c7e07b92542841411a9474f66987 PathCache@impl/kcpstore/paths.go:28
+- struct:be2a24917d7a285dc53d560ba36c744a Options@impl/kcpstore/kcpstore.go:38
+- struct:dafdd052ffecc9d0a327766098dc06f3 Resource@impl/kcpstore/kcpstore.go:123
 kind: SystemContext
 metadata:
   name: impl-kcpstore
   namespace: default
 spec:
+  dependsOn:
+  - sc.abc-store
+  - sc.common-clientlimit
+  - sc.common-kcp
+  - sc.common-ref
+  - sc.common-statuspatch
+  - sc.internal-livekcp
+  - sc.internal-livekcp-livetest
   intent: 'This context exists so that consumers (controllers, admission, DNS, servicenames)
     have one place that knows how to reach kcp: URL shape, per-cluster client reuse,
     rate limiting, JSON decoding, status and finalizer patching, token minting, and

@@ -1,12 +1,18 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
 codeRefIndex:
+- file:impl/openbaoclient/openbaoclient.go openbaoclient.go@impl/openbaoclient/openbaoclient.go
 - file:impl/openbaoclient/openbaoclient_test.go openbaoclient_test.go@impl/openbaoclient/openbaoclient_test.go
 - file:impl/openbaoclient/testcert_test.go testcert_test.go@impl/openbaoclient/testcert_test.go
+- method:a100c179495b135b3fe2b971348dfedb ResponseError.Is@impl/openbaoclient/openbaoclient.go:46
+- method:bc10c8978afe004cb92eee07347f2fbf ResponseError.Error@impl/openbaoclient/openbaoclient.go:42
+- struct:e00b5c976e1ed1448875b77d0cec020b ResponseError@impl/openbaoclient/openbaoclient.go:32
 kind: SystemContext
 metadata:
   name: impl-openbaoclient
   namespace: default
 spec:
+  dependsOn:
+  - sc.abc-pki
   intent: This context exists so that the rest of the library can treat OpenBao as
     one interchangeable PKI backend behind a narrow Go surface. It separates OpenBao's
     REST and HTTP error vocabulary from the domain types (pki.Health, pki.RootCA,

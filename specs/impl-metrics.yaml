@@ -1,4 +1,21 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:impl/metrics/metrics.go metrics.go@impl/metrics/metrics.go
+- file:impl/metrics/metrics_test.go metrics_test.go@impl/metrics/metrics_test.go
+- function:3dd18f3afa474317bc20bf9d8ce521ed New@impl/metrics/metrics.go:21
+- method:22dbba2741b262a6e8f413f68c6881a9 Registry.GaugeFunc@impl/metrics/metrics.go:50
+- method:398ced1f3e757d374616550142bd5518 Registry.Registry@impl/metrics/metrics.go:25
+- method:54ddf7ba8219fb9150866ee200bac2ce Registry.Summary@impl/metrics/metrics.go:58
+- method:5aa29e31405d7485061154e56775d604 Server.Address@impl/metrics/metrics.go:112
+- method:75c11a332140d7b3055ad5d064bf82cf Registry.Name@impl/metrics/metrics.go:33
+- method:7c6900816ec7f4f0413e76c1f65af404 Registry.Gauge@impl/metrics/metrics.go:45
+- method:85f974cd4e6426f92ba1d7e4a6f5c3e7 Registry.Handler@impl/metrics/metrics.go:90
+- method:b518b6626d0caa622f7f0fa1c0410bcf Registry.Counter@impl/metrics/metrics.go:40
+- method:b5bbba2315db1d50de247c1650bdff0c Registry.Render@impl/metrics/metrics.go:76
+- method:dafe620a88e59c54431ba7b2aa5c720e Server.Close@impl/metrics/metrics.go:119
+- method:efe5348355d57e0d4f64052375fb2ca7 Registry.Listen@impl/metrics/metrics.go:100
+- struct:7917d94287fa848087ff53481834da21 Registry@impl/metrics/metrics.go:15
+- struct:a14e163798928aaf7cacdaa7f5b3e1cb Server@impl/metrics/metrics.go:94
 kind: SystemContext
 metadata:
   name: impl-metrics

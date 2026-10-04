@@ -1,9 +1,24 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:impl/informerwatch/informerwatch.go informerwatch.go@impl/informerwatch/informerwatch.go
+- file:impl/informerwatch/informerwatch_test.go informerwatch_test.go@impl/informerwatch/informerwatch_test.go
+- function:e7b0c39be09f14cf5d6e760c26e08195 Run@impl/informerwatch/informerwatch.go:57
+- interface:69ae3bee91c7100683df536ca4bee1f1 Reactor@impl/informerwatch/informerwatch.go:35
+- method:19895db5d0e36b28d57bf850b23b04ad Reactor.Added@impl/informerwatch/informerwatch.go:36
+- method:965fbef5d03cd976d93d50b7588840e0 Reactor.Updated@impl/informerwatch/informerwatch.go:38
+- struct:591bf69eb781348c20c82bf16173a503 Options@impl/informerwatch/informerwatch.go:41
+- struct:f606eb0070d5227633ed9759d17ac235 Resource@impl/informerwatch/informerwatch.go:21
+- struct:ff54a13981e71b687c7ac0015b595ed9 Source@impl/informerwatch/informerwatch.go:27
+- type_alias:922cbb149aec17f0c3fd708c19ebcc25 Enqueue@impl/informerwatch/informerwatch.go:33
 kind: SystemContext
 metadata:
   name: impl-informerwatch
   namespace: default
 spec:
+  dependsOn:
+  - sc.abc-cache
+  - sc.common-clientlimit
+  - sc.common-ref
   intent: 'This context exists so the kcp-libs dynamic watching layer is described
     as it is written: a runtime-neutral informer bootstrap that turns kcp object events
     into enqueue calls and optional reactor callbacks, with the indexer, cache set

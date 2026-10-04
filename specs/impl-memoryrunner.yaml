@@ -2,11 +2,27 @@ apiVersion: specs.publicdomainrelay.dev/v1alpha1
 codeRefIndex:
 - file:impl/memoryrunner/memoryrunner.go memoryrunner.go@impl/memoryrunner/memoryrunner.go
 - file:impl/memoryrunner/memoryrunner_test.go memoryrunner_test.go@impl/memoryrunner/memoryrunner_test.go
+- function:e2306bd41881382147eaf8b3069895ee NewEngine@impl/memoryrunner/memoryrunner.go:112
+- function:e28103a134b3e9ac6daaf0bb72e41005 NewPod@impl/memoryrunner/memoryrunner.go:41
+- method:098390ace6e69e0022deef1529cb656b Engine.Observe@impl/memoryrunner/memoryrunner.go:124
+- method:48226f7f64a37307caf8965bccf68855 Engine.Start@impl/memoryrunner/memoryrunner.go:116
+- method:49f3a507847759e15ebe12029f4d7ab6 Engine.Probe@impl/memoryrunner/memoryrunner.go:147
+- method:7a9767b282a97214edbe56a9c367cbf9 Pod.Probe@impl/memoryrunner/memoryrunner.go:86
+- method:806b7d8c875ce7fdb1779fc6b3eb84f8 Pod.Start@impl/memoryrunner/memoryrunner.go:51
+- method:d13dc67d5b49f32d887748200e8e6880 Pod.Observe@impl/memoryrunner/memoryrunner.go:59
+- method:e9fd6d2481d5bc0aad2f394f8ba186eb Pod.Stop@impl/memoryrunner/memoryrunner.go:73
+- method:ee1b796b776a0010bd5381e7774de163 Engine.Stop@impl/memoryrunner/memoryrunner.go:138
+- struct:9d329f0ad839a867f04ada3209850157 Engine@impl/memoryrunner/memoryrunner.go:94
+- struct:ac6c667397cefb3293ada1d745b0df58 PodOptions@impl/memoryrunner/memoryrunner.go:13
+- struct:ee18afe6dcdfa47419c426a3dd83071d EngineOptions@impl/memoryrunner/memoryrunner.go:90
+- struct:f1cb1d1b9762a5263f685d1b1a57baa4 Pod@impl/memoryrunner/memoryrunner.go:21
 kind: SystemContext
 metadata:
   name: impl-memoryrunner
   namespace: default
 spec:
+  dependsOn:
+  - sc.abc-runner
   intent: 'This context exists to give the rest of kcp-libs a controllable, in-memory
     fake for the runner contracts (abc/runner), so controllers, reconcile loops and
     tests can drive pod and engine lifecycles through Start/Observe/Stop/Probe without

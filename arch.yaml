@@ -4694,7 +4694,25 @@ system_contexts:
       endpoints and returns ErrReady as soon as the options exports are ready; a failed
       rediscovery is ignored rather than fatal.
   upstream: self
-- id: sc.impl-informerwatch
+- code:
+  - impl/informerwatch/informerwatch.go
+  - impl/informerwatch/informerwatch_test.go
+  codeRefIndex:
+  - file:impl/informerwatch/informerwatch.go informerwatch.go@impl/informerwatch/informerwatch.go
+  - file:impl/informerwatch/informerwatch_test.go informerwatch_test.go@impl/informerwatch/informerwatch_test.go
+  - function:e7b0c39be09f14cf5d6e760c26e08195 Run@impl/informerwatch/informerwatch.go:57
+  - interface:69ae3bee91c7100683df536ca4bee1f1 Reactor@impl/informerwatch/informerwatch.go:35
+  - method:19895db5d0e36b28d57bf850b23b04ad Reactor.Added@impl/informerwatch/informerwatch.go:36
+  - method:965fbef5d03cd976d93d50b7588840e0 Reactor.Updated@impl/informerwatch/informerwatch.go:38
+  - struct:591bf69eb781348c20c82bf16173a503 Options@impl/informerwatch/informerwatch.go:41
+  - struct:f606eb0070d5227633ed9759d17ac235 Resource@impl/informerwatch/informerwatch.go:21
+  - struct:ff54a13981e71b687c7ac0015b595ed9 Source@impl/informerwatch/informerwatch.go:27
+  - type_alias:922cbb149aec17f0c3fd708c19ebcc25 Enqueue@impl/informerwatch/informerwatch.go:33
+  depends_on:
+  - sc.abc-cache
+  - sc.common-clientlimit
+  - sc.common-ref
+  id: sc.impl-informerwatch
   intent: 'This context exists so the kcp-libs dynamic watching layer is described
     as it is written: a runtime-neutral informer bootstrap that turns kcp object events
     into enqueue calls and optional reactor callbacks, with the indexer, cache set
@@ -4848,11 +4866,50 @@ system_contexts:
       fails to sync it must return nil if the context is already done, and otherwise
       the error "informerwatch: the cache for %s did not sync" naming the resource.'
   upstream: self
-- codeRefIndex:
+- code:
+  - impl/kcpstore/kcpstore.go
+  - impl/kcpstore/kcpstore_test.go
+  - impl/kcpstore/live_test.go
+  - impl/kcpstore/paths.go
+  codeRefIndex:
   - file:impl/kcpstore/kcpstore.go kcpstore.go@impl/kcpstore/kcpstore.go
   - file:impl/kcpstore/kcpstore_test.go kcpstore_test.go@impl/kcpstore/kcpstore_test.go
   - file:impl/kcpstore/live_test.go live_test.go@impl/kcpstore/live_test.go
   - file:impl/kcpstore/paths.go paths.go@impl/kcpstore/paths.go
+  - function:41b4ccba5b43f3162c43c6569fe3adaf New@impl/kcpstore/kcpstore.go:66
+  - function:96752734b0a49c97d1a14ee1329189da Of@impl/kcpstore/kcpstore.go:129
+  - function:d7d93064d1945db238404c68788f971f IsNotFound@impl/kcpstore/kcpstore.go:32
+  - method:060eafce6e59dd5e79f3672d53ae6d3b Resource.PatchStatus@impl/kcpstore/kcpstore.go:221
+  - method:08d58c09d0e2e942a57a5d0cd38b26bf Resource.ListIn@impl/kcpstore/kcpstore.go:169
+  - method:0adeb1384568f6dec86b61baf285da43 Resource.Delete@impl/kcpstore/kcpstore.go:208
+  - method:2124e46883b2f5ba56788dc76b299726 PathCache.Len@impl/kcpstore/paths.go:68
+  - method:22f545280ed249562e9ca742d5a77c44 Store.ClusterPath@impl/kcpstore/kcpstore.go:333
+  - method:28c264fe91c941c628570295cc91bcea Resource.Get@impl/kcpstore/kcpstore.go:149
+  - method:2da1765147db771d09748666fa261d52 Store.MintServiceAccountToken@impl/kcpstore/kcpstore.go:357
+  - method:5763969969c0f4e887f1c499a7fccf73 Resource.AddFinalizer@impl/kcpstore/kcpstore.go:285
+  - method:6647c7478f971106b8507d72f97f9d9a Resource.GetRaw@impl/kcpstore/kcpstore.go:137
+  - method:67159703f7d37d59b1fec3d3fe2613b0 PathCache.Lookup@impl/kcpstore/paths.go:40
+  - method:708cca7ea762c4eac4f03c27a2e78121 Resource.List@impl/kcpstore/kcpstore.go:157
+  - method:b56020606bf6fc9651ef87cd37dbe904 Resource.RemoveKnownFinalizer@impl/kcpstore/kcpstore.go:274
+  - method:b590040c169d2610823c037f9e6acc73 Resource.RemoveFinalizer@impl/kcpstore/kcpstore.go:263
+  - method:c00fe3e383047902bea23ff36069e91f Store.Config@impl/kcpstore/kcpstore.go:92
+  - method:c256b1a18aecee599f7d008d7300042e Resource.PatchJSON@impl/kcpstore/kcpstore.go:238
+  - method:c311b4200adb69d996ac127afb62ed56 Store.ClientFor@impl/kcpstore/kcpstore.go:96
+  - method:cfd282c2aae4ed3dd3a523783c18bc20 Resource.Finalizers@impl/kcpstore/kcpstore.go:251
+  - method:e54d2aabb8486cab3ffb3fccd9e528b4 Resource.Create@impl/kcpstore/kcpstore.go:181
+  - method:f26fdfbd10d0713dc8243504308be1dc PathCache.Forget@impl/kcpstore/paths.go:62
+  - struct:432c046ab7a1ce292d7fa0372790eed7 Store@impl/kcpstore/kcpstore.go:54
+  - struct:bd87c7e07b92542841411a9474f66987 PathCache@impl/kcpstore/paths.go:28
+  - struct:be2a24917d7a285dc53d560ba36c744a Options@impl/kcpstore/kcpstore.go:38
+  - struct:dafdd052ffecc9d0a327766098dc06f3 Resource@impl/kcpstore/kcpstore.go:123
+  depends_on:
+  - sc.abc-store
+  - sc.common-clientlimit
+  - sc.common-kcp
+  - sc.common-ref
+  - sc.common-statuspatch
+  - sc.internal-livekcp
+  - sc.internal-livekcp-livetest
   id: sc.impl-kcpstore
   intent: 'This context exists so that consumers (controllers, admission, DNS, servicenames)
     have one place that knows how to reach kcp: URL shape, per-cluster client reuse,
@@ -5174,9 +5231,28 @@ system_contexts:
       current list and skip the request entirely when statuspatch.FinalizerRemove
       returns a nil patch.
   upstream: self
-- codeRefIndex:
+- code:
+  - impl/memoryrunner/memoryrunner.go
+  - impl/memoryrunner/memoryrunner_test.go
+  codeRefIndex:
   - file:impl/memoryrunner/memoryrunner.go memoryrunner.go@impl/memoryrunner/memoryrunner.go
   - file:impl/memoryrunner/memoryrunner_test.go memoryrunner_test.go@impl/memoryrunner/memoryrunner_test.go
+  - function:e2306bd41881382147eaf8b3069895ee NewEngine@impl/memoryrunner/memoryrunner.go:112
+  - function:e28103a134b3e9ac6daaf0bb72e41005 NewPod@impl/memoryrunner/memoryrunner.go:41
+  - method:098390ace6e69e0022deef1529cb656b Engine.Observe@impl/memoryrunner/memoryrunner.go:124
+  - method:48226f7f64a37307caf8965bccf68855 Engine.Start@impl/memoryrunner/memoryrunner.go:116
+  - method:49f3a507847759e15ebe12029f4d7ab6 Engine.Probe@impl/memoryrunner/memoryrunner.go:147
+  - method:7a9767b282a97214edbe56a9c367cbf9 Pod.Probe@impl/memoryrunner/memoryrunner.go:86
+  - method:806b7d8c875ce7fdb1779fc6b3eb84f8 Pod.Start@impl/memoryrunner/memoryrunner.go:51
+  - method:d13dc67d5b49f32d887748200e8e6880 Pod.Observe@impl/memoryrunner/memoryrunner.go:59
+  - method:e9fd6d2481d5bc0aad2f394f8ba186eb Pod.Stop@impl/memoryrunner/memoryrunner.go:73
+  - method:ee1b796b776a0010bd5381e7774de163 Engine.Stop@impl/memoryrunner/memoryrunner.go:138
+  - struct:9d329f0ad839a867f04ada3209850157 Engine@impl/memoryrunner/memoryrunner.go:94
+  - struct:ac6c667397cefb3293ada1d745b0df58 PodOptions@impl/memoryrunner/memoryrunner.go:13
+  - struct:ee18afe6dcdfa47419c426a3dd83071d EngineOptions@impl/memoryrunner/memoryrunner.go:90
+  - struct:f1cb1d1b9762a5263f685d1b1a57baa4 Pod@impl/memoryrunner/memoryrunner.go:21
+  depends_on:
+  - sc.abc-runner
   id: sc.impl-memoryrunner
   intent: 'This context exists to give the rest of kcp-libs a controllable, in-memory
     fake for the runner contracts (abc/runner), so controllers, reconcile loops and
@@ -5374,7 +5450,27 @@ system_contexts:
     text: Both Pod and Engine must guard their run maps with their own sync.Mutex,
       locking in Start, Observe and Stop so the fakes are safe for concurrent use.
   upstream: self
-- id: sc.impl-metrics
+- code:
+  - impl/metrics/metrics.go
+  - impl/metrics/metrics_test.go
+  codeRefIndex:
+  - file:impl/metrics/metrics.go metrics.go@impl/metrics/metrics.go
+  - file:impl/metrics/metrics_test.go metrics_test.go@impl/metrics/metrics_test.go
+  - function:3dd18f3afa474317bc20bf9d8ce521ed New@impl/metrics/metrics.go:21
+  - method:22dbba2741b262a6e8f413f68c6881a9 Registry.GaugeFunc@impl/metrics/metrics.go:50
+  - method:398ced1f3e757d374616550142bd5518 Registry.Registry@impl/metrics/metrics.go:25
+  - method:54ddf7ba8219fb9150866ee200bac2ce Registry.Summary@impl/metrics/metrics.go:58
+  - method:5aa29e31405d7485061154e56775d604 Server.Address@impl/metrics/metrics.go:112
+  - method:75c11a332140d7b3055ad5d064bf82cf Registry.Name@impl/metrics/metrics.go:33
+  - method:7c6900816ec7f4f0413e76c1f65af404 Registry.Gauge@impl/metrics/metrics.go:45
+  - method:85f974cd4e6426f92ba1d7e4a6f5c3e7 Registry.Handler@impl/metrics/metrics.go:90
+  - method:b518b6626d0caa622f7f0fa1c0410bcf Registry.Counter@impl/metrics/metrics.go:40
+  - method:b5bbba2315db1d50de247c1650bdff0c Registry.Render@impl/metrics/metrics.go:76
+  - method:dafe620a88e59c54431ba7b2aa5c720e Server.Close@impl/metrics/metrics.go:119
+  - method:efe5348355d57e0d4f64052375fb2ca7 Registry.Listen@impl/metrics/metrics.go:100
+  - struct:7917d94287fa848087ff53481834da21 Registry@impl/metrics/metrics.go:15
+  - struct:a14e163798928aaf7cacdaa7f5b3e1cb Server@impl/metrics/metrics.go:94
+  id: sc.impl-metrics
   intent: 'This context exists so that every component in the repository can expose
     Prometheus metrics through one small, uniform surface instead of touching the
     prometheus client directly. It gives each component an isolated registry plus
@@ -5508,9 +5604,19 @@ system_contexts:
       panic when registration fails for any other reason, including a name registered
       with a different help string or a different collector type.
   upstream: self
-- codeRefIndex:
+- code:
+  - impl/openbaoclient/openbaoclient.go
+  - impl/openbaoclient/openbaoclient_test.go
+  - impl/openbaoclient/testcert_test.go
+  codeRefIndex:
+  - file:impl/openbaoclient/openbaoclient.go openbaoclient.go@impl/openbaoclient/openbaoclient.go
   - file:impl/openbaoclient/openbaoclient_test.go openbaoclient_test.go@impl/openbaoclient/openbaoclient_test.go
   - file:impl/openbaoclient/testcert_test.go testcert_test.go@impl/openbaoclient/testcert_test.go
+  - method:a100c179495b135b3fe2b971348dfedb ResponseError.Is@impl/openbaoclient/openbaoclient.go:46
+  - method:bc10c8978afe004cb92eee07347f2fbf ResponseError.Error@impl/openbaoclient/openbaoclient.go:42
+  - struct:e00b5c976e1ed1448875b77d0cec020b ResponseError@impl/openbaoclient/openbaoclient.go:32
+  depends_on:
+  - sc.abc-pki
   id: sc.impl-openbaoclient
   intent: This context exists so that the rest of the library can treat OpenBao as
     one interchangeable PKI backend behind a narrow Go surface. It separates OpenBao's
