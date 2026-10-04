@@ -1,1 +1,29 @@
-observed: {}
+conditions:
+- message: 'undeclared: Run'
+  reason: InterfacesMissing
+  status: "False"
+  type: CodeSynced
+- message: observed facts match the synced fingerprint
+  reason: FingerprintEqual
+  status: "False"
+  type: Drifted
+- message: the spec passes the validator
+  reason: ValidatorPassed
+  status: "True"
+  type: SpecValid
+observed:
+  files:
+  - examples/workloads/main.go
+  - examples/workloads/main_test.go
+  fingerprint: 16c8c60e95de84b7eb85aa4fb34af6dea416b90635aee149692b8019b61be63e
+  interfaces:
+  - codegraphId: function:4f9e3c5199d0b48e53740bacffb4b9ac
+    file: examples/workloads/main.go
+    kind: function
+    line: 31
+    name: Run
+    signature: (ctx context.Context, out io.Writer) error
+observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+realizedSpecHash: 5da44e86e03e4c37fd1099d48eea4770329159a966078192c64dcbb10248d331
+syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+syncedFingerprint: 16c8c60e95de84b7eb85aa4fb34af6dea416b90635aee149692b8019b61be63e

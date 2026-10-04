@@ -163,6 +163,39 @@ system_contexts:
   id: sc.examples-policy
   name: examples-policy
   upstream: self
-- id: sc.examples-workloads
+- code:
+  - examples/workloads/main.go
+  - examples/workloads/main_test.go
+  id: sc.examples-workloads
   name: examples-workloads
+  upstream: self
+- code:
+  - factory/admission/admission.go
+  - factory/admission/admission_test.go
+  id: sc.factory-admission
+  name: factory-admission
+  upstream: self
+- code:
+  - factory/controller/controller.go
+  - factory/controller/controller_test.go
+  - factory/controller/events.go
+  - factory/controller/live_test.go
+  id: sc.factory-controller
+  name: factory-controller
+  upstream: self
+- code:
+  - factory/servicenames/servicenames.go
+  - factory/servicenames/servicenames_test.go
+  id: sc.factory-servicenames
+  name: factory-servicenames
+  upstream: self
+- code:
+  - impl/assets/assets.go
+  - impl/assets/assets_test.go
+  - impl/assets/dns.go
+  - impl/assets/dns_test.go
+  - impl/assets/dnsprobe.ts
+  - impl/assets/dnsshim.ts
+  id: sc.impl-assets
+  name: impl-assets
   upstream: self
