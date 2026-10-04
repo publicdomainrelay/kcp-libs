@@ -1,66 +1,66 @@
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: 006894dcb1008d7837bc2fb76ebe03b9850ac3237017ff6194b6e42cb05c0183
+realizedSpecHash: b34e6ee796ff3bb182979fccf16967d8d53045770dd87b42073b39b2282a9896
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
+- type: CodeSynced
+  status: "True"
   reason: InterfacesObserved
-  status: "True"
-  type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+  message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+- type: Drifted
   status: "False"
-  type: Drifted
-- message: the spec passes the validator
-  reason: ValidatorPassed
+  reason: FingerprintEqual
+  message: observed facts match the synced fingerprint
+- type: SpecValid
   status: "True"
-  type: SpecValid
+  reason: ValidatorPassed
+  message: the spec passes the validator
 observed:
   files:
   - impl/informerwatch/informerwatch.go
   - impl/informerwatch/informerwatch_test.go
-  fingerprint: 006894dcb1008d7837bc2fb76ebe03b9850ac3237017ff6194b6e42cb05c0183
   interfaces:
-  - codegraphId: struct:f606eb0070d5227633ed9759d17ac235
-    file: impl/informerwatch/informerwatch.go
+  - name: Resource
     kind: struct
+    file: impl/informerwatch/informerwatch.go
     line: 21
-    name: Resource
-  - codegraphId: struct:ff54a13981e71b687c7ac0015b595ed9
-    file: impl/informerwatch/informerwatch.go
+    codegraphId: struct:f606eb0070d5227633ed9759d17ac235
+  - name: Source
     kind: struct
+    file: impl/informerwatch/informerwatch.go
     line: 27
-    name: Source
-  - codegraphId: type_alias:922cbb149aec17f0c3fd708c19ebcc25
-    file: impl/informerwatch/informerwatch.go
+    codegraphId: struct:ff54a13981e71b687c7ac0015b595ed9
+  - name: Enqueue
     kind: type_alias
+    file: impl/informerwatch/informerwatch.go
     line: 33
-    name: Enqueue
-  - codegraphId: interface:69ae3bee91c7100683df536ca4bee1f1
-    file: impl/informerwatch/informerwatch.go
+    codegraphId: type_alias:922cbb149aec17f0c3fd708c19ebcc25
+  - name: Reactor
     kind: interface
+    file: impl/informerwatch/informerwatch.go
     line: 35
-    name: Reactor
-  - codegraphId: method:19895db5d0e36b28d57bf850b23b04ad
-    file: impl/informerwatch/informerwatch.go
+    codegraphId: interface:69ae3bee91c7100683df536ca4bee1f1
+  - name: Reactor.Added
     kind: method
-    line: 36
-    name: Reactor.Added
     signature: (kind string, obj *unstructured.Unstructured, enqueue Enqueue)
-  - codegraphId: method:965fbef5d03cd976d93d50b7588840e0
     file: impl/informerwatch/informerwatch.go
+    line: 36
+    codegraphId: method:19895db5d0e36b28d57bf850b23b04ad
+  - name: Reactor.Updated
     kind: method
-    line: 38
-    name: Reactor.Updated
     signature: (kind string, old, obj *unstructured.Unstructured, enqueue Enqueue)
-  - codegraphId: struct:591bf69eb781348c20c82bf16173a503
     file: impl/informerwatch/informerwatch.go
+    line: 38
+    codegraphId: method:965fbef5d03cd976d93d50b7588840e0
+  - name: Options
     kind: struct
-    line: 41
-    name: Options
-  - codegraphId: function:e7b0c39be09f14cf5d6e760c26e08195
     file: impl/informerwatch/informerwatch.go
+    line: 41
+    codegraphId: struct:591bf69eb781348c20c82bf16173a503
+  - name: Run
     kind: function
-    line: 57
-    name: Run
     signature: (ctx context.Context, opts Options) error
-realizedSpecHash: b34e6ee796ff3bb182979fccf16967d8d53045770dd87b42073b39b2282a9896
-syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-syncedFingerprint: 006894dcb1008d7837bc2fb76ebe03b9850ac3237017ff6194b6e42cb05c0183
+    file: impl/informerwatch/informerwatch.go
+    line: 57
+    codegraphId: function:e7b0c39be09f14cf5d6e760c26e08195
+  fingerprint: 006894dcb1008d7837bc2fb76ebe03b9850ac3237017ff6194b6e42cb05c0183

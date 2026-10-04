@@ -1,77 +1,77 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
-codeRefIndex:
-- file:abc/policy/policy.go policy.go@abc/policy/policy.go
-- interface:3ec82f13ff355ba5c823fadd91cbc034 Client@abc/policy/policy.go:23
-- method:60e85e0780bae7128346127fea69a2e3 Client.Submit@abc/policy/policy.go:24
-- method:e1e87944f71f145e385b7bc3db9a5588 Client.Status@abc/policy/policy.go:26
-- struct:c1003284dadd5dbd150449f4f9af4ddc Task@abc/policy/policy.go:13
 kind: SystemContext
 metadata:
   name: abc-policy
   namespace: default
 spec:
+  repository: kcp-libs
+  upstream: self
   intent: This context exists so that consumers of a policy engine depend on a stable,
     transport-free contract instead of a concrete HTTP client. It defines the vocabulary
     and signatures that an implementation such as impl/policyclient must satisfy,
     and the shape of the task status that callers poll after submission. Keeping the
     contract in abc/policy lets the engine endpoint stay a per-call argument, so one
     Client talks to many policy engines.
-  interfaces:
-  - file: abc/policy/policy.go
-    kind: interface
-    name: Client
-    signature: type Client interface { Submit(ctx context.Context, endpoint string,
-      workflow []byte, inputs map[string]string) (string, error); Status(ctx context.Context,
-      endpoint, taskID string) (Task, error) }
-  - file: abc/policy/policy.go
-    kind: method
-    name: Client.Status
-    signature: Status(ctx context.Context, endpoint, taskID string) (Task, error)
-  - file: abc/policy/policy.go
-    kind: method
-    name: Client.Submit
-    signature: Submit(ctx context.Context, endpoint string, workflow []byte, inputs
-      map[string]string) (string, error)
-  - file: abc/policy/policy.go
-    kind: struct
-    name: Task
-    signature: type Task struct { State string; ExitStatus string; Outputs map[string]string;
-      Message string }
-  repository: kcp-libs
   requirements:
-  - codeRefs:
-    - interface:3ec82f13ff355ba5c823fadd91cbc034
-    - method:60e85e0780bae7128346127fea69a2e3
-    - method:e1e87944f71f145e385b7bc3db9a5588
-    id: r.client-contract
+  - id: r.client-contract
     level: MUST
     text: The package MUST export a Client interface whose Submit call returns a task
       identifier string and an error, and whose Status call returns a Task and an
       error.
-  - codeRefs:
-    - file:abc/policy/policy.go
-    id: r.state-vocabulary
+    codeRefs:
+    - interface:3ec82f13ff355ba5c823fadd91cbc034
+    - method:60e85e0780bae7128346127fea69a2e3
+    - method:e1e87944f71f145e385b7bc3db9a5588
+  - id: r.state-vocabulary
     level: MUST
     text: 'The package MUST define exactly three run states as string constants: StateRunning
       with value "running", StateSucceeded with value "succeeded", and StateFailed
       with value "failed".'
-  - codeRefs:
-    - method:e1e87944f71f145e385b7bc3db9a5588
-    id: r.status-lookup
+    codeRefs:
+    - file:abc/policy/policy.go
+  - id: r.status-lookup
     level: MUST
     text: Status MUST identify a run by the engine endpoint plus the task identifier
       returned from Submit, and MUST accept a context for cancellation.
-  - codeRefs:
-    - method:60e85e0780bae7128346127fea69a2e3
-    id: r.submit-inputs
+    codeRefs:
+    - method:e1e87944f71f145e385b7bc3db9a5588
+  - id: r.submit-inputs
     level: MUST
     text: Submit MUST take the engine endpoint as a string, the workflow as raw JSON
       bytes, and the run inputs as a map[string]string, and MUST accept a context
       for cancellation.
-  - codeRefs:
-    - struct:c1003284dadd5dbd150449f4f9af4ddc
-    id: r.task-shape
+    codeRefs:
+    - method:60e85e0780bae7128346127fea69a2e3
+  - id: r.task-shape
     level: MUST
     text: Task MUST carry State, ExitStatus, Outputs as a map[string]string, and Message,
       all as plain string or map fields.
-  upstream: self
+    codeRefs:
+    - struct:c1003284dadd5dbd150449f4f9af4ddc
+  interfaces:
+  - name: Client
+    kind: interface
+    signature: type Client interface { Submit(ctx context.Context, endpoint string,
+      workflow []byte, inputs map[string]string) (string, error); Status(ctx context.Context,
+      endpoint, taskID string) (Task, error) }
+    file: abc/policy/policy.go
+  - name: Client.Status
+    kind: method
+    signature: Status(ctx context.Context, endpoint, taskID string) (Task, error)
+    file: abc/policy/policy.go
+  - name: Client.Submit
+    kind: method
+    signature: Submit(ctx context.Context, endpoint string, workflow []byte, inputs
+      map[string]string) (string, error)
+    file: abc/policy/policy.go
+  - name: Task
+    kind: struct
+    signature: type Task struct { State string; ExitStatus string; Outputs map[string]string;
+      Message string }
+    file: abc/policy/policy.go
+codeRefIndex:
+- file:abc/policy/policy.go policy.go@abc/policy/policy.go
+- interface:3ec82f13ff355ba5c823fadd91cbc034 Client@abc/policy/policy.go:23
+- method:60e85e0780bae7128346127fea69a2e3 Client.Submit@abc/policy/policy.go:24
+- method:e1e87944f71f145e385b7bc3db9a5588 Client.Status@abc/policy/policy.go:26
+- struct:c1003284dadd5dbd150449f4f9af4ddc Task@abc/policy/policy.go:13

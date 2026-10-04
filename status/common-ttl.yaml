@@ -1,48 +1,48 @@
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: 1bbbebd686b542eb40b525e9155f001af945a2e02e2f267a990db213b67e592b
+realizedSpecHash: d0ea5f2ceada2c1a5504eaa5ad9f6d3bc65999a10d0f215eaad1ae2c0f781b12
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
+- type: CodeSynced
+  status: "True"
   reason: InterfacesObserved
-  status: "True"
-  type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+  message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+- type: Drifted
   status: "False"
-  type: Drifted
-- message: the spec passes the validator
-  reason: ValidatorPassed
+  reason: FingerprintEqual
+  message: observed facts match the synced fingerprint
+- type: SpecValid
   status: "True"
-  type: SpecValid
+  reason: ValidatorPassed
+  message: the spec passes the validator
 observed:
   files:
   - common/ttl/ttl.go
   - common/ttl/ttl_test.go
-  fingerprint: 1bbbebd686b542eb40b525e9155f001af945a2e02e2f267a990db213b67e592b
   interfaces:
-  - codegraphId: function:d687afb3744f79be091b78a990794a9d
-    file: common/ttl/ttl.go
+  - name: Effective
     kind: function
-    line: 9
-    name: Effective
     signature: (override, fallback *int64) *int64
-  - codegraphId: function:503ea477e92bcc1bc7f9bdba99922323
     file: common/ttl/ttl.go
+    line: 9
+    codegraphId: function:d687afb3744f79be091b78a990794a9d
+  - name: Expiry
     kind: function
-    line: 21
-    name: Expiry
     signature: (completion *metav1.Time, seconds *int64) (time.Time, bool)
-  - codegraphId: function:a0c1200f8b55a18bfa918f1f0cee7615
     file: common/ttl/ttl.go
+    line: 21
+    codegraphId: function:503ea477e92bcc1bc7f9bdba99922323
+  - name: Expired
     kind: function
-    line: 28
-    name: Expired
     signature: (completion *metav1.Time, seconds *int64, now time.Time) (expired bool,
       after time.Duration, known bool)
-  - codegraphId: function:9fdc74d33c3a88840f75732e3c0170bb
     file: common/ttl/ttl.go
+    line: 28
+    codegraphId: function:a0c1200f8b55a18bfa918f1f0cee7615
+  - name: Deadline
     kind: function
-    line: 39
-    name: Deadline
     signature: (start *metav1.Time, seconds *int64, now time.Time) bool
-realizedSpecHash: d0ea5f2ceada2c1a5504eaa5ad9f6d3bc65999a10d0f215eaad1ae2c0f781b12
-syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-syncedFingerprint: 1bbbebd686b542eb40b525e9155f001af945a2e02e2f267a990db213b67e592b
+    file: common/ttl/ttl.go
+    line: 39
+    codegraphId: function:9fdc74d33c3a88840f75732e3c0170bb
+  fingerprint: 1bbbebd686b542eb40b525e9155f001af945a2e02e2f267a990db213b67e592b

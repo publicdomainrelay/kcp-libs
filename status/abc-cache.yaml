@@ -1,139 +1,139 @@
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: adc057336d7bf089ee08e328e96fd89802bc9e8dece56c6c92d24adde498b1aa
+realizedSpecHash: 780f7187bdbed5b363f8eba55c4c5211ff17ee2a514e6821382547e2a6c06466
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
+- type: CodeSynced
+  status: "True"
   reason: InterfacesObserved
-  status: "True"
-  type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+  message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+- type: Drifted
   status: "False"
-  type: Drifted
-- message: the spec passes the validator
-  reason: ValidatorPassed
+  reason: FingerprintEqual
+  message: observed facts match the synced fingerprint
+- type: SpecValid
   status: "True"
-  type: SpecValid
+  reason: ValidatorPassed
+  message: the spec passes the validator
 observed:
   files:
   - abc/cache/cache.go
   - abc/cache/cache_test.go
-  fingerprint: adc057336d7bf089ee08e328e96fd89802bc9e8dece56c6c92d24adde498b1aa
   interfaces:
-  - codegraphId: interface:83657a0a0b8c546e00b0f6ddd68c8e0a
-    file: abc/cache/cache.go
+  - name: Indexer
     kind: interface
+    file: abc/cache/cache.go
     line: 26
-    name: Indexer
-  - codegraphId: method:3cf5981edb352b4ae0f722e3ed6bb96c
-    file: abc/cache/cache.go
+    codegraphId: interface:83657a0a0b8c546e00b0f6ddd68c8e0a
+  - name: Indexer.GetByKey
     kind: method
-    line: 27
-    name: Indexer.GetByKey
     signature: (key string) (item any, exists bool, err error)
-  - codegraphId: method:2f035c41d933e105b559d662a9a88767
     file: abc/cache/cache.go
+    line: 27
+    codegraphId: method:3cf5981edb352b4ae0f722e3ed6bb96c
+  - name: Indexer.ByIndex
     kind: method
-    line: 29
-    name: Indexer.ByIndex
     signature: (indexName, indexedValue string) ([]any, error)
-  - codegraphId: method:e8d2e2d111f92694f5202ff04b380d0c
     file: abc/cache/cache.go
+    line: 29
+    codegraphId: method:2f035c41d933e105b559d662a9a88767
+  - name: Indexer.List
     kind: method
-    line: 31
-    name: Indexer.List
     signature: () []any
-  - codegraphId: type_alias:c324eb8aebee5659b8c3144e047c30a2
     file: abc/cache/cache.go
+    line: 31
+    codegraphId: method:e8d2e2d111f92694f5202ff04b380d0c
+  - name: IndexFunc
     kind: type_alias
+    file: abc/cache/cache.go
     line: 34
-    name: IndexFunc
-  - codegraphId: type_alias:a2a398908517249bfded29f79dbe609e
-    file: abc/cache/cache.go
+    codegraphId: type_alias:c324eb8aebee5659b8c3144e047c30a2
+  - name: Indexers
     kind: type_alias
+    file: abc/cache/cache.go
     line: 36
-    name: Indexers
-  - codegraphId: struct:b3ef85326db0e635df938cf47a312813
-    file: abc/cache/cache.go
+    codegraphId: type_alias:a2a398908517249bfded29f79dbe609e
+  - name: Set
     kind: struct
+    file: abc/cache/cache.go
     line: 38
-    name: Set
-  - codegraphId: function:368cfc3b7333cde3fc16c28b5f4a251e
-    file: abc/cache/cache.go
+    codegraphId: struct:b3ef85326db0e635df938cf47a312813
+  - name: NewSet
     kind: function
-    line: 44
-    name: NewSet
     signature: () *Set
-  - codegraphId: method:995ab025f452ec7f8d6ac24f85f6bbba
     file: abc/cache/cache.go
+    line: 44
+    codegraphId: function:368cfc3b7333cde3fc16c28b5f4a251e
+  - name: Set.Add
     kind: method
-    line: 48
-    name: Set.Add
     signature: (kind string, indexer Indexer)
-  - codegraphId: method:7dedfffcc434baa8546c274ac5fa4131
     file: abc/cache/cache.go
+    line: 48
+    codegraphId: method:995ab025f452ec7f8d6ac24f85f6bbba
+  - name: Set.Get
     kind: method
-    line: 60
-    name: Set.Get
     signature: (kind string, r ref.Ref) (any, bool)
-  - codegraphId: method:79db186239dd9ebf94db73d3c1834051
     file: abc/cache/cache.go
+    line: 60
+    codegraphId: method:7dedfffcc434baa8546c274ac5fa4131
+  - name: Set.List
     kind: method
-    line: 71
-    name: Set.List
     signature: (kind string) []any
-  - codegraphId: method:436e0dc34ebdec584138d188650d491e
     file: abc/cache/cache.go
+    line: 71
+    codegraphId: method:79db186239dd9ebf94db73d3c1834051
+  - name: Set.ByIndex
     kind: method
-    line: 79
-    name: Set.ByIndex
     signature: (kind, index, value string) []any
-  - codegraphId: method:23f07591814f8acee78325cb538a547d
     file: abc/cache/cache.go
+    line: 79
+    codegraphId: method:436e0dc34ebdec584138d188650d491e
+  - name: Set.Names
     kind: method
-    line: 91
-    name: Set.Names
     signature: (kind, index, value string) []string
-  - codegraphId: function:ac84053b66aaf34b0c83c98bd076de38
     file: abc/cache/cache.go
+    line: 91
+    codegraphId: method:23f07591814f8acee78325cb538a547d
+  - name: Decode
     kind: function
-    line: 101
-    name: Decode
     signature: (obj any) (*T, error)
-  - codegraphId: function:7b1ca2f92d1acfeb4fc9be87c387a001
     file: abc/cache/cache.go
+    line: 101
+    codegraphId: function:ac84053b66aaf34b0c83c98bd076de38
+  - name: ClusterOf
     kind: function
+    signature: (obj any) string
+    file: abc/cache/cache.go
     line: 116
-    name: ClusterOf
-    signature: (obj any) string
-  - codegraphId: function:323ee6d71bcc903db5a96ba67a3e1292
-    file: abc/cache/cache.go
+    codegraphId: function:7b1ca2f92d1acfeb4fc9be87c387a001
+  - name: RefOf
     kind: function
-    line: 124
-    name: RefOf
     signature: (obj any) (ref.Ref, bool)
-  - codegraphId: function:53a9fed74460c17bc06521cc3e273e8c
     file: abc/cache/cache.go
+    line: 124
+    codegraphId: function:323ee6d71bcc903db5a96ba67a3e1292
+  - name: NameOf
     kind: function
+    signature: (obj any) string
+    file: abc/cache/cache.go
     line: 136
-    name: NameOf
-    signature: (obj any) string
-  - codegraphId: function:3b4476e3e6d3931e3e5f66d88938a0d2
-    file: abc/cache/cache.go
+    codegraphId: function:53a9fed74460c17bc06521cc3e273e8c
+  - name: PhaseOf
     kind: function
+    signature: (obj any) string
+    file: abc/cache/cache.go
     line: 144
-    name: PhaseOf
-    signature: (obj any) string
-  - codegraphId: function:cf99478a03753478fb8bd3cc621df402
-    file: abc/cache/cache.go
+    codegraphId: function:3b4476e3e6d3931e3e5f66d88938a0d2
+  - name: NestedString
     kind: function
-    line: 153
-    name: NestedString
     signature: (obj any, fields ...string) string
-  - codegraphId: function:5ce1c083464f112da22046a1de3a5518
     file: abc/cache/cache.go
+    line: 153
+    codegraphId: function:cf99478a03753478fb8bd3cc621df402
+  - name: IndexersFor
     kind: function
-    line: 162
-    name: IndexersFor
     signature: (parentLabel, jobLabel, triggerPodField string) Indexers
-realizedSpecHash: 780f7187bdbed5b363f8eba55c4c5211ff17ee2a514e6821382547e2a6c06466
-syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-syncedFingerprint: adc057336d7bf089ee08e328e96fd89802bc9e8dece56c6c92d24adde498b1aa
+    file: abc/cache/cache.go
+    line: 162
+    codegraphId: function:5ce1c083464f112da22046a1de3a5518
+  fingerprint: adc057336d7bf089ee08e328e96fd89802bc9e8dece56c6c92d24adde498b1aa

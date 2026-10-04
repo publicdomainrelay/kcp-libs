@@ -1,17 +1,20 @@
+syncedCommit: f9e2ef3cfa3a9ae4d984768e8fce97092fe179bf
+syncedFingerprint: be4c6f16907046046680aafaa15e85c525435f769125a5b14520883e0e58657b
+realizedSpecHash: aa8079cbba85fb3bcd8b341dbb93e4ecd9ad3ac52aa43bf37fe672c88693f9bd
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
+- type: CodeSynced
+  status: "True"
   reason: InterfacesObserved
-  status: "True"
-  type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+  message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+- type: Drifted
   status: "False"
-  type: Drifted
-- message: the spec passes the validator
-  reason: ValidatorPassed
+  reason: FingerprintEqual
+  message: observed facts match the synced fingerprint
+- type: SpecValid
   status: "True"
-  type: SpecValid
+  reason: ValidatorPassed
+  message: the spec passes the validator
 observed:
   files:
   - impl/assets/assets.go
@@ -20,37 +23,34 @@ observed:
   - impl/assets/dns_test.go
   - impl/assets/dnsprobe.ts
   - impl/assets/dnsshim.ts
-  fingerprint: be4c6f16907046046680aafaa15e85c525435f769125a5b14520883e0e58657b
   interfaces:
-  - codegraphId: struct:6a6e6a1cca0d3f0928da5e266ee9e2da
-    file: impl/assets/assets.go
+  - name: Set
     kind: struct
+    file: impl/assets/assets.go
     line: 12
-    name: Set
-  - codegraphId: method:459575a1ced2aec2dc09df6c846496d1
-    file: impl/assets/assets.go
+    codegraphId: struct:6a6e6a1cca0d3f0928da5e266ee9e2da
+  - name: Set.Materialise
     kind: method
+    signature: () (map[string]string, error)
+    file: impl/assets/assets.go
     line: 30
-    name: Set.Materialise
-    signature: () (map[string]string, error)
-  - codegraphId: method:621b8207809a46a163d2af9949761ea0
-    file: impl/assets/assets.go
+    codegraphId: method:459575a1ced2aec2dc09df6c846496d1
+  - name: Set.Rewrite
     kind: method
+    signature: () (map[string]string, error)
+    file: impl/assets/assets.go
     line: 44
-    name: Set.Rewrite
-    signature: () (map[string]string, error)
-  - codegraphId: method:dfdb88e0a88513d22977521f62fadc3c
-    file: impl/assets/assets.go
+    codegraphId: method:621b8207809a46a163d2af9949761ea0
+  - name: Set.Path
     kind: method
-    line: 65
-    name: Set.Path
     signature: (name string) (string, error)
-  - codegraphId: function:d3ebda2faf6210986c5ca5687c578339
-    file: impl/assets/dns.go
+    file: impl/assets/assets.go
+    line: 65
+    codegraphId: method:dfdb88e0a88513d22977521f62fadc3c
+  - name: DNSSet
     kind: function
-    line: 18
-    name: DNSSet
     signature: (runsDir string) *Set
-realizedSpecHash: aa8079cbba85fb3bcd8b341dbb93e4ecd9ad3ac52aa43bf37fe672c88693f9bd
-syncedCommit: f9e2ef3cfa3a9ae4d984768e8fce97092fe179bf
-syncedFingerprint: be4c6f16907046046680aafaa15e85c525435f769125a5b14520883e0e58657b
+    file: impl/assets/dns.go
+    line: 18
+    codegraphId: function:d3ebda2faf6210986c5ca5687c578339
+  fingerprint: be4c6f16907046046680aafaa15e85c525435f769125a5b14520883e0e58657b

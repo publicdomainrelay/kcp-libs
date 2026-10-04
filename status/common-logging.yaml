@@ -1,39 +1,39 @@
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: d291177aa9649b3089a9ccef3f20d5605ccb1ef08e5415c915f5a58cf547de4d
+realizedSpecHash: e047c051da5d59000e16121d1a292cda587bfc00a98c760a9a5ace274e4968be
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
+- type: CodeSynced
+  status: "True"
   reason: InterfacesObserved
-  status: "True"
-  type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+  message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+- type: Drifted
   status: "False"
-  type: Drifted
-- message: the spec passes the validator
-  reason: ValidatorPassed
+  reason: FingerprintEqual
+  message: observed facts match the synced fingerprint
+- type: SpecValid
   status: "True"
-  type: SpecValid
+  reason: ValidatorPassed
+  message: the spec passes the validator
 observed:
   files:
   - common/logging/logging.go
-  fingerprint: d291177aa9649b3089a9ccef3f20d5605ccb1ef08e5415c915f5a58cf547de4d
   interfaces:
-  - codegraphId: struct:e5309481f2a5ce717212c88d3d90aa51
-    file: common/logging/logging.go
+  - name: Options
     kind: struct
+    file: common/logging/logging.go
     line: 8
-    name: Options
-  - codegraphId: function:630830e31f658442858bdfe9d070a2bd
-    file: common/logging/logging.go
+    codegraphId: struct:e5309481f2a5ce717212c88d3d90aa51
+  - name: New
     kind: function
-    line: 16
-    name: New
     signature: (opts Options) *slog.Logger
-  - codegraphId: function:7e515b3fbe4a91f9d8b15bdd7d149aca
     file: common/logging/logging.go
+    line: 16
+    codegraphId: function:630830e31f658442858bdfe9d070a2bd
+  - name: Discard
     kind: function
-    line: 28
-    name: Discard
     signature: () *slog.Logger
-realizedSpecHash: e047c051da5d59000e16121d1a292cda587bfc00a98c760a9a5ace274e4968be
-syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-syncedFingerprint: d291177aa9649b3089a9ccef3f20d5605ccb1ef08e5415c915f5a58cf547de4d
+    file: common/logging/logging.go
+    line: 28
+    codegraphId: function:7e515b3fbe4a91f9d8b15bdd7d149aca
+  fingerprint: d291177aa9649b3089a9ccef3f20d5605ccb1ef08e5415c915f5a58cf547de4d

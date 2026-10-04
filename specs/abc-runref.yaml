@@ -1,20 +1,11 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
-codeRefIndex:
-- file:abc/runref/runref.go runref.go@abc/runref/runref.go
-- file:abc/runref/runref_test.go runref_test.go@abc/runref/runref_test.go
-- function:02b977ff8ed4f89bd7fb19f709f855a0 New@abc/runref/runref.go:34
-- function:b3be3bdb00e0f276639e92a391046532 AlreadyStarted@abc/runref/runref.go:83
-- method:31e9e3f14991919b8dc8c86a1ae20707 Index.Record@abc/runref/runref.go:38
-- method:a092ed399600f5b0fda4c653bab06826 Index.Lookup@abc/runref/runref.go:64
-- method:cae442026fb66407a9804c8987ffee8e Index.Forget@abc/runref/runref.go:49
-- method:f29af6e54699815a89e6dfded48853b8 Index.Keep@abc/runref/runref.go:56
-- method:f61f5a9ef40992f65bfc79298b0fc1b8 Index.Len@abc/runref/runref.go:79
-- struct:f9c19c773fc6457d35bf1a48e8d0750c Record@abc/runref/runref.go:10
 kind: SystemContext
 metadata:
   name: abc-runref
   namespace: default
 spec:
+  repository: kcp-libs
+  upstream: self
   dependsOn:
   - sc.common-expiringmap
   - sc.common-ref
@@ -26,136 +17,145 @@ spec:
     path needs, including the cases that must NOT be refused: no record, the same
     runID, a run that already started, a retry, or a recreated object that carries
     a different UID behind the same name.'
-  interfaces:
-  - file: abc/runref/runref.go
-    kind: function
-    name: AlreadyStarted
-    signature: func AlreadyStarted(known Record, found bool, current Current) bool
-  - file: abc/runref/runref.go
-    kind: struct
-    name: Current
-    signature: type Current struct { RunID string; UID string; Started bool; Retries
-      int32 }
-  - file: abc/runref/runref.go
-    kind: struct
-    name: Index
-    signature: type Index struct { entries *expiringmap.Map[string, Record] }
-  - file: abc/runref/runref.go
-    kind: method
-    name: Index.Forget
-    signature: func (i *Index) Forget(r ref.Ref)
-  - file: abc/runref/runref.go
-    kind: method
-    name: Index.Keep
-    signature: func (i *Index) Keep(r ref.Ref, runID, uid string, terminal bool, now
-      time.Time)
-  - file: abc/runref/runref.go
-    kind: method
-    name: Index.Len
-    signature: func (i *Index) Len() int
-  - file: abc/runref/runref.go
-    kind: method
-    name: Index.Lookup
-    signature: func (i *Index) Lookup(r ref.Ref) (Record, bool)
-  - file: abc/runref/runref.go
-    kind: method
-    name: Index.Record
-    signature: func (i *Index) Record(r ref.Ref, runID, uid string, now time.Time)
-  - file: abc/runref/runref.go
-    kind: function
-    name: New
-    signature: func New(ttl time.Duration) *Index
-  - file: abc/runref/runref.go
-    kind: struct
-    name: Record
-    signature: type Record struct { Ref ref.Ref; RunID string; UID string; At time.Time
-      }
-  repository: kcp-libs
   requirements:
-  - codeRefs:
-    - file:abc/runref/runref.go
-    - function:b3be3bdb00e0f276639e92a391046532
-    id: r.already-started-no-record-no-refusal
+  - id: r.already-started-no-record-no-refusal
     level: MUST
     text: AlreadyStarted returns false when found is false, when known.RunID is empty,
       or when known.RunID equals current.RunID.
-  - codeRefs:
+    codeRefs:
     - file:abc/runref/runref.go
-    - file:abc/runref/runref_test.go
     - function:b3be3bdb00e0f276639e92a391046532
-    id: r.already-started-refuses-stale-pending-copy
+  - id: r.already-started-refuses-stale-pending-copy
     level: MUST
     text: AlreadyStarted returns true only for a found record with a different non-empty
       runID against a current run that has not started, has no retries, and has no
       conflicting UID; this is the refusal of a stale Pending copy.
-  - codeRefs:
+    codeRefs:
     - file:abc/runref/runref.go
+    - file:abc/runref/runref_test.go
     - function:b3be3bdb00e0f276639e92a391046532
-    id: r.already-started-retry-not-duplicate
+  - id: r.already-started-retry-not-duplicate
     level: MUST
     text: AlreadyStarted returns false when current.Started is true or current.Retries
       > 0, so a run that has started before is retrying, not duplicating.
-  - codeRefs:
+    codeRefs:
     - file:abc/runref/runref.go
     - function:b3be3bdb00e0f276639e92a391046532
-    id: r.already-started-uid-mismatch-not-duplicate
+  - id: r.already-started-uid-mismatch-not-duplicate
     level: MUST
     text: AlreadyStarted returns false when both known.UID and current.UID are non-empty
       and differ, so a recreated object behind the same name is not refused.
-  - codeRefs:
+    codeRefs:
     - file:abc/runref/runref.go
-    - method:cae442026fb66407a9804c8987ffee8e
-    id: r.forget-deletes-by-normalized-ref
+    - function:b3be3bdb00e0f276639e92a391046532
+  - id: r.forget-deletes-by-normalized-ref
     level: MUST
     text: Index.Forget deletes every entry whose Ref equals ref.New(r.LogicalCluster,
       r.Namespace, r.Name), regardless of runID.
-  - codeRefs:
+    codeRefs:
     - file:abc/runref/runref.go
-    - method:f29af6e54699815a89e6dfded48853b8
-    id: r.keep-terminal-or-empty-runid-forgets
+    - method:cae442026fb66407a9804c8987ffee8e
+  - id: r.keep-terminal-or-empty-runid-forgets
     level: MUST
     text: Index.Keep calls Forget when terminal is true or runID is empty, and Record
       otherwise, so terminal runs leave no trace in the index.
-  - codeRefs:
+    codeRefs:
     - file:abc/runref/runref.go
-    - method:f61f5a9ef40992f65bfc79298b0fc1b8
-    id: r.len-reports-entry-count
+    - method:f29af6e54699815a89e6dfded48853b8
+  - id: r.len-reports-entry-count
     level: MUST
     text: Index.Len returns the number of live entries held by the underlying map.
-  - codeRefs:
+    codeRefs:
     - file:abc/runref/runref.go
-    - method:a092ed399600f5b0fda4c653bab06826
-    id: r.lookup-returns-first-matching-ref
+    - method:f61f5a9ef40992f65bfc79298b0fc1b8
+  - id: r.lookup-returns-first-matching-ref
     level: MUST
     text: Index.Lookup returns the first entry whose Ref equals the normalized key
       and true, or the zero Record and false when no entry matches.
-  - codeRefs:
+    codeRefs:
     - file:abc/runref/runref.go
-    - function:02b977ff8ed4f89bd7fb19f709f855a0
-    id: r.new-builds-index-with-ttl
+    - method:a092ed399600f5b0fda4c653bab06826
+  - id: r.new-builds-index-with-ttl
     level: MUST
     text: New(ttl) returns an Index backed by an expiring map with that TTL, so records
       age out without an explicit delete.
-  - codeRefs:
+    codeRefs:
     - file:abc/runref/runref.go
-    - method:31e9e3f14991919b8dc8c86a1ae20707
-    id: r.record-ignores-empty-runid
+    - function:02b977ff8ed4f89bd7fb19f709f855a0
+  - id: r.record-ignores-empty-runid
     level: MUST
     text: Index.Record with an empty runID is a no-op; nothing is stored.
-  - codeRefs:
+    codeRefs:
     - file:abc/runref/runref.go
     - method:31e9e3f14991919b8dc8c86a1ae20707
-    - struct:f9c19c773fc6457d35bf1a48e8d0750c
-    id: r.record-normalizes-ref-key
+  - id: r.record-normalizes-ref-key
     level: MUST
     text: Index.Record stores the entry under the runID, with Ref rebuilt from ref.New(r.LogicalCluster,
       r.Namespace, r.Name), so the map key and the stored Ref are the normalized triple.
-  - codeRefs:
+    codeRefs:
     - file:abc/runref/runref.go
     - method:31e9e3f14991919b8dc8c86a1ae20707
-    id: r.record-prunes-other-run-for-same-ref
+    - struct:f9c19c773fc6457d35bf1a48e8d0750c
+  - id: r.record-prunes-other-run-for-same-ref
     level: MUST
     text: Index.Record prunes any stored entry whose id differs from the new runID
       and whose Ref equals the new normalized key, so one ref keeps only the newest
       run.
-  upstream: self
+    codeRefs:
+    - file:abc/runref/runref.go
+    - method:31e9e3f14991919b8dc8c86a1ae20707
+  interfaces:
+  - name: AlreadyStarted
+    kind: function
+    signature: func AlreadyStarted(known Record, found bool, current Current) bool
+    file: abc/runref/runref.go
+  - name: Current
+    kind: struct
+    signature: type Current struct { RunID string; UID string; Started bool; Retries
+      int32 }
+    file: abc/runref/runref.go
+  - name: Index
+    kind: struct
+    signature: type Index struct { entries *expiringmap.Map[string, Record] }
+    file: abc/runref/runref.go
+  - name: Index.Forget
+    kind: method
+    signature: func (i *Index) Forget(r ref.Ref)
+    file: abc/runref/runref.go
+  - name: Index.Keep
+    kind: method
+    signature: func (i *Index) Keep(r ref.Ref, runID, uid string, terminal bool, now
+      time.Time)
+    file: abc/runref/runref.go
+  - name: Index.Len
+    kind: method
+    signature: func (i *Index) Len() int
+    file: abc/runref/runref.go
+  - name: Index.Lookup
+    kind: method
+    signature: func (i *Index) Lookup(r ref.Ref) (Record, bool)
+    file: abc/runref/runref.go
+  - name: Index.Record
+    kind: method
+    signature: func (i *Index) Record(r ref.Ref, runID, uid string, now time.Time)
+    file: abc/runref/runref.go
+  - name: New
+    kind: function
+    signature: func New(ttl time.Duration) *Index
+    file: abc/runref/runref.go
+  - name: Record
+    kind: struct
+    signature: type Record struct { Ref ref.Ref; RunID string; UID string; At time.Time
+      }
+    file: abc/runref/runref.go
+codeRefIndex:
+- file:abc/runref/runref.go runref.go@abc/runref/runref.go
+- file:abc/runref/runref_test.go runref_test.go@abc/runref/runref_test.go
+- function:02b977ff8ed4f89bd7fb19f709f855a0 New@abc/runref/runref.go:34
+- function:b3be3bdb00e0f276639e92a391046532 AlreadyStarted@abc/runref/runref.go:83
+- method:31e9e3f14991919b8dc8c86a1ae20707 Index.Record@abc/runref/runref.go:38
+- method:a092ed399600f5b0fda4c653bab06826 Index.Lookup@abc/runref/runref.go:64
+- method:cae442026fb66407a9804c8987ffee8e Index.Forget@abc/runref/runref.go:49
+- method:f29af6e54699815a89e6dfded48853b8 Index.Keep@abc/runref/runref.go:56
+- method:f61f5a9ef40992f65bfc79298b0fc1b8 Index.Len@abc/runref/runref.go:79
+- struct:f9c19c773fc6457d35bf1a48e8d0750c Record@abc/runref/runref.go:10

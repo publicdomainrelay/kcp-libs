@@ -1,64 +1,64 @@
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: a15d0a79c1172da8d0928bd09a0e45a0077ce62dfd4939ed1ed946441b482fb7
+realizedSpecHash: c31f18ea329c20f10c043656dbebbbe0566fd2836557d6417b448d4d40006e7e
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
+- type: CodeSynced
+  status: "True"
   reason: InterfacesObserved
-  status: "True"
-  type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+  message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+- type: Drifted
   status: "False"
-  type: Drifted
-- message: the spec passes the validator
-  reason: ValidatorPassed
+  reason: FingerprintEqual
+  message: observed facts match the synced fingerprint
+- type: SpecValid
   status: "True"
-  type: SpecValid
+  reason: ValidatorPassed
+  message: the spec passes the validator
 observed:
   files:
   - common/denocomputer/denocomputer.go
   - common/denocomputer/denocomputer_test.go
-  fingerprint: a15d0a79c1172da8d0928bd09a0e45a0077ce62dfd4939ed1ed946441b482fb7
   interfaces:
-  - codegraphId: type_alias:a265ac7a2b0813430059371d42a76985
-    file: common/denocomputer/denocomputer.go
+  - name: Phase
     kind: type_alias
+    file: common/denocomputer/denocomputer.go
     line: 55
-    name: Phase
-  - codegraphId: function:6e7c1837ac42c5ecd27e997607373d2d
-    file: common/denocomputer/denocomputer.go
+    codegraphId: type_alias:a265ac7a2b0813430059371d42a76985
+  - name: TerminalDenoRun
     kind: function
+    signature: (phase string) bool
+    file: common/denocomputer/denocomputer.go
     line: 75
-    name: TerminalDenoRun
-    signature: (phase string) bool
-  - codegraphId: function:0d13333d7202e69c40af4472e0f2436b
-    file: common/denocomputer/denocomputer.go
+    codegraphId: function:6e7c1837ac42c5ecd27e997607373d2d
+  - name: TerminalDenoPod
     kind: function
+    signature: (phase string) bool
+    file: common/denocomputer/denocomputer.go
     line: 79
-    name: TerminalDenoPod
-    signature: (phase string) bool
-  - codegraphId: function:36ff8f97f3450e32e33a6b3b0e493610
-    file: common/denocomputer/denocomputer.go
+    codegraphId: function:0d13333d7202e69c40af4472e0f2436b
+  - name: TerminalDenoJob
     kind: function
+    signature: (phase string) bool
+    file: common/denocomputer/denocomputer.go
     line: 83
-    name: TerminalDenoJob
-    signature: (phase string) bool
-  - codegraphId: function:0ac0b313ea9228a561bfd9f56465b4be
-    file: common/denocomputer/denocomputer.go
+    codegraphId: function:36ff8f97f3450e32e33a6b3b0e493610
+  - name: TerminalPolicyWorkflow
     kind: function
+    signature: (phase string) bool
+    file: common/denocomputer/denocomputer.go
     line: 87
-    name: TerminalPolicyWorkflow
-    signature: (phase string) bool
-  - codegraphId: function:8947f352a45e5a31be8d9bdad53c8a93
-    file: common/denocomputer/denocomputer.go
+    codegraphId: function:0ac0b313ea9228a561bfd9f56465b4be
+  - name: TerminalPolicyEngine
     kind: function
+    signature: (phase string) bool
+    file: common/denocomputer/denocomputer.go
     line: 91
-    name: TerminalPolicyEngine
-    signature: (phase string) bool
-  - codegraphId: function:67ee37b108a01a226ce8f48241d735b8
-    file: common/denocomputer/denocomputer.go
+    codegraphId: function:8947f352a45e5a31be8d9bdad53c8a93
+  - name: RunningPhase
     kind: function
-    line: 95
-    name: RunningPhase
     signature: (phase string) bool
-realizedSpecHash: c31f18ea329c20f10c043656dbebbbe0566fd2836557d6417b448d4d40006e7e
-syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-syncedFingerprint: a15d0a79c1172da8d0928bd09a0e45a0077ce62dfd4939ed1ed946441b482fb7
+    file: common/denocomputer/denocomputer.go
+    line: 95
+    codegraphId: function:67ee37b108a01a226ce8f48241d735b8
+  fingerprint: a15d0a79c1172da8d0928bd09a0e45a0077ce62dfd4939ed1ed946441b482fb7

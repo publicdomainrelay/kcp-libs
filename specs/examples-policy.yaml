@@ -1,4 +1,83 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+kind: SystemContext
+metadata:
+  name: examples-policy
+  namespace: default
+spec:
+  repository: kcp-libs
+  upstream: self
+  dependsOn:
+  - sc.abc-policy
+  - sc.impl-policyclient
+  intent: 'This context documents the examples/policy package: the runnable demonstration
+    of the policy engine surface. It exists so the exported behaviour of that example
+    — the engine''s URL accessor, its Close, its submitted-run counter, its HTTP handler,
+    and the Run entry point — is described and anchored to code, letting a reader
+    or a tool reason about what the example guarantees without reading every line.'
+  requirements:
+  - id: r.engine-close
+    level: MUST
+    text: engine.Close must shut down the embedded HTTP server and must return the
+      error from that server's Close.
+    codeRefs:
+    - file:examples/policy/engine.go
+    - method:8efb924d3babc92148f8bda3b2d45469
+  - id: r.engine-http-handler
+    level: MUST
+    text: engine.ServeHTTP must take an http.ResponseWriter and an *http.Request,
+      so the engine satisfies http.Handler and can be mounted on a net/http server.
+    codeRefs:
+    - file:examples/policy/engine.go
+    - method:dd19ad85f3bd4cb7b58e6d21d7d16180
+  - id: r.engine-submit-count
+    level: MUST
+    text: engine.Submits must return the recorded submit count, read while holding
+      the engine mutex, so concurrent callers see a consistent value.
+    codeRefs:
+    - file:examples/policy/engine.go
+    - method:5e7dd0b9cb49339a8dce6360d81790ab
+  - id: r.engine-url
+    level: MUST
+    text: engine.URL must return the address the engine's own HTTP server listens
+      on, so a caller can hand the endpoint to the policy client.
+    codeRefs:
+    - file:examples/policy/engine.go
+    - method:8adc047283ab850bffddf2fa6d30a23c
+  - id: r.example-tested
+    level: MAY
+    text: The example may carry a test file, main_test.go, exercising the Run entry
+      point and the engine.
+    codeRefs:
+    - file:examples/policy/main_test.go
+  - id: r.run-entry-point
+    level: MUST
+    text: Run must be the example's entry point, taking a context.Context and an io.Writer
+      and returning an error; it must use the engine's URL, Close and Submits methods
+      to drive and verify the run.
+    codeRefs:
+    - file:examples/policy/main.go
+    - function:4cf3070e763136f1251e403942485497
+  interfaces:
+  - name: Run
+    kind: function
+    signature: (ctx context.Context, out io.Writer) error
+    file: examples/policy/main.go
+  - name: engine.Close
+    kind: method
+    signature: () error
+    file: examples/policy/engine.go
+  - name: engine.ServeHTTP
+    kind: method
+    signature: (w http.ResponseWriter, r *http.Request)
+    file: examples/policy/engine.go
+  - name: engine.Submits
+    kind: method
+    signature: () int
+    file: examples/policy/engine.go
+  - name: engine.URL
+    kind: method
+    signature: () string
+    file: examples/policy/engine.go
 codeRefIndex:
 - file:examples/policy/engine.go engine.go@examples/policy/engine.go
 - file:examples/policy/main.go main.go@examples/policy/main.go
@@ -8,82 +87,3 @@ codeRefIndex:
 - method:8adc047283ab850bffddf2fa6d30a23c engine.URL@examples/policy/engine.go:58
 - method:8efb924d3babc92148f8bda3b2d45469 engine.Close@examples/policy/engine.go:62
 - method:dd19ad85f3bd4cb7b58e6d21d7d16180 engine.ServeHTTP@examples/policy/engine.go:72
-kind: SystemContext
-metadata:
-  name: examples-policy
-  namespace: default
-spec:
-  dependsOn:
-  - sc.abc-policy
-  - sc.impl-policyclient
-  intent: 'This context documents the examples/policy package: the runnable demonstration
-    of the policy engine surface. It exists so the exported behaviour of that example
-    — the engine''s URL accessor, its Close, its submitted-run counter, its HTTP handler,
-    and the Run entry point — is described and anchored to code, letting a reader
-    or a tool reason about what the example guarantees without reading every line.'
-  interfaces:
-  - file: examples/policy/main.go
-    kind: function
-    name: Run
-    signature: (ctx context.Context, out io.Writer) error
-  - file: examples/policy/engine.go
-    kind: method
-    name: engine.Close
-    signature: () error
-  - file: examples/policy/engine.go
-    kind: method
-    name: engine.ServeHTTP
-    signature: (w http.ResponseWriter, r *http.Request)
-  - file: examples/policy/engine.go
-    kind: method
-    name: engine.Submits
-    signature: () int
-  - file: examples/policy/engine.go
-    kind: method
-    name: engine.URL
-    signature: () string
-  repository: kcp-libs
-  requirements:
-  - codeRefs:
-    - file:examples/policy/engine.go
-    - method:8efb924d3babc92148f8bda3b2d45469
-    id: r.engine-close
-    level: MUST
-    text: engine.Close must shut down the embedded HTTP server and must return the
-      error from that server's Close.
-  - codeRefs:
-    - file:examples/policy/engine.go
-    - method:dd19ad85f3bd4cb7b58e6d21d7d16180
-    id: r.engine-http-handler
-    level: MUST
-    text: engine.ServeHTTP must take an http.ResponseWriter and an *http.Request,
-      so the engine satisfies http.Handler and can be mounted on a net/http server.
-  - codeRefs:
-    - file:examples/policy/engine.go
-    - method:5e7dd0b9cb49339a8dce6360d81790ab
-    id: r.engine-submit-count
-    level: MUST
-    text: engine.Submits must return the recorded submit count, read while holding
-      the engine mutex, so concurrent callers see a consistent value.
-  - codeRefs:
-    - file:examples/policy/engine.go
-    - method:8adc047283ab850bffddf2fa6d30a23c
-    id: r.engine-url
-    level: MUST
-    text: engine.URL must return the address the engine's own HTTP server listens
-      on, so a caller can hand the endpoint to the policy client.
-  - codeRefs:
-    - file:examples/policy/main_test.go
-    id: r.example-tested
-    level: MAY
-    text: The example may carry a test file, main_test.go, exercising the Run entry
-      point and the engine.
-  - codeRefs:
-    - file:examples/policy/main.go
-    - function:4cf3070e763136f1251e403942485497
-    id: r.run-entry-point
-    level: MUST
-    text: Run must be the example's entry point, taking a context.Context and an io.Writer
-      and returning an error; it must use the engine's URL, Close and Submits methods
-      to drive and verify the run.
-  upstream: self

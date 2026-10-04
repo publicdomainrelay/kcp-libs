@@ -1,11 +1,11 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
-codeRefIndex:
-- file:internal/boundaries/boundaries_test.go boundaries_test.go@internal/boundaries/boundaries_test.go
 kind: SystemContext
 metadata:
   name: internal-boundaries
   namespace: default
 spec:
+  repository: kcp-libs
+  upstream: self
   intent: This context exists to keep the kcp-libs module's ABC-style layering honest
     by test rather than by convention. The tests read the real import graph from the
     Go toolchain, so any new import that crosses a layer boundary, points at internal
@@ -13,51 +13,48 @@ spec:
     leaf layer fails the build. The spec records the invariants the test file enforces
     and the vocabulary (layers and their ranks) it relies on, so the boundaries package
     can be understood without re-deriving the rules from the Go source.
-  repository: kcp-libs
   requirements:
-  - codeRefs:
-    - file:internal/boundaries/boundaries_test.go
-    id: r.abc-imports-common-only
+  - id: r.abc-imports-common-only
     level: MUST
     text: A package under the module's abc/ subtree MUST import module-local packages
       from the common/ subtree only, counting both Imports and TestImports; any other
       module-local import fails with `%s imports %s; the abc layer may import common
       only`.
-  - codeRefs:
+    codeRefs:
     - file:internal/boundaries/boundaries_test.go
-    id: r.capture-import-graph
+  - id: r.capture-import-graph
     level: MUST
     text: The boundaries test MUST enumerate the module's packages by running `go
       list -json ./...` with working directory ../.. and decoding the stream into
       listEntry values carrying ImportPath, Imports, TestImports and Name; a failure
       to run go list or decode its output MUST fail the test.
-  - codeRefs:
+    codeRefs:
     - file:internal/boundaries/boundaries_test.go
-    id: r.common-is-leaf
+  - id: r.common-is-leaf
     level: MUST
     text: A package under the module's common/ subtree MUST NOT import any other module-local
       package, in either Imports or TestImports; a violation fails with `%s imports
       %s; the common layer must be leaf packages`.
-  - codeRefs:
+    codeRefs:
     - file:internal/boundaries/boundaries_test.go
-    id: r.every-package-in-a-layer
+  - id: r.every-package-in-a-layer
     level: MUST
     text: Every package whose import path is not .../internal/boundaries MUST resolve
       to one of the recognised layers common, abc, impl, factory, examples, cmd or
       internal; an unrecognised importer fails with `%s is not in a recognised layer`,
       and an unrecognised module-local import fails with `%s imports %s, which is
       not in a recognised layer`.
-  - codeRefs:
+    codeRefs:
     - file:internal/boundaries/boundaries_test.go
-    id: r.layer-classification
+  - id: r.layer-classification
     level: MUST
     text: Layer classification MUST use the first path segment after the module prefix
       github.com/publicdomainrelay/kcp-libs/ and MUST return empty for paths outside
       the module or with no such segment; rank MUST return the fixed numeric position
       of a known layer and -1 for an unknown one.
-  - codeRefs:
+    codeRefs:
     - file:internal/boundaries/boundaries_test.go
-    id: r.one-way-layer-dependencies
+  - id: r.one-way-layer-dependencies
     level: MUST
     text: For module-local imports, a package in any layer other than internal MUST
       NOT import a package whose layer rank is greater than or equal to its own; when
@@ -65,11 +62,14 @@ spec:
       0, abc 1, impl 2, factory 3, examples 4, cmd 4, internal 5, so dependencies
       flow common <- abc <- impl <- factory <- examples and a layer may not import
       its own.
-  - codeRefs:
+    codeRefs:
     - file:internal/boundaries/boundaries_test.go
-    id: r.test-support-not-in-production
+  - id: r.test-support-not-in-production
     level: MUST
     text: A package whose import path is outside the module's internal/ and examples/
       subtrees MUST NOT import any package under the module's internal/ subtree; a
       violation fails with the message `%s imports %s; test support belongs in tests`.
-  upstream: self
+    codeRefs:
+    - file:internal/boundaries/boundaries_test.go
+codeRefIndex:
+- file:internal/boundaries/boundaries_test.go boundaries_test.go@internal/boundaries/boundaries_test.go

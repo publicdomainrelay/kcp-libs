@@ -1,54 +1,54 @@
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: a5ba8b73b8afcca1d31b33f4a820321242c05c2651d15c166731aafd0c6f32ba
+realizedSpecHash: 49a8d916dbe7aa179a0974f0dd040571bfac4777b23d6786bc6f8a42540efafc
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
+- type: CodeSynced
+  status: "True"
   reason: InterfacesObserved
-  status: "True"
-  type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+  message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+- type: Drifted
   status: "False"
-  type: Drifted
-- message: the spec passes the validator
-  reason: ValidatorPassed
+  reason: FingerprintEqual
+  message: observed facts match the synced fingerprint
+- type: SpecValid
   status: "True"
-  type: SpecValid
+  reason: ValidatorPassed
+  message: the spec passes the validator
 observed:
   files:
   - examples/policy/engine.go
   - examples/policy/main.go
   - examples/policy/main_test.go
-  fingerprint: a5ba8b73b8afcca1d31b33f4a820321242c05c2651d15c166731aafd0c6f32ba
   interfaces:
-  - codegraphId: method:8adc047283ab850bffddf2fa6d30a23c
-    file: examples/policy/engine.go
+  - name: engine.URL
     kind: method
-    line: 58
-    name: engine.URL
     signature: () string
-  - codegraphId: method:8efb924d3babc92148f8bda3b2d45469
     file: examples/policy/engine.go
+    line: 58
+    codegraphId: method:8adc047283ab850bffddf2fa6d30a23c
+  - name: engine.Close
     kind: method
-    line: 62
-    name: engine.Close
     signature: () error
-  - codegraphId: method:5e7dd0b9cb49339a8dce6360d81790ab
     file: examples/policy/engine.go
+    line: 62
+    codegraphId: method:8efb924d3babc92148f8bda3b2d45469
+  - name: engine.Submits
     kind: method
-    line: 66
-    name: engine.Submits
     signature: () int
-  - codegraphId: method:dd19ad85f3bd4cb7b58e6d21d7d16180
     file: examples/policy/engine.go
+    line: 66
+    codegraphId: method:5e7dd0b9cb49339a8dce6360d81790ab
+  - name: engine.ServeHTTP
     kind: method
-    line: 72
-    name: engine.ServeHTTP
     signature: (w http.ResponseWriter, r *http.Request)
-  - codegraphId: function:4cf3070e763136f1251e403942485497
-    file: examples/policy/main.go
+    file: examples/policy/engine.go
+    line: 72
+    codegraphId: method:dd19ad85f3bd4cb7b58e6d21d7d16180
+  - name: Run
     kind: function
-    line: 18
-    name: Run
     signature: (ctx context.Context, out io.Writer) error
-realizedSpecHash: 49a8d916dbe7aa179a0974f0dd040571bfac4777b23d6786bc6f8a42540efafc
-syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-syncedFingerprint: a5ba8b73b8afcca1d31b33f4a820321242c05c2651d15c166731aafd0c6f32ba
+    file: examples/policy/main.go
+    line: 18
+    codegraphId: function:4cf3070e763136f1251e403942485497
+  fingerprint: a5ba8b73b8afcca1d31b33f4a820321242c05c2651d15c166731aafd0c6f32ba

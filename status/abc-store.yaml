@@ -1,92 +1,92 @@
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: 146218f9646f5c53c6b4d4b5a4a86fa96d0b78c102117b09ece4b0337aaf1f6d
+realizedSpecHash: 21094dce36aaedff142135d74f1c88d132ac4f34425916f807475b4aada15f0c
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
+- type: CodeSynced
+  status: "True"
   reason: InterfacesObserved
-  status: "True"
-  type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+  message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+- type: Drifted
   status: "False"
-  type: Drifted
-- message: the spec passes the validator
-  reason: ValidatorPassed
+  reason: FingerprintEqual
+  message: observed facts match the synced fingerprint
+- type: SpecValid
   status: "True"
-  type: SpecValid
+  reason: ValidatorPassed
+  message: the spec passes the validator
 observed:
   files:
   - abc/store/store.go
   - abc/store/store_test.go
-  fingerprint: 146218f9646f5c53c6b4d4b5a4a86fa96d0b78c102117b09ece4b0337aaf1f6d
   interfaces:
-  - codegraphId: function:989c182ec2114a55ce5c64d494875860
-    file: abc/store/store.go
+  - name: Unchanged
     kind: function
-    line: 12
-    name: Unchanged
     signature: (a, b any) bool
-  - codegraphId: interface:35f2d3c152cb806dafbc20869a2b1645
     file: abc/store/store.go
+    line: 12
+    codegraphId: function:989c182ec2114a55ce5c64d494875860
+  - name: Reader
     kind: interface
+    file: abc/store/store.go
     line: 24
-    name: Reader
-  - codegraphId: method:e52cadf103fd9081db57993476b63580
-    file: abc/store/store.go
+    codegraphId: interface:35f2d3c152cb806dafbc20869a2b1645
+  - name: Reader.Get
     kind: method
-    line: 25
-    name: Reader.Get
     signature: (ctx context.Context, r ref.Ref) (*T, error)
-  - codegraphId: method:dd7423535cde997b6ddc93c5ec334c4b
     file: abc/store/store.go
+    line: 25
+    codegraphId: method:e52cadf103fd9081db57993476b63580
+  - name: Reader.List
     kind: method
-    line: 27
-    name: Reader.List
     signature: (ctx context.Context, logicalCluster string) ([]T, error)
-  - codegraphId: interface:24a75b1e85b321842f9208ef68c555dd
     file: abc/store/store.go
+    line: 27
+    codegraphId: method:dd7423535cde997b6ddc93c5ec334c4b
+  - name: Writer
     kind: interface
+    file: abc/store/store.go
     line: 30
-    name: Writer
-  - codegraphId: method:0c58430aa89b1920a3744d460c85b616
-    file: abc/store/store.go
+    codegraphId: interface:24a75b1e85b321842f9208ef68c555dd
+  - name: Writer.Create
     kind: method
-    line: 31
-    name: Writer.Create
     signature: (ctx context.Context, logicalCluster string, obj *T) error
-  - codegraphId: method:b66a329085f8ae0870f5487662772dd4
     file: abc/store/store.go
+    line: 31
+    codegraphId: method:0c58430aa89b1920a3744d460c85b616
+  - name: Writer.Delete
     kind: method
-    line: 33
-    name: Writer.Delete
     signature: (ctx context.Context, r ref.Ref) error
-  - codegraphId: method:fbb58fe6aca56610baea0a33ce6e3d5f
     file: abc/store/store.go
+    line: 33
+    codegraphId: method:b66a329085f8ae0870f5487662772dd4
+  - name: Writer.PatchStatus
     kind: method
-    line: 35
-    name: Writer.PatchStatus
     signature: (ctx context.Context, r ref.Ref, patch []byte) error
-  - codegraphId: method:cf43c7d659eb7321032b9dd58fe618c7
     file: abc/store/store.go
+    line: 35
+    codegraphId: method:fbb58fe6aca56610baea0a33ce6e3d5f
+  - name: Writer.RemoveFinalizer
     kind: method
-    line: 37
-    name: Writer.RemoveFinalizer
     signature: (ctx context.Context, r ref.Ref, finalizer string) error
-  - codegraphId: interface:9d5d8b965e6b6d107bc98f738bd212ac
     file: abc/store/store.go
+    line: 37
+    codegraphId: method:cf43c7d659eb7321032b9dd58fe618c7
+  - name: Resource
     kind: interface
+    file: abc/store/store.go
     line: 40
-    name: Resource
-  - codegraphId: interface:60623c60df0bde883df69e0a6fd8778d
-    file: abc/store/store.go
+    codegraphId: interface:9d5d8b965e6b6d107bc98f738bd212ac
+  - name: TokenMinter
     kind: interface
-    line: 46
-    name: TokenMinter
-  - codegraphId: method:1d478157f0c21fec12ff68cca5afa4d8
     file: abc/store/store.go
+    line: 46
+    codegraphId: interface:60623c60df0bde883df69e0a6fd8778d
+  - name: TokenMinter.MintServiceAccountToken
     kind: method
-    line: 47
-    name: TokenMinter.MintServiceAccountToken
     signature: (ctx context.Context, logicalCluster, namespace, name string, ttl time.Duration)
       (string, error)
-realizedSpecHash: 21094dce36aaedff142135d74f1c88d132ac4f34425916f807475b4aada15f0c
-syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-syncedFingerprint: 146218f9646f5c53c6b4d4b5a4a86fa96d0b78c102117b09ece4b0337aaf1f6d
+    file: abc/store/store.go
+    line: 47
+    codegraphId: method:1d478157f0c21fec12ff68cca5afa4d8
+  fingerprint: 146218f9646f5c53c6b4d4b5a4a86fa96d0b78c102117b09ece4b0337aaf1f6d

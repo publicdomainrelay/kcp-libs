@@ -1,75 +1,75 @@
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: 9507bb1af103d77777996e8721bf31e436d53f131d16287076439df8d208c1be
+realizedSpecHash: a0af07240401333bd28e7769767f08fdbabb47fa96ce2fbec2dd4a1d81123d5c
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
+- type: CodeSynced
+  status: "True"
   reason: InterfacesObserved
-  status: "True"
-  type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+  message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+- type: Drifted
   status: "False"
-  type: Drifted
-- message: the spec passes the validator
-  reason: ValidatorPassed
+  reason: FingerprintEqual
+  message: observed facts match the synced fingerprint
+- type: SpecValid
   status: "True"
-  type: SpecValid
+  reason: ValidatorPassed
+  message: the spec passes the validator
 observed:
   files:
   - abc/joballoc/joballoc.go
   - abc/joballoc/joballoc_test.go
-  fingerprint: 9507bb1af103d77777996e8721bf31e436d53f131d16287076439df8d208c1be
   interfaces:
-  - codegraphId: struct:c6c45587967912c642f434fc5c395fac
-    file: abc/joballoc/joballoc.go
+  - name: Allocation
     kind: struct
+    file: abc/joballoc/joballoc.go
     line: 10
-    name: Allocation
-  - codegraphId: struct:81a3d6c6679a07f9c85fcbb079cd24ef
-    file: abc/joballoc/joballoc.go
+    codegraphId: struct:c6c45587967912c642f434fc5c395fac
+  - name: Allocator
     kind: struct
+    file: abc/joballoc/joballoc.go
     line: 16
-    name: Allocator
-  - codegraphId: function:e5835aa23953e8fe5e8ba0521c6f6305
-    file: abc/joballoc/joballoc.go
+    codegraphId: struct:81a3d6c6679a07f9c85fcbb079cd24ef
+  - name: New
     kind: function
-    line: 20
-    name: New
     signature: (ttl time.Duration) *Allocator
-  - codegraphId: method:1d809a0f9cc0db66dd09568aab52e10e
     file: abc/joballoc/joballoc.go
+    line: 20
+    codegraphId: function:e5835aa23953e8fe5e8ba0521c6f6305
+  - name: Allocator.Allocate
     kind: method
-    line: 24
-    name: Allocator.Allocate
     signature: (r ref.Ref, names []string, now time.Time)
-  - codegraphId: method:2fe2fe5409de2aff6260db2ad57424e1
     file: abc/joballoc/joballoc.go
+    line: 24
+    codegraphId: method:1d809a0f9cc0db66dd09568aab52e10e
+  - name: Allocator.Names
     kind: method
-    line: 35
-    name: Allocator.Names
     signature: (r ref.Ref, now time.Time) []string
-  - codegraphId: method:9c2e809f72d7951e74cf7925860610ec
     file: abc/joballoc/joballoc.go
+    line: 35
+    codegraphId: method:2fe2fe5409de2aff6260db2ad57424e1
+  - name: Allocator.Pending
     kind: method
-    line: 47
-    name: Allocator.Pending
     signature: (r ref.Ref, observed []string, now time.Time) []string
-  - codegraphId: method:10aee9a9b59c82c429e59eda7063cff2
     file: abc/joballoc/joballoc.go
+    line: 47
+    codegraphId: method:9c2e809f72d7951e74cf7925860610ec
+  - name: Allocator.Forget
     kind: method
-    line: 67
-    name: Allocator.Forget
     signature: (r ref.Ref)
-  - codegraphId: method:99144fd4f43e31bdffe2206a3a99a050
     file: abc/joballoc/joballoc.go
+    line: 67
+    codegraphId: method:10aee9a9b59c82c429e59eda7063cff2
+  - name: Allocator.Len
     kind: method
-    line: 71
-    name: Allocator.Len
     signature: () int
-  - codegraphId: function:3f2d8c8fe1fe9a1ffe2aec6ae9cb21b1
     file: abc/joballoc/joballoc.go
+    line: 71
+    codegraphId: method:99144fd4f43e31bdffe2206a3a99a050
+  - name: MergeNames
     kind: function
-    line: 75
-    name: MergeNames
     signature: (groups ...[]string) []string
-realizedSpecHash: a0af07240401333bd28e7769767f08fdbabb47fa96ce2fbec2dd4a1d81123d5c
-syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-syncedFingerprint: 9507bb1af103d77777996e8721bf31e436d53f131d16287076439df8d208c1be
+    file: abc/joballoc/joballoc.go
+    line: 75
+    codegraphId: function:3f2d8c8fe1fe9a1ffe2aec6ae9cb21b1
+  fingerprint: 9507bb1af103d77777996e8721bf31e436d53f131d16287076439df8d208c1be

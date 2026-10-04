@@ -1,29 +1,29 @@
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: 716b8dee84234787d3493b101d1d71e70c6765f5df72112d5870cbbb783a9ee5
+realizedSpecHash: 2a8a01ef2c15c5fb1a3a73fad49a8bf99703fa3a5e4eefe04a8653b9a67b1707
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
+- type: CodeSynced
+  status: "True"
   reason: InterfacesObserved
-  status: "True"
-  type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+  message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+- type: Drifted
   status: "False"
-  type: Drifted
-- message: the spec passes the validator
-  reason: ValidatorPassed
+  reason: FingerprintEqual
+  message: observed facts match the synced fingerprint
+- type: SpecValid
   status: "True"
-  type: SpecValid
+  reason: ValidatorPassed
+  message: the spec passes the validator
 observed:
   files:
   - common/clientlimit/clientlimit.go
   - common/clientlimit/clientlimit_test.go
-  fingerprint: 716b8dee84234787d3493b101d1d71e70c6765f5df72112d5870cbbb783a9ee5
   interfaces:
-  - codegraphId: function:67bc041de773d39e4803a9795f096d96
-    file: common/clientlimit/clientlimit.go
+  - name: Apply
     kind: function
-    line: 9
-    name: Apply
     signature: (cfg *rest.Config, qps float32, burst int) *rest.Config
-realizedSpecHash: 2a8a01ef2c15c5fb1a3a73fad49a8bf99703fa3a5e4eefe04a8653b9a67b1707
-syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-syncedFingerprint: 716b8dee84234787d3493b101d1d71e70c6765f5df72112d5870cbbb783a9ee5
+    file: common/clientlimit/clientlimit.go
+    line: 9
+    codegraphId: function:67bc041de773d39e4803a9795f096d96
+  fingerprint: 716b8dee84234787d3493b101d1d71e70c6765f5df72112d5870cbbb783a9ee5

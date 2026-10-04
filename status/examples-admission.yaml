@@ -1,48 +1,48 @@
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: 5e60d39798956a1481ad6d9cac338e793d3cd4fd79476f9d9ed982303f6eb75a
+realizedSpecHash: 6462aee62e4ae266641a60d028c63cb97746f64d2871b414f7b0fdd2149e1c3a
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
+- type: CodeSynced
+  status: "True"
   reason: InterfacesObserved
-  status: "True"
-  type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+  message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+- type: Drifted
   status: "False"
-  type: Drifted
-- message: the spec passes the validator
-  reason: ValidatorPassed
+  reason: FingerprintEqual
+  message: observed facts match the synced fingerprint
+- type: SpecValid
   status: "True"
-  type: SpecValid
+  reason: ValidatorPassed
+  message: the spec passes the validator
 observed:
   files:
   - examples/admission/main.go
   - examples/admission/main_test.go
-  fingerprint: 5e60d39798956a1481ad6d9cac338e793d3cd4fd79476f9d9ed982303f6eb75a
   interfaces:
-  - codegraphId: method:9391ce08b0aaa1ca190f09656b2de077
-    file: examples/admission/main.go
+  - name: source.Parent
     kind: method
-    line: 62
-    name: source.Parent
     signature: (ctx context.Context, run queue.Run) (ref.Ref, bool, error)
-  - codegraphId: method:e222d2ede890130c86294ba108430575
     file: examples/admission/main.go
+    line: 62
+    codegraphId: method:9391ce08b0aaa1ca190f09656b2de077
+  - name: source.Runs
     kind: method
-    line: 74
-    name: source.Runs
     signature: (ctx context.Context, parent ref.Ref) ([]queue.Run, error)
-  - codegraphId: method:4b1c829db1dd2db486e75edae8ec99f8
     file: examples/admission/main.go
+    line: 74
+    codegraphId: method:e222d2ede890130c86294ba108430575
+  - name: source.Capacity
     kind: method
-    line: 95
-    name: source.Capacity
     signature: (ctx context.Context, parent ref.Ref) (queue.Capacity, *queue.Blocker,
       error)
-  - codegraphId: function:382c144be35e7a3b04857018760f4c2b
     file: examples/admission/main.go
+    line: 95
+    codegraphId: method:4b1c829db1dd2db486e75edae8ec99f8
+  - name: Run
     kind: function
-    line: 126
-    name: Run
     signature: (ctx context.Context, out io.Writer) error
-realizedSpecHash: 6462aee62e4ae266641a60d028c63cb97746f64d2871b414f7b0fdd2149e1c3a
-syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-syncedFingerprint: 5e60d39798956a1481ad6d9cac338e793d3cd4fd79476f9d9ed982303f6eb75a
+    file: examples/admission/main.go
+    line: 126
+    codegraphId: function:382c144be35e7a3b04857018760f4c2b
+  fingerprint: 5e60d39798956a1481ad6d9cac338e793d3cd4fd79476f9d9ed982303f6eb75a

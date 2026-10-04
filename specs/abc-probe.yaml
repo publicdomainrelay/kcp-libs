@@ -1,4 +1,121 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+kind: SystemContext
+metadata:
+  name: abc-probe
+  namespace: default
+spec:
+  repository: kcp-libs
+  upstream: self
+  intent: 'This context exists to specify the consecutive-failure probe abstraction:
+    a shared, concurrency-safe place where repeated observations about a named probe
+    key accumulate into a trip/no-trip decision. It is deliberately narrow, holding
+    only counting and threshold normalization, so that callers decide what a key means
+    and what tripping it should do. The behavior encoded here, that a success resets
+    the count, that a new run ID restarts the count, and that keys are independent,
+    is what the tests pin down.'
+  requirements:
+  - id: r.counter-records-run-and-failures
+    level: MUST
+    text: A Counter must carry the RunID of the workload instance it describes and
+      the number of consecutive Failures observed for it.
+    codeRefs:
+    - file:abc/probe/probe.go
+    - struct:c82813d1c5f66d076eef090321523676
+  - id: r.effective-threshold-defaults-to-one
+    level: MUST
+    text: EffectiveThreshold must return the supplied threshold when it is positive
+      and fall back to a default of one when it is zero or negative.
+    codeRefs:
+    - file:abc/probe/probe.go
+    - function:4fa0354f183a097615e79c3cd44dee84
+  - id: r.forget-drops-a-key
+    level: MUST
+    text: Tracker.Forget must remove the counter held for the given key, whether or
+      not that key is currently present.
+    codeRefs:
+    - file:abc/probe/probe.go
+    - method:6e9f3e9deecbcb4ec14db06af7386ac7
+  - id: r.keys-are-independent
+    level: MUST
+    text: Each probe key must keep its own counter, so failures recorded under one
+      key never affect the count or the trip decision of another key.
+    codeRefs:
+    - file:abc/probe/probe_test.go
+    - method:3c2f19df0b852dd0e9aafecfd9d631a2
+  - id: r.len-reports-key-count
+    level: MUST
+    text: Tracker.Len must report the number of keys currently held by the tracker.
+    codeRefs:
+    - file:abc/probe/probe.go
+    - method:6bdac2559baf52a89854a4b785722987
+  - id: r.new-run-restarts-count
+    level: MUST
+    text: Tracker.Record must detect a run ID that differs from the stored one and
+      restart that key's count from zero, so a restarted workload is not judged by
+      its predecessor's failures.
+    codeRefs:
+    - file:abc/probe/probe_test.go
+    - method:3c2f19df0b852dd0e9aafecfd9d631a2
+  - id: r.newtracker-returns-empty-tracker
+    level: MUST
+    text: NewTracker must return a Tracker with an initialized, empty counter map,
+      ready for use without further setup.
+    codeRefs:
+    - file:abc/probe/probe.go
+    - function:dd53e30fa995268962209545381294f4
+  - id: r.record-trips-at-threshold
+    level: MUST
+    text: Tracker.Record must increment the failure count for the key on a failed
+      observation and return true only when the count reaches the threshold, so failures
+      below the threshold return false.
+    codeRefs:
+    - file:abc/probe/probe_test.go
+    - method:3c2f19df0b852dd0e9aafecfd9d631a2
+  - id: r.success-resets-count
+    level: MUST
+    text: Tracker.Record must reset the consecutive failure count to zero on a passed
+      observation and return false, so the next failure starts counting from one again.
+    codeRefs:
+    - file:abc/probe/probe_test.go
+    - method:3c2f19df0b852dd0e9aafecfd9d631a2
+  - id: r.tracker-guards-its-map
+    level: MUST
+    text: Tracker must hold its counters in a map keyed by the probe key string and
+      guard every access with a mutex, so Record, Forget and Len are safe to call
+      concurrently.
+    codeRefs:
+    - file:abc/probe/probe.go
+    - struct:455c909dc9384fcb23e3388b626fe2ed
+  interfaces:
+  - name: Counter
+    kind: struct
+    signature: "type Counter struct {\n\tRunID string\n\n\tFailures int\n}"
+    file: abc/probe/probe.go
+  - name: EffectiveThreshold
+    kind: function
+    signature: func EffectiveThreshold(threshold int32) int32
+    file: abc/probe/probe.go
+  - name: NewTracker
+    kind: function
+    signature: func NewTracker() *Tracker
+    file: abc/probe/probe.go
+  - name: Tracker
+    kind: struct
+    signature: "type Tracker struct {\n\tmu sync.Mutex\n\n\tcounters map[string]Counter\n}"
+    file: abc/probe/probe.go
+  - name: Tracker.Forget
+    kind: method
+    signature: func (t *Tracker) Forget(key string)
+    file: abc/probe/probe.go
+  - name: Tracker.Len
+    kind: method
+    signature: func (t *Tracker) Len() int
+    file: abc/probe/probe.go
+  - name: Tracker.Record
+    kind: method
+    signature: func (t *Tracker) Record(key, runID string, passed bool, threshold
+      int32) bool
+    file: abc/probe/probe.go
 codeRefIndex:
 - file:abc/probe/probe.go probe.go@abc/probe/probe.go
 - file:abc/probe/probe_test.go probe_test.go@abc/probe/probe_test.go
@@ -9,120 +126,3 @@ codeRefIndex:
 - method:6e9f3e9deecbcb4ec14db06af7386ac7 Tracker.Forget@abc/probe/probe.go:39
 - struct:455c909dc9384fcb23e3388b626fe2ed Tracker@abc/probe/probe.go:13
 - struct:c82813d1c5f66d076eef090321523676 Counter@abc/probe/probe.go:7
-kind: SystemContext
-metadata:
-  name: abc-probe
-  namespace: default
-spec:
-  intent: 'This context exists to specify the consecutive-failure probe abstraction:
-    a shared, concurrency-safe place where repeated observations about a named probe
-    key accumulate into a trip/no-trip decision. It is deliberately narrow, holding
-    only counting and threshold normalization, so that callers decide what a key means
-    and what tripping it should do. The behavior encoded here, that a success resets
-    the count, that a new run ID restarts the count, and that keys are independent,
-    is what the tests pin down.'
-  interfaces:
-  - file: abc/probe/probe.go
-    kind: struct
-    name: Counter
-    signature: "type Counter struct {\n\tRunID string\n\n\tFailures int\n}"
-  - file: abc/probe/probe.go
-    kind: function
-    name: EffectiveThreshold
-    signature: func EffectiveThreshold(threshold int32) int32
-  - file: abc/probe/probe.go
-    kind: function
-    name: NewTracker
-    signature: func NewTracker() *Tracker
-  - file: abc/probe/probe.go
-    kind: struct
-    name: Tracker
-    signature: "type Tracker struct {\n\tmu sync.Mutex\n\n\tcounters map[string]Counter\n}"
-  - file: abc/probe/probe.go
-    kind: method
-    name: Tracker.Forget
-    signature: func (t *Tracker) Forget(key string)
-  - file: abc/probe/probe.go
-    kind: method
-    name: Tracker.Len
-    signature: func (t *Tracker) Len() int
-  - file: abc/probe/probe.go
-    kind: method
-    name: Tracker.Record
-    signature: func (t *Tracker) Record(key, runID string, passed bool, threshold
-      int32) bool
-  repository: kcp-libs
-  requirements:
-  - codeRefs:
-    - file:abc/probe/probe.go
-    - struct:c82813d1c5f66d076eef090321523676
-    id: r.counter-records-run-and-failures
-    level: MUST
-    text: A Counter must carry the RunID of the workload instance it describes and
-      the number of consecutive Failures observed for it.
-  - codeRefs:
-    - file:abc/probe/probe.go
-    - function:4fa0354f183a097615e79c3cd44dee84
-    id: r.effective-threshold-defaults-to-one
-    level: MUST
-    text: EffectiveThreshold must return the supplied threshold when it is positive
-      and fall back to a default of one when it is zero or negative.
-  - codeRefs:
-    - file:abc/probe/probe.go
-    - method:6e9f3e9deecbcb4ec14db06af7386ac7
-    id: r.forget-drops-a-key
-    level: MUST
-    text: Tracker.Forget must remove the counter held for the given key, whether or
-      not that key is currently present.
-  - codeRefs:
-    - file:abc/probe/probe_test.go
-    - method:3c2f19df0b852dd0e9aafecfd9d631a2
-    id: r.keys-are-independent
-    level: MUST
-    text: Each probe key must keep its own counter, so failures recorded under one
-      key never affect the count or the trip decision of another key.
-  - codeRefs:
-    - file:abc/probe/probe.go
-    - method:6bdac2559baf52a89854a4b785722987
-    id: r.len-reports-key-count
-    level: MUST
-    text: Tracker.Len must report the number of keys currently held by the tracker.
-  - codeRefs:
-    - file:abc/probe/probe_test.go
-    - method:3c2f19df0b852dd0e9aafecfd9d631a2
-    id: r.new-run-restarts-count
-    level: MUST
-    text: Tracker.Record must detect a run ID that differs from the stored one and
-      restart that key's count from zero, so a restarted workload is not judged by
-      its predecessor's failures.
-  - codeRefs:
-    - file:abc/probe/probe.go
-    - function:dd53e30fa995268962209545381294f4
-    id: r.newtracker-returns-empty-tracker
-    level: MUST
-    text: NewTracker must return a Tracker with an initialized, empty counter map,
-      ready for use without further setup.
-  - codeRefs:
-    - file:abc/probe/probe_test.go
-    - method:3c2f19df0b852dd0e9aafecfd9d631a2
-    id: r.record-trips-at-threshold
-    level: MUST
-    text: Tracker.Record must increment the failure count for the key on a failed
-      observation and return true only when the count reaches the threshold, so failures
-      below the threshold return false.
-  - codeRefs:
-    - file:abc/probe/probe_test.go
-    - method:3c2f19df0b852dd0e9aafecfd9d631a2
-    id: r.success-resets-count
-    level: MUST
-    text: Tracker.Record must reset the consecutive failure count to zero on a passed
-      observation and return false, so the next failure starts counting from one again.
-  - codeRefs:
-    - file:abc/probe/probe.go
-    - struct:455c909dc9384fcb23e3388b626fe2ed
-    id: r.tracker-guards-its-map
-    level: MUST
-    text: Tracker must hold its counters in a map keyed by the probe key string and
-      guard every access with a mutex, so Record, Forget and Len are safe to call
-      concurrently.
-  upstream: self

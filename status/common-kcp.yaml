@@ -1,35 +1,35 @@
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: f02d64cd71c3557976f663f2fa352997f5ef648661b81a2e7e87d3fd236e75ad
+realizedSpecHash: 2544e8fa49e3c11e4e21cc6a6d1348ac07ac4f4856882a6a13200f8118231589
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
+- type: CodeSynced
+  status: "True"
   reason: InterfacesObserved
-  status: "True"
-  type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+  message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+- type: Drifted
   status: "False"
-  type: Drifted
-- message: the spec passes the validator
-  reason: ValidatorPassed
+  reason: FingerprintEqual
+  message: observed facts match the synced fingerprint
+- type: SpecValid
   status: "True"
-  type: SpecValid
+  reason: ValidatorPassed
+  message: the spec passes the validator
 observed:
   files:
   - common/kcp/kcp.go
   - common/kcp/kcp_test.go
-  fingerprint: f02d64cd71c3557976f663f2fa352997f5ef648661b81a2e7e87d3fd236e75ad
   interfaces:
-  - codegraphId: function:0b14d327c26ec834adfa4a6551d0fc8c
-    file: common/kcp/kcp.go
+  - name: ServiceLabels
     kind: function
-    line: 17
-    name: ServiceLabels
     signature: (logicalCluster string) string
-  - codegraphId: function:027166c10dcc0d8f2f48420216ff5951
     file: common/kcp/kcp.go
+    line: 17
+    codegraphId: function:0b14d327c26ec834adfa4a6551d0fc8c
+  - name: ServiceFQDN
     kind: function
-    line: 29
-    name: ServiceFQDN
     signature: (name, namespace, logicalCluster, domain string) string
-realizedSpecHash: 2544e8fa49e3c11e4e21cc6a6d1348ac07ac4f4856882a6a13200f8118231589
-syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-syncedFingerprint: f02d64cd71c3557976f663f2fa352997f5ef648661b81a2e7e87d3fd236e75ad
+    file: common/kcp/kcp.go
+    line: 29
+    codegraphId: function:027166c10dcc0d8f2f48420216ff5951
+  fingerprint: f02d64cd71c3557976f663f2fa352997f5ef648661b81a2e7e87d3fd236e75ad

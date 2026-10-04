@@ -4,21 +4,21 @@ metadata:
   name: kcp-libs
   namespace: default
 spec:
-  branch: fix/openbao-no-default-issuer
-  populate:
-    partition: directory
-    summarize: true
   source: {}
+  branch: fix/openbao-no-default-issuer
   verify:
   - go
   - test
   - ./...
+  populate:
+    partition: directory
+    summarize: true
 status:
-  contexts:
-    failed: 0
-    summarized: 44
-    total: 44
   headCommit: f9e2ef3cfa3a9ae4d984768e8fce97092fe179bf
   indexedCommit: f9e2ef3cfa3a9ae4d984768e8fce97092fe179bf
   observedCommit: f9e2ef3cfa3a9ae4d984768e8fce97092fe179bf
   phase: Populated
+  contexts:
+    total: 44
+    summarized: 44
+    failed: 0

@@ -1,4 +1,277 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+kind: SystemContext
+metadata:
+  name: abc-pki
+  namespace: default
+spec:
+  repository: kcp-libs
+  upstream: self
+  intent: This context exists to fix the boundary between the reconciler/provisioner
+    code and the certificate authority backend. It names the operations a PKI backend
+    must offer in terms of namespaces, mounts, roles and certificate issuance, so
+    that an OpenBao-backed implementation (impl/openbaoclient) and a caching, idempotent
+    wrapper (impl/pkiprovisioner) can be swapped without the consumers changing. The
+    data carriers mirror the JSON field names the backend returns, which lets the
+    implementations decode responses directly.
+  requirements:
+  - id: r.generate-root
+    level: MUST
+    text: The Client interface MUST let a caller generate a root CA from namespace,
+      mount, common name and TTL, returning a RootCA carrying certificate and serial.
+    codeRefs:
+    - method:4d425dba0f4b78f1a408107711c732c9
+    - struct:8a0cbed52cfc7319d1c688ca4591bcde
+  - id: r.health-shape
+    level: SHOULD
+    text: Health SHOULD describe a backend as Initialized, Sealed, Standby and Version,
+      with the first three as bool and Version as string.
+    codeRefs:
+    - struct:5cbcf189d4f2f7d225d0f3a6d193daba
+  - id: r.intermediate-pair
+    level: MUST
+    text: 'The Client interface MUST support the intermediate flow as a pair: GenerateIntermediate
+      returns an IntermediateCSR with CSR and private key, and SignIntermediate takes
+      the root namespace, mount, CSR, common name and TTL and returns the signed chain.'
+    codeRefs:
+    - method:1a3b315f017de0b6363a1ddf04e98077
+    - method:98d06874b98400ca735ca49933dad7ef
+    - struct:dde1ada7f0bec070360f060f452e6f67
+  - id: r.issue-certificate
+    level: MUST
+    text: The Client interface MUST issue a certificate from namespace, mount, role
+      and a CertRequest (CommonName, AltNames, IPSANs, TTL), returning a Cert with
+      Certificate, PrivateKey, IssuingCA, CAChain and Serial.
+    codeRefs:
+    - method:d58fe4f006f8d8e6d8b06298f11c8b3b
+    - struct:6183e1fd5203660f7cc37a020f980a05
+    - struct:faad17686720ec66a377bf0b42fa729b
+  - id: r.json-tags
+    level: SHOULD
+    text: Cert, RootCA, IntermediateCSR and Health SHOULD keep their JSON tags (certificate,
+      private_key, issuing_ca, ca_chain, serial_number, csr, initialized, sealed,
+      standby, version) so responses decode without a mapping layer.
+    codeRefs:
+    - struct:5cbcf189d4f2f7d225d0f3a6d193daba
+    - struct:8a0cbed52cfc7319d1c688ca4591bcde
+    - struct:dde1ada7f0bec070360f060f452e6f67
+    - struct:faad17686720ec66a377bf0b42fa729b
+  - id: r.mount-kind
+    level: MUST
+    text: The Client interface MUST let a caller ensure a mount inside a namespace,
+      taking the namespace, the path and the mount kind.
+    codeRefs:
+    - method:b8d03e6b65634b9f495bc2f2a1019a7a
+  - id: r.namespace-lifecycle
+    level: MUST
+    text: The Client interface MUST let a caller create a namespace (EnsureNamespace)
+      and remove a namespace (DeleteNamespace), each addressed by path and returning
+      error.
+    codeRefs:
+    - method:07fd1814798e353c56f080d20975fb4b
+    - method:a0ac8a2dec0c7669af33019b4b3f3f11
+  - id: r.package-defaults
+    level: MUST
+    text: The package MUST define DefaultMount "pki", DefaultRole "denopod", DefaultRootCommonName
+      "kcp-mesh-root", DefaultRootTTL "87600h", DefaultIntermediateTTL "43800h" and
+      DefaultLeafTTL "720h" as constants.
+    codeRefs:
+    - file:abc/pki/pki.go
+  - id: r.provisioner-cached-root-pem
+    level: MUST
+    text: Provisioner.CachedRootPEM MUST return the root certificate as bytes with
+      no error and no context, so callers can read it without an authority round trip.
+    codeRefs:
+    - method:17a2eb40b863f13c4652261820c10201
+  - id: r.provisioner-delete
+    level: MUST
+    text: Provisioner.Delete MUST take a path and return error, so a reconciled path
+      can be torn down.
+    codeRefs:
+    - method:808f1bb5f4e1aa53fcaf0a2c6358d976
+  - id: r.provisioner-ensure-authority
+    level: MUST
+    text: Provisioner.EnsureAuthority MUST take a path and return an Authority carrying
+      Namespace, CommonName, Serial and Chain.
+    codeRefs:
+    - method:fd34639484fd56a10516d8affbd6fdcf
+    - struct:af3fa7e349cc30c48784cf7c88c90f63
+  - id: r.provisioner-ensure-root
+    level: MUST
+    text: Provisioner.EnsureRoot MUST return the RootCA for the provisioner's own
+      root without the caller naming namespace or mount.
+    codeRefs:
+    - method:e4543be178161016ecceb88b21d2e99b
+  - id: r.provisioner-issue
+    level: MUST
+    text: Provisioner.Issue MUST take a path, common name, alternative names and IPs
+      and return a Cert, hiding mount, role and TTL from the caller.
+    codeRefs:
+    - method:1f9f2bb7abd96f807c5e53ee523f2708
+  - id: r.provisioner-surface
+    level: MUST
+    text: The Provisioner interface MUST offer EnsureRoot, EnsureAuthority, Issue,
+      Delete and CachedRootPEM as its whole method set.
+    codeRefs:
+    - interface:44a17e9c183e31e9b666d01dca913cc8
+  - id: r.read-ca-serial-and-chain
+    level: MUST
+    text: The Client interface MUST expose the CA serial and the CA chain of a mount
+      as separate string reads (CASerial, CAChain).
+    codeRefs:
+    - method:1e2aa7ebdb54224f489e406f6f3fbef3
+    - method:1ef93b250b4f7c625d04067f81349bf9
+  - id: r.sentinel-no-authority
+    level: MUST
+    text: The package MUST export ErrNoAuthority, an error value meaning the namespace
+      holds no authority yet.
+    codeRefs:
+    - file:abc/pki/pki.go
+  - id: r.set-signed-intermediate
+    level: MUST
+    text: The Client interface MUST let a caller install a signed intermediate chain
+      into namespace and mount (SetSignedIntermediate).
+    codeRefs:
+    - method:ee3e7f50bd6547ee6827b49a28baa253
+  - id: r.write-role
+    level: MUST
+    text: The Client interface MUST let a caller write a named Role into a namespace
+      and mount; Role carries AllowedDomains, AllowSubdomains, AllowBareDomains, EnforceHostnames,
+      KeyType, KeyBits and MaxTTL.
+    codeRefs:
+    - method:eb7720c010c0ac34cb5e99ee48495951
+    - struct:1331436d9816e3e86d68a77c31bda5af
+  interfaces:
+  - name: Authority
+    kind: struct
+    signature: type Authority struct { Namespace string; CommonName string; Serial
+      string; Chain string }
+    file: abc/pki/pki.go
+  - name: Cert
+    kind: struct
+    signature: type Cert struct { Certificate string `json:"certificate"`; PrivateKey
+      string `json:"private_key"`; IssuingCA string `json:"issuing_ca"`; CAChain []string
+      `json:"ca_chain"`; Serial string `json:"serial_number"` }
+    file: abc/pki/pki.go
+  - name: CertRequest
+    kind: struct
+    signature: type CertRequest struct { CommonName string; AltNames []string; IPSANs
+      []string; TTL string }
+    file: abc/pki/pki.go
+  - name: Client
+    kind: interface
+    signature: type Client interface { EnsureNamespace(ctx context.Context, path string)
+      error; EnsureMount(ctx context.Context, namespace, path, kind string) error;
+      GenerateRoot(ctx context.Context, namespace, mount, commonName, ttl string)
+      (RootCA, error); CASerial(ctx context.Context, namespace, mount string) (string,
+      error); CAChain(ctx context.Context, namespace, mount string) (string, error);
+      GenerateIntermediate(ctx context.Context, namespace, mount, commonName string)
+      (IntermediateCSR, error); SignIntermediate(ctx context.Context, rootNamespace,
+      mount, csr, commonName, ttl string) (string, error); SetSignedIntermediate(ctx
+      context.Context, namespace, mount, chain string) error; WriteRole(ctx context.Context,
+      namespace, mount, name string, role Role) error; Issue(ctx context.Context,
+      namespace, mount, role string, req CertRequest) (Cert, error); DeleteNamespace(ctx
+      context.Context, path string) error }
+    file: abc/pki/pki.go
+  - name: Client.CAChain
+    kind: method
+    signature: CAChain(ctx context.Context, namespace, mount string) (string, error)
+    file: abc/pki/pki.go
+  - name: Client.CASerial
+    kind: method
+    signature: CASerial(ctx context.Context, namespace, mount string) (string, error)
+    file: abc/pki/pki.go
+  - name: Client.DeleteNamespace
+    kind: method
+    signature: DeleteNamespace(ctx context.Context, path string) error
+    file: abc/pki/pki.go
+  - name: Client.EnsureMount
+    kind: method
+    signature: EnsureMount(ctx context.Context, namespace, path, kind string) error
+    file: abc/pki/pki.go
+  - name: Client.EnsureNamespace
+    kind: method
+    signature: EnsureNamespace(ctx context.Context, path string) error
+    file: abc/pki/pki.go
+  - name: Client.GenerateIntermediate
+    kind: method
+    signature: GenerateIntermediate(ctx context.Context, namespace, mount, commonName
+      string) (IntermediateCSR, error)
+    file: abc/pki/pki.go
+  - name: Client.GenerateRoot
+    kind: method
+    signature: GenerateRoot(ctx context.Context, namespace, mount, commonName, ttl
+      string) (RootCA, error)
+    file: abc/pki/pki.go
+  - name: Client.Issue
+    kind: method
+    signature: Issue(ctx context.Context, namespace, mount, role string, req CertRequest)
+      (Cert, error)
+    file: abc/pki/pki.go
+  - name: Client.SetSignedIntermediate
+    kind: method
+    signature: SetSignedIntermediate(ctx context.Context, namespace, mount, chain
+      string) error
+    file: abc/pki/pki.go
+  - name: Client.SignIntermediate
+    kind: method
+    signature: SignIntermediate(ctx context.Context, rootNamespace, mount, csr, commonName,
+      ttl string) (string, error)
+    file: abc/pki/pki.go
+  - name: Client.WriteRole
+    kind: method
+    signature: WriteRole(ctx context.Context, namespace, mount, name string, role
+      Role) error
+    file: abc/pki/pki.go
+  - name: Health
+    kind: struct
+    signature: type Health struct { Initialized bool `json:"initialized"`; Sealed
+      bool `json:"sealed"`; Standby bool `json:"standby"`; Version string `json:"version"`
+      }
+    file: abc/pki/pki.go
+  - name: IntermediateCSR
+    kind: struct
+    signature: type IntermediateCSR struct { CSR string `json:"csr"`; PrivateKey string
+      `json:"private_key"` }
+    file: abc/pki/pki.go
+  - name: Provisioner
+    kind: interface
+    signature: type Provisioner interface { EnsureRoot(ctx context.Context) (RootCA,
+      error); EnsureAuthority(ctx context.Context, path string) (Authority, error);
+      Issue(ctx context.Context, path, commonName string, altNames, ips []string)
+      (Cert, error); Delete(ctx context.Context, path string) error; CachedRootPEM()
+      []byte }
+    file: abc/pki/pki.go
+  - name: Provisioner.CachedRootPEM
+    kind: method
+    signature: CachedRootPEM() []byte
+    file: abc/pki/pki.go
+  - name: Provisioner.Delete
+    kind: method
+    signature: Delete(ctx context.Context, path string) error
+    file: abc/pki/pki.go
+  - name: Provisioner.EnsureAuthority
+    kind: method
+    signature: EnsureAuthority(ctx context.Context, path string) (Authority, error)
+    file: abc/pki/pki.go
+  - name: Provisioner.EnsureRoot
+    kind: method
+    signature: EnsureRoot(ctx context.Context) (RootCA, error)
+    file: abc/pki/pki.go
+  - name: Provisioner.Issue
+    kind: method
+    signature: Issue(ctx context.Context, path, commonName string, altNames, ips []string)
+      (Cert, error)
+    file: abc/pki/pki.go
+  - name: Role
+    kind: struct
+    signature: type Role struct { AllowedDomains []string; AllowSubdomains bool; AllowBareDomains
+      bool; EnforceHostnames bool; KeyType string; KeyBits int; MaxTTL string }
+    file: abc/pki/pki.go
+  - name: RootCA
+    kind: struct
+    signature: type RootCA struct { Certificate string `json:"certificate"`; Serial
+      string `json:"serial_number"` }
+    file: abc/pki/pki.go
 codeRefIndex:
 - file:abc/pki/pki.go pki.go@abc/pki/pki.go
 - interface:44a17e9c183e31e9b666d01dca913cc8 Provisioner@abc/pki/pki.go:118
@@ -25,276 +298,3 @@ codeRefIndex:
 - struct:af3fa7e349cc30c48784cf7c88c90f63 Authority@abc/pki/pki.go:74
 - struct:dde1ada7f0bec070360f060f452e6f67 IntermediateCSR@abc/pki/pki.go:42
 - struct:faad17686720ec66a377bf0b42fa729b Cert@abc/pki/pki.go:24
-kind: SystemContext
-metadata:
-  name: abc-pki
-  namespace: default
-spec:
-  intent: This context exists to fix the boundary between the reconciler/provisioner
-    code and the certificate authority backend. It names the operations a PKI backend
-    must offer in terms of namespaces, mounts, roles and certificate issuance, so
-    that an OpenBao-backed implementation (impl/openbaoclient) and a caching, idempotent
-    wrapper (impl/pkiprovisioner) can be swapped without the consumers changing. The
-    data carriers mirror the JSON field names the backend returns, which lets the
-    implementations decode responses directly.
-  interfaces:
-  - file: abc/pki/pki.go
-    kind: struct
-    name: Authority
-    signature: type Authority struct { Namespace string; CommonName string; Serial
-      string; Chain string }
-  - file: abc/pki/pki.go
-    kind: struct
-    name: Cert
-    signature: type Cert struct { Certificate string `json:"certificate"`; PrivateKey
-      string `json:"private_key"`; IssuingCA string `json:"issuing_ca"`; CAChain []string
-      `json:"ca_chain"`; Serial string `json:"serial_number"` }
-  - file: abc/pki/pki.go
-    kind: struct
-    name: CertRequest
-    signature: type CertRequest struct { CommonName string; AltNames []string; IPSANs
-      []string; TTL string }
-  - file: abc/pki/pki.go
-    kind: interface
-    name: Client
-    signature: type Client interface { EnsureNamespace(ctx context.Context, path string)
-      error; EnsureMount(ctx context.Context, namespace, path, kind string) error;
-      GenerateRoot(ctx context.Context, namespace, mount, commonName, ttl string)
-      (RootCA, error); CASerial(ctx context.Context, namespace, mount string) (string,
-      error); CAChain(ctx context.Context, namespace, mount string) (string, error);
-      GenerateIntermediate(ctx context.Context, namespace, mount, commonName string)
-      (IntermediateCSR, error); SignIntermediate(ctx context.Context, rootNamespace,
-      mount, csr, commonName, ttl string) (string, error); SetSignedIntermediate(ctx
-      context.Context, namespace, mount, chain string) error; WriteRole(ctx context.Context,
-      namespace, mount, name string, role Role) error; Issue(ctx context.Context,
-      namespace, mount, role string, req CertRequest) (Cert, error); DeleteNamespace(ctx
-      context.Context, path string) error }
-  - file: abc/pki/pki.go
-    kind: method
-    name: Client.CAChain
-    signature: CAChain(ctx context.Context, namespace, mount string) (string, error)
-  - file: abc/pki/pki.go
-    kind: method
-    name: Client.CASerial
-    signature: CASerial(ctx context.Context, namespace, mount string) (string, error)
-  - file: abc/pki/pki.go
-    kind: method
-    name: Client.DeleteNamespace
-    signature: DeleteNamespace(ctx context.Context, path string) error
-  - file: abc/pki/pki.go
-    kind: method
-    name: Client.EnsureMount
-    signature: EnsureMount(ctx context.Context, namespace, path, kind string) error
-  - file: abc/pki/pki.go
-    kind: method
-    name: Client.EnsureNamespace
-    signature: EnsureNamespace(ctx context.Context, path string) error
-  - file: abc/pki/pki.go
-    kind: method
-    name: Client.GenerateIntermediate
-    signature: GenerateIntermediate(ctx context.Context, namespace, mount, commonName
-      string) (IntermediateCSR, error)
-  - file: abc/pki/pki.go
-    kind: method
-    name: Client.GenerateRoot
-    signature: GenerateRoot(ctx context.Context, namespace, mount, commonName, ttl
-      string) (RootCA, error)
-  - file: abc/pki/pki.go
-    kind: method
-    name: Client.Issue
-    signature: Issue(ctx context.Context, namespace, mount, role string, req CertRequest)
-      (Cert, error)
-  - file: abc/pki/pki.go
-    kind: method
-    name: Client.SetSignedIntermediate
-    signature: SetSignedIntermediate(ctx context.Context, namespace, mount, chain
-      string) error
-  - file: abc/pki/pki.go
-    kind: method
-    name: Client.SignIntermediate
-    signature: SignIntermediate(ctx context.Context, rootNamespace, mount, csr, commonName,
-      ttl string) (string, error)
-  - file: abc/pki/pki.go
-    kind: method
-    name: Client.WriteRole
-    signature: WriteRole(ctx context.Context, namespace, mount, name string, role
-      Role) error
-  - file: abc/pki/pki.go
-    kind: struct
-    name: Health
-    signature: type Health struct { Initialized bool `json:"initialized"`; Sealed
-      bool `json:"sealed"`; Standby bool `json:"standby"`; Version string `json:"version"`
-      }
-  - file: abc/pki/pki.go
-    kind: struct
-    name: IntermediateCSR
-    signature: type IntermediateCSR struct { CSR string `json:"csr"`; PrivateKey string
-      `json:"private_key"` }
-  - file: abc/pki/pki.go
-    kind: interface
-    name: Provisioner
-    signature: type Provisioner interface { EnsureRoot(ctx context.Context) (RootCA,
-      error); EnsureAuthority(ctx context.Context, path string) (Authority, error);
-      Issue(ctx context.Context, path, commonName string, altNames, ips []string)
-      (Cert, error); Delete(ctx context.Context, path string) error; CachedRootPEM()
-      []byte }
-  - file: abc/pki/pki.go
-    kind: method
-    name: Provisioner.CachedRootPEM
-    signature: CachedRootPEM() []byte
-  - file: abc/pki/pki.go
-    kind: method
-    name: Provisioner.Delete
-    signature: Delete(ctx context.Context, path string) error
-  - file: abc/pki/pki.go
-    kind: method
-    name: Provisioner.EnsureAuthority
-    signature: EnsureAuthority(ctx context.Context, path string) (Authority, error)
-  - file: abc/pki/pki.go
-    kind: method
-    name: Provisioner.EnsureRoot
-    signature: EnsureRoot(ctx context.Context) (RootCA, error)
-  - file: abc/pki/pki.go
-    kind: method
-    name: Provisioner.Issue
-    signature: Issue(ctx context.Context, path, commonName string, altNames, ips []string)
-      (Cert, error)
-  - file: abc/pki/pki.go
-    kind: struct
-    name: Role
-    signature: type Role struct { AllowedDomains []string; AllowSubdomains bool; AllowBareDomains
-      bool; EnforceHostnames bool; KeyType string; KeyBits int; MaxTTL string }
-  - file: abc/pki/pki.go
-    kind: struct
-    name: RootCA
-    signature: type RootCA struct { Certificate string `json:"certificate"`; Serial
-      string `json:"serial_number"` }
-  repository: kcp-libs
-  requirements:
-  - codeRefs:
-    - method:4d425dba0f4b78f1a408107711c732c9
-    - struct:8a0cbed52cfc7319d1c688ca4591bcde
-    id: r.generate-root
-    level: MUST
-    text: The Client interface MUST let a caller generate a root CA from namespace,
-      mount, common name and TTL, returning a RootCA carrying certificate and serial.
-  - codeRefs:
-    - struct:5cbcf189d4f2f7d225d0f3a6d193daba
-    id: r.health-shape
-    level: SHOULD
-    text: Health SHOULD describe a backend as Initialized, Sealed, Standby and Version,
-      with the first three as bool and Version as string.
-  - codeRefs:
-    - method:1a3b315f017de0b6363a1ddf04e98077
-    - method:98d06874b98400ca735ca49933dad7ef
-    - struct:dde1ada7f0bec070360f060f452e6f67
-    id: r.intermediate-pair
-    level: MUST
-    text: 'The Client interface MUST support the intermediate flow as a pair: GenerateIntermediate
-      returns an IntermediateCSR with CSR and private key, and SignIntermediate takes
-      the root namespace, mount, CSR, common name and TTL and returns the signed chain.'
-  - codeRefs:
-    - method:d58fe4f006f8d8e6d8b06298f11c8b3b
-    - struct:6183e1fd5203660f7cc37a020f980a05
-    - struct:faad17686720ec66a377bf0b42fa729b
-    id: r.issue-certificate
-    level: MUST
-    text: The Client interface MUST issue a certificate from namespace, mount, role
-      and a CertRequest (CommonName, AltNames, IPSANs, TTL), returning a Cert with
-      Certificate, PrivateKey, IssuingCA, CAChain and Serial.
-  - codeRefs:
-    - struct:5cbcf189d4f2f7d225d0f3a6d193daba
-    - struct:8a0cbed52cfc7319d1c688ca4591bcde
-    - struct:dde1ada7f0bec070360f060f452e6f67
-    - struct:faad17686720ec66a377bf0b42fa729b
-    id: r.json-tags
-    level: SHOULD
-    text: Cert, RootCA, IntermediateCSR and Health SHOULD keep their JSON tags (certificate,
-      private_key, issuing_ca, ca_chain, serial_number, csr, initialized, sealed,
-      standby, version) so responses decode without a mapping layer.
-  - codeRefs:
-    - method:b8d03e6b65634b9f495bc2f2a1019a7a
-    id: r.mount-kind
-    level: MUST
-    text: The Client interface MUST let a caller ensure a mount inside a namespace,
-      taking the namespace, the path and the mount kind.
-  - codeRefs:
-    - method:07fd1814798e353c56f080d20975fb4b
-    - method:a0ac8a2dec0c7669af33019b4b3f3f11
-    id: r.namespace-lifecycle
-    level: MUST
-    text: The Client interface MUST let a caller create a namespace (EnsureNamespace)
-      and remove a namespace (DeleteNamespace), each addressed by path and returning
-      error.
-  - codeRefs:
-    - file:abc/pki/pki.go
-    id: r.package-defaults
-    level: MUST
-    text: The package MUST define DefaultMount "pki", DefaultRole "denopod", DefaultRootCommonName
-      "kcp-mesh-root", DefaultRootTTL "87600h", DefaultIntermediateTTL "43800h" and
-      DefaultLeafTTL "720h" as constants.
-  - codeRefs:
-    - method:17a2eb40b863f13c4652261820c10201
-    id: r.provisioner-cached-root-pem
-    level: MUST
-    text: Provisioner.CachedRootPEM MUST return the root certificate as bytes with
-      no error and no context, so callers can read it without an authority round trip.
-  - codeRefs:
-    - method:808f1bb5f4e1aa53fcaf0a2c6358d976
-    id: r.provisioner-delete
-    level: MUST
-    text: Provisioner.Delete MUST take a path and return error, so a reconciled path
-      can be torn down.
-  - codeRefs:
-    - method:fd34639484fd56a10516d8affbd6fdcf
-    - struct:af3fa7e349cc30c48784cf7c88c90f63
-    id: r.provisioner-ensure-authority
-    level: MUST
-    text: Provisioner.EnsureAuthority MUST take a path and return an Authority carrying
-      Namespace, CommonName, Serial and Chain.
-  - codeRefs:
-    - method:e4543be178161016ecceb88b21d2e99b
-    id: r.provisioner-ensure-root
-    level: MUST
-    text: Provisioner.EnsureRoot MUST return the RootCA for the provisioner's own
-      root without the caller naming namespace or mount.
-  - codeRefs:
-    - method:1f9f2bb7abd96f807c5e53ee523f2708
-    id: r.provisioner-issue
-    level: MUST
-    text: Provisioner.Issue MUST take a path, common name, alternative names and IPs
-      and return a Cert, hiding mount, role and TTL from the caller.
-  - codeRefs:
-    - interface:44a17e9c183e31e9b666d01dca913cc8
-    id: r.provisioner-surface
-    level: MUST
-    text: The Provisioner interface MUST offer EnsureRoot, EnsureAuthority, Issue,
-      Delete and CachedRootPEM as its whole method set.
-  - codeRefs:
-    - method:1e2aa7ebdb54224f489e406f6f3fbef3
-    - method:1ef93b250b4f7c625d04067f81349bf9
-    id: r.read-ca-serial-and-chain
-    level: MUST
-    text: The Client interface MUST expose the CA serial and the CA chain of a mount
-      as separate string reads (CASerial, CAChain).
-  - codeRefs:
-    - file:abc/pki/pki.go
-    id: r.sentinel-no-authority
-    level: MUST
-    text: The package MUST export ErrNoAuthority, an error value meaning the namespace
-      holds no authority yet.
-  - codeRefs:
-    - method:ee3e7f50bd6547ee6827b49a28baa253
-    id: r.set-signed-intermediate
-    level: MUST
-    text: The Client interface MUST let a caller install a signed intermediate chain
-      into namespace and mount (SetSignedIntermediate).
-  - codeRefs:
-    - method:eb7720c010c0ac34cb5e99ee48495951
-    - struct:1331436d9816e3e86d68a77c31bda5af
-    id: r.write-role
-    level: MUST
-    text: The Client interface MUST let a caller write a named Role into a namespace
-      and mount; Role carries AllowedDomains, AllowSubdomains, AllowBareDomains, EnforceHostnames,
-      KeyType, KeyBits and MaxTTL.
-  upstream: self

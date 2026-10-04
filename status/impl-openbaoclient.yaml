@@ -1,5 +1,11 @@
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: c0deb0eb5b0e898e955a6b69b1be4c79a0b6b4cfdadeb7844e9c6b5996003090
+realizedSpecHash: 0c88002058fb92c8065daf97b958ab212adc7b0121c46efa6520b09d8405bf16
 conditions:
-- message: 'unresolved requirement code refs: r.client-construction: function:97f09c010ce8629e3cb888dd53f5fe44,
+- type: CodeSynced
+  status: "False"
+  reason: CodeRefsUnresolved
+  message: 'unresolved requirement code refs: r.client-construction: function:97f09c010ce8629e3cb888dd53f5fe44,
     r.client-construction: struct:644a4d9f9b0e4ee3d1be7476cdc52999, r.client-construction:
     struct:d32e9faf15c28f010e9517f571192b92, r.health-mapping: method:61f0984d8204ee9a9d2c470dc79017b6,
     r.intermediate-authority: method:6ff60253ccaf2e7c0441bd69c2ba6e7f, r.intermediate-authority:
@@ -11,140 +17,134 @@ conditions:
     method:a078027b3f0dfe8153b040d123df1507, r.role-and-issuance: method:d06e05f8cc830da5173bb7f340c18d37,
     r.role-and-issuance: method:fdf9868ddff367c3a03b7e89abf414b8, r.root-authority:
     method:671d53de5144fe4d487f4388a0695574'
-  reason: CodeRefsUnresolved
+- type: Drifted
   status: "False"
-  type: CodeSynced
-- message: observed facts match the synced fingerprint
   reason: FingerprintEqual
-  status: "False"
-  type: Drifted
-- message: the spec passes the validator
-  reason: ValidatorPassed
+  message: observed facts match the synced fingerprint
+- type: SpecValid
   status: "True"
-  type: SpecValid
+  reason: ValidatorPassed
+  message: the spec passes the validator
 observed:
   files:
   - impl/openbaoclient/openbaoclient.go
   - impl/openbaoclient/openbaoclient_test.go
   - impl/openbaoclient/testcert_test.go
-  fingerprint: c0deb0eb5b0e898e955a6b69b1be4c79a0b6b4cfdadeb7844e9c6b5996003090
   interfaces:
-  - codegraphId: struct:e00b5c976e1ed1448875b77d0cec020b
-    file: impl/openbaoclient/openbaoclient.go
+  - name: ResponseError
     kind: struct
+    file: impl/openbaoclient/openbaoclient.go
     line: 32
-    name: ResponseError
-  - codegraphId: method:bc10c8978afe004cb92eee07347f2fbf
-    file: impl/openbaoclient/openbaoclient.go
+    codegraphId: struct:e00b5c976e1ed1448875b77d0cec020b
+  - name: ResponseError.Error
     kind: method
-    line: 42
-    name: ResponseError.Error
     signature: () string
-  - codegraphId: method:a100c179495b135b3fe2b971348dfedb
     file: impl/openbaoclient/openbaoclient.go
+    line: 42
+    codegraphId: method:bc10c8978afe004cb92eee07347f2fbf
+  - name: ResponseError.Is
     kind: method
-    line: 46
-    name: ResponseError.Is
     signature: (target error) bool
-  - codegraphId: struct:e3b96d9757623d14e22d2a1091966b68
     file: impl/openbaoclient/openbaoclient.go
+    line: 46
+    codegraphId: method:a100c179495b135b3fe2b971348dfedb
+  - name: Options
     kind: struct
+    file: impl/openbaoclient/openbaoclient.go
     line: 64
-    name: Options
-  - codegraphId: struct:312293f0f3d4b547b434febccf5f9ab3
-    file: impl/openbaoclient/openbaoclient.go
+    codegraphId: struct:e3b96d9757623d14e22d2a1091966b68
+  - name: Client
     kind: struct
+    file: impl/openbaoclient/openbaoclient.go
     line: 74
-    name: Client
-  - codegraphId: function:50cc797fdaa9ea30e1c2268227d49e6f
-    file: impl/openbaoclient/openbaoclient.go
+    codegraphId: struct:312293f0f3d4b547b434febccf5f9ab3
+  - name: New
     kind: function
-    line: 80
-    name: New
     signature: (opts Options) (*Client, error)
-  - codegraphId: method:028ba10088ea7e1c9b088f1371ff6f1c
     file: impl/openbaoclient/openbaoclient.go
+    line: 80
+    codegraphId: function:50cc797fdaa9ea30e1c2268227d49e6f
+  - name: Client.Health
     kind: method
-    line: 131
-    name: Client.Health
     signature: (ctx context.Context) (pki.Health, error)
-  - codegraphId: method:28c4bfafbaa07d6c82e2084b324aa194
     file: impl/openbaoclient/openbaoclient.go
+    line: 131
+    codegraphId: method:028ba10088ea7e1c9b088f1371ff6f1c
+  - name: Client.EnsureNamespace
     kind: method
+    signature: (ctx context.Context, path string) error
+    file: impl/openbaoclient/openbaoclient.go
     line: 144
-    name: Client.EnsureNamespace
-    signature: (ctx context.Context, path string) error
-  - codegraphId: method:36ab1558443e4dc608d55d9b54f9a89c
-    file: impl/openbaoclient/openbaoclient.go
+    codegraphId: method:28c4bfafbaa07d6c82e2084b324aa194
+  - name: Client.NamespaceExists
     kind: method
-    line: 158
-    name: Client.NamespaceExists
     signature: (ctx context.Context, path string) (bool, error)
-  - codegraphId: method:edc1b59fa40dbebe402cfff04b5aa69c
     file: impl/openbaoclient/openbaoclient.go
+    line: 158
+    codegraphId: method:36ab1558443e4dc608d55d9b54f9a89c
+  - name: Client.DeleteNamespace
     kind: method
-    line: 172
-    name: Client.DeleteNamespace
     signature: (ctx context.Context, path string) error
-  - codegraphId: method:daa5ec84247fd7f6efc20c9ed1ab66a0
     file: impl/openbaoclient/openbaoclient.go
+    line: 172
+    codegraphId: method:edc1b59fa40dbebe402cfff04b5aa69c
+  - name: Client.EnsureMount
     kind: method
-    line: 180
-    name: Client.EnsureMount
     signature: (ctx context.Context, namespace, path, kind string) error
-  - codegraphId: method:d434c58e3c847579feb579420d450ba3
     file: impl/openbaoclient/openbaoclient.go
+    line: 180
+    codegraphId: method:daa5ec84247fd7f6efc20c9ed1ab66a0
+  - name: Client.GenerateRoot
     kind: method
-    line: 202
-    name: Client.GenerateRoot
     signature: (ctx context.Context, namespace, mount, commonName, ttl string) (pki.RootCA,
       error)
-  - codegraphId: method:1aea693d3bb71792a60e5be463529d7d
     file: impl/openbaoclient/openbaoclient.go
+    line: 202
+    codegraphId: method:d434c58e3c847579feb579420d450ba3
+  - name: Client.CASerial
     kind: method
+    signature: (ctx context.Context, namespace, mount string) (string, error)
+    file: impl/openbaoclient/openbaoclient.go
     line: 218
-    name: Client.CASerial
-    signature: (ctx context.Context, namespace, mount string) (string, error)
-  - codegraphId: method:e68f0e43ec497ceea63eadb4056e8953
-    file: impl/openbaoclient/openbaoclient.go
+    codegraphId: method:1aea693d3bb71792a60e5be463529d7d
+  - name: Client.CAChain
     kind: method
+    signature: (ctx context.Context, namespace, mount string) (string, error)
+    file: impl/openbaoclient/openbaoclient.go
     line: 232
-    name: Client.CAChain
-    signature: (ctx context.Context, namespace, mount string) (string, error)
-  - codegraphId: method:2780ee841e94c2842351b25f86a9aba6
-    file: impl/openbaoclient/openbaoclient.go
+    codegraphId: method:e68f0e43ec497ceea63eadb4056e8953
+  - name: Client.GenerateIntermediate
     kind: method
-    line: 245
-    name: Client.GenerateIntermediate
     signature: (ctx context.Context, namespace, mount, commonName string) (pki.IntermediateCSR,
       error)
-  - codegraphId: method:06d62fc43abe23d63deb2db4632e1e1e
     file: impl/openbaoclient/openbaoclient.go
+    line: 245
+    codegraphId: method:2780ee841e94c2842351b25f86a9aba6
+  - name: Client.SignIntermediate
     kind: method
-    line: 257
-    name: Client.SignIntermediate
     signature: (ctx context.Context, rootNamespace, mount, csr, commonName, ttl string)
       (string, error)
-  - codegraphId: method:62c6db661c632979b8c3f7e19b7798c1
     file: impl/openbaoclient/openbaoclient.go
+    line: 257
+    codegraphId: method:06d62fc43abe23d63deb2db4632e1e1e
+  - name: Client.SetSignedIntermediate
     kind: method
-    line: 273
-    name: Client.SetSignedIntermediate
     signature: (ctx context.Context, namespace, mount, chain string) error
-  - codegraphId: method:e958540130931c8d8324f14876bb1e0b
     file: impl/openbaoclient/openbaoclient.go
+    line: 273
+    codegraphId: method:62c6db661c632979b8c3f7e19b7798c1
+  - name: Client.WriteRole
     kind: method
-    line: 279
-    name: Client.WriteRole
     signature: (ctx context.Context, namespace, mount, name string, role pki.Role)
       error
-  - codegraphId: method:936472024a18a6ae02d83697145811e6
     file: impl/openbaoclient/openbaoclient.go
+    line: 279
+    codegraphId: method:e958540130931c8d8324f14876bb1e0b
+  - name: Client.Issue
     kind: method
-    line: 301
-    name: Client.Issue
     signature: (ctx context.Context, namespace, mount, role string, req pki.CertRequest)
       (pki.Cert, error)
-realizedSpecHash: 0c88002058fb92c8065daf97b958ab212adc7b0121c46efa6520b09d8405bf16
-syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-syncedFingerprint: c0deb0eb5b0e898e955a6b69b1be4c79a0b6b4cfdadeb7844e9c6b5996003090
+    file: impl/openbaoclient/openbaoclient.go
+    line: 301
+    codegraphId: method:936472024a18a6ae02d83697145811e6
+  fingerprint: c0deb0eb5b0e898e955a6b69b1be4c79a0b6b4cfdadeb7844e9c6b5996003090

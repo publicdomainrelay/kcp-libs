@@ -1,86 +1,86 @@
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: 8d86aec4b4d243b9edded111cf695f85c0e14981fe5254093f8789553f64b786
+realizedSpecHash: c20bd320a70983c65a867c9b7cf244fce09e1115419a674b0e35d90563933a7d
 conditions:
-- message: 'missing: DefaultTTL'
+- type: CodeSynced
+  status: "False"
   reason: InterfacesMissing
+  message: 'missing: DefaultTTL'
+- type: Drifted
   status: "False"
-  type: CodeSynced
-- message: observed facts match the synced fingerprint
   reason: FingerprintEqual
-  status: "False"
-  type: Drifted
-- message: the spec passes the validator
-  reason: ValidatorPassed
+  message: observed facts match the synced fingerprint
+- type: SpecValid
   status: "True"
-  type: SpecValid
+  reason: ValidatorPassed
+  message: the spec passes the validator
 observed:
   files:
   - common/expiringmap/expiringmap.go
   - common/expiringmap/expiringmap_test.go
-  fingerprint: 8d86aec4b4d243b9edded111cf695f85c0e14981fe5254093f8789553f64b786
   interfaces:
-  - codegraphId: struct:4591c45a4e14e38ecea0056987c4a802
-    file: common/expiringmap/expiringmap.go
+  - name: Entry
     kind: struct
+    file: common/expiringmap/expiringmap.go
     line: 8
-    name: Entry
-  - codegraphId: struct:0cf196f032937400c5ba73ab5c3d51ff
-    file: common/expiringmap/expiringmap.go
+    codegraphId: struct:4591c45a4e14e38ecea0056987c4a802
+  - name: Map
     kind: struct
+    file: common/expiringmap/expiringmap.go
     line: 14
-    name: Map
-  - codegraphId: function:b650d97e85ca58be6eed757f0ef38420
-    file: common/expiringmap/expiringmap.go
+    codegraphId: struct:0cf196f032937400c5ba73ab5c3d51ff
+  - name: NewMap
     kind: function
-    line: 22
-    name: NewMap
     signature: (ttl time.Duration) *Map[K, V]
-  - codegraphId: method:833590fe505d58158e5ad88ed13ba9cc
     file: common/expiringmap/expiringmap.go
+    line: 22
+    codegraphId: function:b650d97e85ca58be6eed757f0ef38420
+  - name: Map.Set
     kind: method
-    line: 29
-    name: Map.Set
     signature: (key K, value V, at time.Time)
-  - codegraphId: method:b2e22247efe32229253f3fb18c64c607
     file: common/expiringmap/expiringmap.go
+    line: 29
+    codegraphId: method:833590fe505d58158e5ad88ed13ba9cc
+  - name: Map.Get
     kind: method
-    line: 35
-    name: Map.Get
     signature: (key K, at time.Time) (V, bool)
-  - codegraphId: method:82e839c35aabb06ef821933917ec63f0
     file: common/expiringmap/expiringmap.go
+    line: 35
+    codegraphId: method:b2e22247efe32229253f3fb18c64c607
+  - name: Map.Delete
     kind: method
-    line: 51
-    name: Map.Delete
     signature: (key K)
-  - codegraphId: method:7ec6b2c7bd76f63321cd3c4b190a603f
     file: common/expiringmap/expiringmap.go
+    line: 51
+    codegraphId: method:82e839c35aabb06ef821933917ec63f0
+  - name: Map.DeleteIf
     kind: method
-    line: 57
-    name: Map.DeleteIf
     signature: (drop func(K, V) bool) int
-  - codegraphId: method:565f61a59f8a37b307e3fa936cd2346d
     file: common/expiringmap/expiringmap.go
+    line: 57
+    codegraphId: method:7ec6b2c7bd76f63321cd3c4b190a603f
+  - name: Map.Expire
     kind: method
-    line: 65
-    name: Map.Expire
     signature: (at time.Time) int
-  - codegraphId: method:8f9103006c5e1c080fd378e749aabca6
     file: common/expiringmap/expiringmap.go
+    line: 65
+    codegraphId: method:565f61a59f8a37b307e3fa936cd2346d
+  - name: Map.Range
     kind: method
-    line: 73
-    name: Map.Range
     signature: (visit func(K, V) bool)
-  - codegraphId: method:7b7c2151e545ad092e0d5272ef61b892
     file: common/expiringmap/expiringmap.go
+    line: 73
+    codegraphId: method:8f9103006c5e1c080fd378e749aabca6
+  - name: Map.SetPruning
     kind: method
-    line: 87
-    name: Map.SetPruning
     signature: (key K, value V, at time.Time, prune func(K, V) bool)
-  - codegraphId: method:17d4b8f64aa42e72ce9ddd19f369e46f
     file: common/expiringmap/expiringmap.go
+    line: 87
+    codegraphId: method:7b7c2151e545ad092e0d5272ef61b892
+  - name: Map.Len
     kind: method
-    line: 98
-    name: Map.Len
     signature: () int
-realizedSpecHash: c20bd320a70983c65a867c9b7cf244fce09e1115419a674b0e35d90563933a7d
-syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-syncedFingerprint: 8d86aec4b4d243b9edded111cf695f85c0e14981fe5254093f8789553f64b786
+    file: common/expiringmap/expiringmap.go
+    line: 98
+    codegraphId: method:17d4b8f64aa42e72ce9ddd19f369e46f
+  fingerprint: 8d86aec4b4d243b9edded111cf695f85c0e14981fe5254093f8789553f64b786

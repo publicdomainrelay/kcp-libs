@@ -1,107 +1,107 @@
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: 015e905df3adaf5c0e59ed3512ffdd239cfda4c9a8539d17e943a50e261e6afb
+realizedSpecHash: 12dd6b810c49f0f8b79924fcb182aef15cf866b2bb9add0a95778c8dff8468c8
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
+- type: CodeSynced
+  status: "True"
   reason: InterfacesObserved
-  status: "True"
-  type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+  message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+- type: Drifted
   status: "False"
-  type: Drifted
-- message: the spec passes the validator
-  reason: ValidatorPassed
+  reason: FingerprintEqual
+  message: observed facts match the synced fingerprint
+- type: SpecValid
   status: "True"
-  type: SpecValid
+  reason: ValidatorPassed
+  message: the spec passes the validator
 observed:
   files:
   - abc/runner/runner.go
-  fingerprint: 015e905df3adaf5c0e59ed3512ffdd239cfda4c9a8539d17e943a50e261e6afb
   interfaces:
-  - codegraphId: type_alias:5468a2c306be0c500554229bdda5aadd
-    file: abc/runner/runner.go
+  - name: State
     kind: type_alias
+    file: abc/runner/runner.go
     line: 8
-    name: State
-  - codegraphId: struct:46cec8074c83b78c8fabcd0fc4957e32
-    file: abc/runner/runner.go
+    codegraphId: type_alias:5468a2c306be0c500554229bdda5aadd
+  - name: PodRequest
     kind: struct
+    file: abc/runner/runner.go
     line: 18
-    name: PodRequest
-  - codegraphId: struct:5dc6f04f8f1d6725396ad778f57753ed
-    file: abc/runner/runner.go
+    codegraphId: struct:46cec8074c83b78c8fabcd0fc4957e32
+  - name: PodStatus
     kind: struct
+    file: abc/runner/runner.go
     line: 40
-    name: PodStatus
-  - codegraphId: interface:710591a1c2c64a81c34bf809d899679a
-    file: abc/runner/runner.go
+    codegraphId: struct:5dc6f04f8f1d6725396ad778f57753ed
+  - name: PodRunner
     kind: interface
+    file: abc/runner/runner.go
     line: 50
-    name: PodRunner
-  - codegraphId: method:fdb656c1b22baaa050976fef1ccc2950
-    file: abc/runner/runner.go
+    codegraphId: interface:710591a1c2c64a81c34bf809d899679a
+  - name: PodRunner.Start
     kind: method
-    line: 51
-    name: PodRunner.Start
     signature: (ctx context.Context, req PodRequest) (string, error)
-  - codegraphId: method:0dd0d42d1a37091f0638d086e94ed5c6
     file: abc/runner/runner.go
+    line: 51
+    codegraphId: method:fdb656c1b22baaa050976fef1ccc2950
+  - name: PodRunner.Observe
     kind: method
-    line: 53
-    name: PodRunner.Observe
     signature: (ctx context.Context, runID string) (PodStatus, error)
-  - codegraphId: method:15f9ba905e255f2171396063a3091a74
     file: abc/runner/runner.go
+    line: 53
+    codegraphId: method:0dd0d42d1a37091f0638d086e94ed5c6
+  - name: PodRunner.Stop
     kind: method
+    signature: (ctx context.Context, runID string) error
+    file: abc/runner/runner.go
     line: 55
-    name: PodRunner.Stop
-    signature: (ctx context.Context, runID string) error
-  - codegraphId: method:405b17e18e48a4f4ac2253ec9ce449dd
-    file: abc/runner/runner.go
+    codegraphId: method:15f9ba905e255f2171396063a3091a74
+  - name: PodRunner.Probe
     kind: method
+    signature: (ctx context.Context, runID string, command []string, timeout time.Duration)
+      (bool, error)
+    file: abc/runner/runner.go
     line: 57
-    name: PodRunner.Probe
-    signature: (ctx context.Context, runID string, command []string, timeout time.Duration)
-      (bool, error)
-  - codegraphId: struct:bd7270a885b505237f5cd4d9038da86d
-    file: abc/runner/runner.go
+    codegraphId: method:405b17e18e48a4f4ac2253ec9ce449dd
+  - name: EngineRequest
     kind: struct
+    file: abc/runner/runner.go
     line: 60
-    name: EngineRequest
-  - codegraphId: struct:b8dec15e30496deaf9bd895e8e7218d8
-    file: abc/runner/runner.go
+    codegraphId: struct:bd7270a885b505237f5cd4d9038da86d
+  - name: EngineStatus
     kind: struct
+    file: abc/runner/runner.go
     line: 70
-    name: EngineStatus
-  - codegraphId: interface:cee292400f7e239797b1b10cd6e5e2f3
-    file: abc/runner/runner.go
+    codegraphId: struct:b8dec15e30496deaf9bd895e8e7218d8
+  - name: EngineRunner
     kind: interface
+    file: abc/runner/runner.go
     line: 76
-    name: EngineRunner
-  - codegraphId: method:9b3f09bbc26d631a7a08a5c4713097bc
-    file: abc/runner/runner.go
+    codegraphId: interface:cee292400f7e239797b1b10cd6e5e2f3
+  - name: EngineRunner.Start
     kind: method
-    line: 77
-    name: EngineRunner.Start
     signature: (ctx context.Context, req EngineRequest) (string, error)
-  - codegraphId: method:193f9210bd1837651faf136898a881d1
     file: abc/runner/runner.go
+    line: 77
+    codegraphId: method:9b3f09bbc26d631a7a08a5c4713097bc
+  - name: EngineRunner.Observe
     kind: method
-    line: 79
-    name: EngineRunner.Observe
     signature: (ctx context.Context, runID string) (EngineStatus, error)
-  - codegraphId: method:febb512db7e00e28129ca183c51968b0
     file: abc/runner/runner.go
+    line: 79
+    codegraphId: method:193f9210bd1837651faf136898a881d1
+  - name: EngineRunner.Stop
     kind: method
-    line: 81
-    name: EngineRunner.Stop
     signature: (ctx context.Context, runID string) error
-  - codegraphId: method:387e9c4ad715a0e08a6e5e5208da6a72
     file: abc/runner/runner.go
+    line: 81
+    codegraphId: method:febb512db7e00e28129ca183c51968b0
+  - name: EngineRunner.Probe
     kind: method
-    line: 83
-    name: EngineRunner.Probe
     signature: (ctx context.Context, runID string, command []string, timeout time.Duration)
       (bool, error)
-realizedSpecHash: 12dd6b810c49f0f8b79924fcb182aef15cf866b2bb9add0a95778c8dff8468c8
-syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-syncedFingerprint: 015e905df3adaf5c0e59ed3512ffdd239cfda4c9a8539d17e943a50e261e6afb
+    file: abc/runner/runner.go
+    line: 83
+    codegraphId: method:387e9c4ad715a0e08a6e5e5208da6a72
+  fingerprint: 015e905df3adaf5c0e59ed3512ffdd239cfda4c9a8539d17e943a50e261e6afb

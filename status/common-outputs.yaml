@@ -1,35 +1,35 @@
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: 809bb4812e9604f8788b4fb1b33547079186dd90a7b3de8f52275b2ff7746b23
+realizedSpecHash: 685f62702bbe9771dfb7e842576cf9e23e3e81e34468fe713eac80beb8dccabe
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
+- type: CodeSynced
+  status: "True"
   reason: InterfacesObserved
-  status: "True"
-  type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+  message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+- type: Drifted
   status: "False"
-  type: Drifted
-- message: the spec passes the validator
-  reason: ValidatorPassed
+  reason: FingerprintEqual
+  message: observed facts match the synced fingerprint
+- type: SpecValid
   status: "True"
-  type: SpecValid
+  reason: ValidatorPassed
+  message: the spec passes the validator
 observed:
   files:
   - common/outputs/outputs.go
   - common/outputs/outputs_test.go
-  fingerprint: 809bb4812e9604f8788b4fb1b33547079186dd90a7b3de8f52275b2ff7746b23
   interfaces:
-  - codegraphId: function:d16f38628fc00d680c6f54309865e821
-    file: common/outputs/outputs.go
+  - name: Stringify
     kind: function
-    line: 8
-    name: Stringify
     signature: (in map[string]any) map[string]string
-  - codegraphId: function:1f7915d8cd9aa1f3759d833f5af90128
     file: common/outputs/outputs.go
+    line: 8
+    codegraphId: function:d16f38628fc00d680c6f54309865e821
+  - name: StringifyValue
     kind: function
-    line: 19
-    name: StringifyValue
     signature: (value any) string
-realizedSpecHash: 685f62702bbe9771dfb7e842576cf9e23e3e81e34468fe713eac80beb8dccabe
-syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-syncedFingerprint: 809bb4812e9604f8788b4fb1b33547079186dd90a7b3de8f52275b2ff7746b23
+    file: common/outputs/outputs.go
+    line: 19
+    codegraphId: function:1f7915d8cd9aa1f3759d833f5af90128
+  fingerprint: 809bb4812e9604f8788b4fb1b33547079186dd90a7b3de8f52275b2ff7746b23

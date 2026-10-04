@@ -1,29 +1,29 @@
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: 882dba9bdedcea1e63e92bb22e1463ae695e06ddd657c91302b903fb6294c52a
+realizedSpecHash: edee0fbadb661a472249f92ea307f52e2a584de4f4ae1d12fd936abc5266d09c
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
+- type: CodeSynced
+  status: "True"
   reason: InterfacesObserved
-  status: "True"
-  type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+  message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+- type: Drifted
   status: "False"
-  type: Drifted
-- message: the spec passes the validator
-  reason: ValidatorPassed
+  reason: FingerprintEqual
+  message: observed facts match the synced fingerprint
+- type: SpecValid
   status: "True"
-  type: SpecValid
+  reason: ValidatorPassed
+  message: the spec passes the validator
 observed:
   files:
   - examples/controller/main.go
   - examples/controller/main_test.go
-  fingerprint: 882dba9bdedcea1e63e92bb22e1463ae695e06ddd657c91302b903fb6294c52a
   interfaces:
-  - codegraphId: function:23c706f296c8210aa4211fe5ad7815cf
-    file: examples/controller/main.go
+  - name: Run
     kind: function
-    line: 121
-    name: Run
     signature: (ctx context.Context, out io.Writer) error
-realizedSpecHash: edee0fbadb661a472249f92ea307f52e2a584de4f4ae1d12fd936abc5266d09c
-syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-syncedFingerprint: 882dba9bdedcea1e63e92bb22e1463ae695e06ddd657c91302b903fb6294c52a
+    file: examples/controller/main.go
+    line: 121
+    codegraphId: function:23c706f296c8210aa4211fe5ad7815cf
+  fingerprint: 882dba9bdedcea1e63e92bb22e1463ae695e06ddd657c91302b903fb6294c52a

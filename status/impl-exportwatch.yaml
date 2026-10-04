@@ -1,74 +1,74 @@
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: defbb3cd65e176b025a937894473fa6859e92a80e3fdf30891082e604ed10f3b
+realizedSpecHash: 37cecbc545d5a8ef934c8b6fcba88524a4803d208ff12d8ec9780d5d6ce3c969
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
+- type: CodeSynced
+  status: "True"
   reason: InterfacesObserved
-  status: "True"
-  type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+  message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+- type: Drifted
   status: "False"
-  type: Drifted
-- message: the spec passes the validator
-  reason: ValidatorPassed
+  reason: FingerprintEqual
+  message: observed facts match the synced fingerprint
+- type: SpecValid
   status: "True"
-  type: SpecValid
+  reason: ValidatorPassed
+  message: the spec passes the validator
 observed:
   files:
   - impl/exportwatch/exportwatch.go
-  fingerprint: defbb3cd65e176b025a937894473fa6859e92a80e3fdf30891082e604ed10f3b
   interfaces:
-  - codegraphId: type_alias:94252f87faff3176628078b9500af709
-    file: impl/exportwatch/exportwatch.go
+  - name: Endpoints
     kind: type_alias
+    file: impl/exportwatch/exportwatch.go
     line: 27
-    name: Endpoints
-  - codegraphId: struct:99a8a7585a6b5d30375c471a8fb38c71
-    file: impl/exportwatch/exportwatch.go
+    codegraphId: type_alias:94252f87faff3176628078b9500af709
+  - name: Options
     kind: struct
+    file: impl/exportwatch/exportwatch.go
     line: 29
-    name: Options
-  - codegraphId: function:efb61af66b10e227581818288975a28e
-    file: impl/exportwatch/exportwatch.go
+    codegraphId: struct:99a8a7585a6b5d30375c471a8fb38c71
+  - name: Client
     kind: function
-    line: 50
-    name: Client
     signature: (opts Options) (dynamic.Interface, error)
-  - codegraphId: function:0e22ac2739d17dd3caab2abd75c390e0
     file: impl/exportwatch/exportwatch.go
+    line: 50
+    codegraphId: function:efb61af66b10e227581818288975a28e
+  - name: Discover
     kind: function
+    signature: (ctx context.Context, opts Options) (Endpoints, error)
+    file: impl/exportwatch/exportwatch.go
     line: 63
-    name: Discover
-    signature: (ctx context.Context, opts Options) (Endpoints, error)
-  - codegraphId: function:4855b61ac47e7bbc0bb211b8661e9d59
-    file: impl/exportwatch/exportwatch.go
+    codegraphId: function:0e22ac2739d17dd3caab2abd75c390e0
+  - name: FromList
     kind: function
-    line: 75
-    name: FromList
     signature: (list *unstructured.UnstructuredList) Endpoints
-  - codegraphId: method:631983bf08fd7d3133061275ab1f910d
     file: impl/exportwatch/exportwatch.go
+    line: 75
+    codegraphId: function:4855b61ac47e7bbc0bb211b8661e9d59
+  - name: Endpoints.Ready
     kind: method
-    line: 98
-    name: Endpoints.Ready
     signature: (exports ...string) bool
-  - codegraphId: function:48d584db657cf9d26e0c376b34aa6773
     file: impl/exportwatch/exportwatch.go
+    line: 98
+    codegraphId: method:631983bf08fd7d3133061275ab1f910d
+  - name: Await
     kind: function
-    line: 107
-    name: Await
     signature: (ctx context.Context, opts Options) (Endpoints, error)
-  - codegraphId: function:b185d3ac6de1d5bfcfd671f7afeca0c2
     file: impl/exportwatch/exportwatch.go
+    line: 107
+    codegraphId: function:48d584db657cf9d26e0c376b34aa6773
+  - name: WatchEndpointSlices
     kind: function
-    line: 141
-    name: WatchEndpointSlices
     signature: (ctx context.Context, opts Options, wait time.Duration) error
-  - codegraphId: function:96edd4eb5a20bcded694ab307fa5f365
     file: impl/exportwatch/exportwatch.go
+    line: 141
+    codegraphId: function:b185d3ac6de1d5bfcfd671f7afeca0c2
+  - name: Paths
     kind: function
-    line: 187
-    name: Paths
     signature: (endpoints Endpoints, export string) []string
-realizedSpecHash: 37cecbc545d5a8ef934c8b6fcba88524a4803d208ff12d8ec9780d5d6ce3c969
-syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-syncedFingerprint: defbb3cd65e176b025a937894473fa6859e92a80e3fdf30891082e604ed10f3b
+    file: impl/exportwatch/exportwatch.go
+    line: 187
+    codegraphId: function:96edd4eb5a20bcded694ab307fa5f365
+  fingerprint: defbb3cd65e176b025a937894473fa6859e92a80e3fdf30891082e604ed10f3b

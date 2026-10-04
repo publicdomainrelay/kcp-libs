@@ -1,107 +1,107 @@
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: ddb012159ae6fc554cda17e65875acbc07ad51ad8a54938b77924f79be028072
+realizedSpecHash: 7fd087cb3d40fae91843441a0df0df6ab0026a2cc71625a1667949f912b0e66b
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
+- type: CodeSynced
+  status: "True"
   reason: InterfacesObserved
-  status: "True"
-  type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+  message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+- type: Drifted
   status: "False"
-  type: Drifted
-- message: the spec passes the validator
-  reason: ValidatorPassed
+  reason: FingerprintEqual
+  message: observed facts match the synced fingerprint
+- type: SpecValid
   status: "True"
-  type: SpecValid
+  reason: ValidatorPassed
+  message: the spec passes the validator
 observed:
   files:
   - impl/execrunner/engine.go
   - impl/execrunner/pod.go
   - impl/execrunner/pod_test.go
   - impl/execrunner/supervisor.go
-  fingerprint: ddb012159ae6fc554cda17e65875acbc07ad51ad8a54938b77924f79be028072
   interfaces:
-  - codegraphId: struct:6aef5701957707ea4bef629407cabc37
-    file: impl/execrunner/engine.go
+  - name: EngineOptions
     kind: struct
+    file: impl/execrunner/engine.go
     line: 15
-    name: EngineOptions
-  - codegraphId: struct:5a9b7da405a97b69724f6f93d52cf4ab
-    file: impl/execrunner/engine.go
+    codegraphId: struct:6aef5701957707ea4bef629407cabc37
+  - name: Engine
     kind: struct
+    file: impl/execrunner/engine.go
     line: 29
-    name: Engine
-  - codegraphId: function:4c978aedd11952f3ee6365eb5898c321
-    file: impl/execrunner/engine.go
+    codegraphId: struct:5a9b7da405a97b69724f6f93d52cf4ab
+  - name: NewEngine
     kind: function
-    line: 37
-    name: NewEngine
     signature: (opts EngineOptions) (*Engine, error)
-  - codegraphId: method:2beee7604d9afe94ca0951259ecada45
     file: impl/execrunner/engine.go
+    line: 37
+    codegraphId: function:4c978aedd11952f3ee6365eb5898c321
+  - name: Engine.Start
     kind: method
-    line: 63
-    name: Engine.Start
     signature: (_ context.Context, req runner.EngineRequest) (string, error)
-  - codegraphId: method:e837684e27d5363ecf736c655e7e5b24
     file: impl/execrunner/engine.go
+    line: 63
+    codegraphId: method:2beee7604d9afe94ca0951259ecada45
+  - name: Engine.Observe
     kind: method
-    line: 84
-    name: Engine.Observe
     signature: (_ context.Context, runID string) (runner.EngineStatus, error)
-  - codegraphId: method:42a8aeb02623810d653a714732142368
     file: impl/execrunner/engine.go
+    line: 84
+    codegraphId: method:e837684e27d5363ecf736c655e7e5b24
+  - name: Engine.Stop
     kind: method
+    signature: (_ context.Context, runID string) error
+    file: impl/execrunner/engine.go
     line: 106
-    name: Engine.Stop
-    signature: (_ context.Context, runID string) error
-  - codegraphId: method:53d6600d1f29a1f604f9fe12de4fe3df
+    codegraphId: method:42a8aeb02623810d653a714732142368
+  - name: Engine.Probe
+    kind: method
+    signature: (ctx context.Context, runID string, command []string, timeout time.Duration)
+      (bool, error)
     file: impl/execrunner/engine.go
-    kind: method
     line: 110
-    name: Engine.Probe
-    signature: (ctx context.Context, runID string, command []string, timeout time.Duration)
-      (bool, error)
-  - codegraphId: struct:c617bd87489adfc74952ca77d12f02ae
-    file: impl/execrunner/pod.go
+    codegraphId: method:53d6600d1f29a1f604f9fe12de4fe3df
+  - name: PodOptions
     kind: struct
+    file: impl/execrunner/pod.go
     line: 21
-    name: PodOptions
-  - codegraphId: struct:aa3532720785693eda3016d5bd68272c
-    file: impl/execrunner/pod.go
+    codegraphId: struct:c617bd87489adfc74952ca77d12f02ae
+  - name: Pod
     kind: struct
+    file: impl/execrunner/pod.go
     line: 39
-    name: Pod
-  - codegraphId: function:00b074a7109347b2daa577f4bdc75467
-    file: impl/execrunner/pod.go
+    codegraphId: struct:aa3532720785693eda3016d5bd68272c
+  - name: NewPod
     kind: function
-    line: 51
-    name: NewPod
     signature: (opts PodOptions) (*Pod, error)
-  - codegraphId: method:e4363e67372d0067b655391e57db53ed
     file: impl/execrunner/pod.go
+    line: 51
+    codegraphId: function:00b074a7109347b2daa577f4bdc75467
+  - name: Pod.Start
     kind: method
-    line: 72
-    name: Pod.Start
     signature: (_ context.Context, req runner.PodRequest) (string, error)
-  - codegraphId: method:0cfcac9db3f96294b49ce881bee14d93
     file: impl/execrunner/pod.go
+    line: 72
+    codegraphId: method:e4363e67372d0067b655391e57db53ed
+  - name: Pod.Observe
     kind: method
-    line: 95
-    name: Pod.Observe
     signature: (_ context.Context, runID string) (runner.PodStatus, error)
-  - codegraphId: method:55c0a5d0dd6cf0808dd2503822444b65
     file: impl/execrunner/pod.go
+    line: 95
+    codegraphId: method:0cfcac9db3f96294b49ce881bee14d93
+  - name: Pod.Stop
     kind: method
-    line: 114
-    name: Pod.Stop
     signature: (_ context.Context, runID string) error
-  - codegraphId: method:ef6ab966433b9776496a384adb8cf1e1
     file: impl/execrunner/pod.go
+    line: 114
+    codegraphId: method:55c0a5d0dd6cf0808dd2503822444b65
+  - name: Pod.Probe
     kind: method
-    line: 118
-    name: Pod.Probe
     signature: (ctx context.Context, runID string, command []string, timeout time.Duration)
       (bool, error)
-realizedSpecHash: 7fd087cb3d40fae91843441a0df0df6ab0026a2cc71625a1667949f912b0e66b
-syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-syncedFingerprint: ddb012159ae6fc554cda17e65875acbc07ad51ad8a54938b77924f79be028072
+    file: impl/execrunner/pod.go
+    line: 118
+    codegraphId: method:ef6ab966433b9776496a384adb8cf1e1
+  fingerprint: ddb012159ae6fc554cda17e65875acbc07ad51ad8a54938b77924f79be028072

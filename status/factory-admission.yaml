@@ -1,81 +1,81 @@
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: 8902e5bebe10316fa7f25c8a35498921516e9767fc598fe977fd6a395c05cc3d
+realizedSpecHash: f1d3ed6e29e9f66a2340219eea2540b0615f8ca8a47c134c10a1b2cca4682d65
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
+- type: CodeSynced
+  status: "True"
   reason: InterfacesObserved
-  status: "True"
-  type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+  message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+- type: Drifted
   status: "False"
-  type: Drifted
-- message: the spec passes the validator
-  reason: ValidatorPassed
+  reason: FingerprintEqual
+  message: observed facts match the synced fingerprint
+- type: SpecValid
   status: "True"
-  type: SpecValid
+  reason: ValidatorPassed
+  message: the spec passes the validator
 observed:
   files:
   - factory/admission/admission.go
   - factory/admission/admission_test.go
-  fingerprint: 8902e5bebe10316fa7f25c8a35498921516e9767fc598fe977fd6a395c05cc3d
   interfaces:
-  - codegraphId: interface:9c23d5af968c6dcd87d996b5fb785c81
-    file: factory/admission/admission.go
+  - name: Source
     kind: interface
+    file: factory/admission/admission.go
     line: 11
-    name: Source
-  - codegraphId: method:596d1d41bb4565e406b326020ce25a82
-    file: factory/admission/admission.go
+    codegraphId: interface:9c23d5af968c6dcd87d996b5fb785c81
+  - name: Source.Parent
     kind: method
-    line: 12
-    name: Source.Parent
     signature: (ctx context.Context, run queue.Run) (ref.Ref, bool, error)
-  - codegraphId: method:0d37cff2d12a3e38aa4393696696d4c5
     file: factory/admission/admission.go
+    line: 12
+    codegraphId: method:596d1d41bb4565e406b326020ce25a82
+  - name: Source.Runs
     kind: method
-    line: 14
-    name: Source.Runs
     signature: (ctx context.Context, parent ref.Ref) ([]queue.Run, error)
-  - codegraphId: method:d3904e1762452936d94101cc4cfc4bbe
     file: factory/admission/admission.go
+    line: 14
+    codegraphId: method:0d37cff2d12a3e38aa4393696696d4c5
+  - name: Source.Capacity
     kind: method
-    line: 16
-    name: Source.Capacity
     signature: (ctx context.Context, parent ref.Ref) (queue.Capacity, *queue.Blocker,
       error)
-  - codegraphId: struct:3aede7d4f92074172612567f434a4408
     file: factory/admission/admission.go
+    line: 16
+    codegraphId: method:d3904e1762452936d94101cc4cfc4bbe
+  - name: Options
     kind: struct
+    file: factory/admission/admission.go
     line: 19
-    name: Options
-  - codegraphId: struct:c62339005d8ea8281d87db8bcb56a638
-    file: factory/admission/admission.go
+    codegraphId: struct:3aede7d4f92074172612567f434a4408
+  - name: Admitter
     kind: struct
+    file: factory/admission/admission.go
     line: 37
-    name: Admitter
-  - codegraphId: function:4204d25ce951cefafd1bb89729e7bd03
-    file: factory/admission/admission.go
+    codegraphId: struct:c62339005d8ea8281d87db8bcb56a638
+  - name: New
     kind: function
-    line: 41
-    name: New
     signature: (opts Options) *Admitter
-  - codegraphId: method:e452266abf564c3d1e61f18fb3d426f6
     file: factory/admission/admission.go
+    line: 41
+    codegraphId: function:4204d25ce951cefafd1bb89729e7bd03
+  - name: Admitter.Leases
     kind: method
-    line: 51
-    name: Admitter.Leases
     signature: () *queue.Leases
-  - codegraphId: method:9b26f8dc3db4f420718a3ae685d15ea8
     file: factory/admission/admission.go
+    line: 51
+    codegraphId: method:e452266abf564c3d1e61f18fb3d426f6
+  - name: Admitter.Admit
     kind: method
-    line: 55
-    name: Admitter.Admit
     signature: (ctx context.Context, run queue.Run) (queue.Admission, error)
-  - codegraphId: method:fb3c595a96a98de51678ad45702f4519
     file: factory/admission/admission.go
+    line: 55
+    codegraphId: method:9b26f8dc3db4f420718a3ae685d15ea8
+  - name: Admitter.Wake
     kind: method
-    line: 87
-    name: Admitter.Wake
     signature: (ctx context.Context, parent ref.Ref) error
-realizedSpecHash: f1d3ed6e29e9f66a2340219eea2540b0615f8ca8a47c134c10a1b2cca4682d65
-syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-syncedFingerprint: 8902e5bebe10316fa7f25c8a35498921516e9767fc598fe977fd6a395c05cc3d
+    file: factory/admission/admission.go
+    line: 87
+    codegraphId: method:fb3c595a96a98de51678ad45702f4519
+  fingerprint: 8902e5bebe10316fa7f25c8a35498921516e9767fc598fe977fd6a395c05cc3d

@@ -1,4 +1,154 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+kind: SystemContext
+metadata:
+  name: common-denospec
+  namespace: default
+spec:
+  repository: kcp-libs
+  upstream: self
+  intent: This context exists so that the deno workload vocabulary lives in one Go
+    package that both the KCP libraries and the Deno-side consumer agree on. The structs
+    are the wire contract; the contract test fails if the Go shapes drift from what
+    the consumer declares. Validate and Args exist so that a permission set declared
+    as data becomes a checked, runnable Deno command line rather than an ad-hoc string
+    built at each call site, and EffectiveRestartPolicy and ProbeCommand pin down
+    the remaining runtime decisions around restarts and probes.
+  requirements:
+  - id: r.args-render-permission-flags
+    level: MUST
+    text: Permissions.Args must render the permission set into a Deno argument list
+      covering every flag form, returning an error rather than a partial list when
+      the permissions do not validate.
+    codeRefs:
+    - file:common/denospec/denospec_test.go
+    - function:8d4402900d3462a266b3860020572db3
+  - id: r.effective-restart-policy-resolves-default
+    level: MUST
+    text: EffectiveRestartPolicy must resolve an unset or unrecognised RestartPolicy
+      to the policy the workload is actually restarted under, so callers need not
+      special-case the empty value.
+    codeRefs:
+    - file:common/denospec/denospec.go
+    - function:8c740b4bfa20b8c5c3abcbedabd84404
+    - type_alias:c9ed92b47f68b4cc5b0bb51223210dbb
+  - id: r.exec-probe-shape-matches-consumer
+    level: MUST
+    text: ExecProbe must carry the exec probe shape the consumer declares, so a probe
+      written on either side decodes on the other.
+    codeRefs:
+    - file:common/denospec/denospec_contract_test.go
+    - struct:e63b3474fb8e8342ee8ddcbf9aeff650
+  - id: r.no-workload-runtime-assumption-elsewhere
+    level: SHOULD
+    text: The deno vocabulary should stay in this package, so the generic library
+      layers keep naming no workload runtime and remain usable without deno.
+    codeRefs:
+    - file:common/denospec/denospec.go
+  - id: r.permission-allow-and-deny-forms
+    level: MUST
+    text: Permission must express both the bare allow and deny booleans and their
+      AllowList and DenyList member lists, so a permission can be granted or refused
+      wholesale or narrowed to named members.
+    codeRefs:
+    - file:common/denospec/denospec.go
+    - struct:bbb7094c15f71e3d40b7bd6ef4ffad5e
+  - id: r.permissions-cover-deno-capabilities
+    level: MUST
+    text: 'Permissions must cover Deno''s capability set: All, NoPrompt, HRTime, and
+      the Read, Write, Net, Env, Run, FFI, Sys, Import and IgnoreEnv permissions,
+      plus AllowScripts for the named scripts that may run.'
+    codeRefs:
+    - file:common/denospec/denospec.go
+    - struct:37cfecc71eb8d4169a8fdffff71f2eb3
+  - id: r.pod-template-describes-workload
+    level: MUST
+    text: PodTemplate must describe the pod the deno workload runs in, including its
+      probe, so a consumer declares the pod in the same shape the Go side decodes.
+    codeRefs:
+    - file:common/denospec/denospec.go
+    - struct:ee22e42a28e08358a06298c6048e62e5
+  - id: r.probe-command-is-issued-through-the-shim
+    level: MUST
+    text: ProbeCommand must build the probe invocation from the runtime, shim, probe,
+      name and path, passing only the environment names in allowEnv, so a probe runs
+      under the same runtime and shim as the workload with a bounded environment.
+    codeRefs:
+    - file:common/denospec/denospec.go
+    - function:10ed3675a84f3ace014b3a75a3e36f7c
+    - struct:e63b3474fb8e8342ee8ddcbf9aeff650
+  - id: r.service-account-ref-names-identity
+    level: MUST
+    text: ServiceAccountRef must carry the service account Name and an optional Namespace,
+      so a workload can name the identity it runs as without pinning a namespace.
+    codeRefs:
+    - file:common/denospec/denospec.go
+    - struct:81393b3c6451cfbfd692bcbb851b30a9
+  - id: r.shapes-match-consumer-declaration
+    level: MUST
+    text: Every exported shape in this package must carry exactly the field names
+      the TypeScript consumer declares for it, so a value written from one side decodes
+      as the other; the contract test fails when a shape here is invented or drifts.
+    codeRefs:
+    - file:common/denospec/denospec_contract_test.go
+    - struct:37cfecc71eb8d4169a8fdffff71f2eb3
+    - struct:81393b3c6451cfbfd692bcbb851b30a9
+    - struct:bbb7094c15f71e3d40b7bd6ef4ffad5e
+    - struct:e63b3474fb8e8342ee8ddcbf9aeff650
+    - struct:ee22e42a28e08358a06298c6048e62e5
+  - id: r.validate-rejects-unrepresentable-permissions
+    level: MUST
+    text: Permissions.Validate must return an error for permission values that cannot
+      be rendered as Deno flags, rejecting commas and empty values, and return nil
+      for a permission set that can be rendered.
+    codeRefs:
+    - file:common/denospec/denospec_test.go
+    - function:961db49fe00a81882f3e64de7ff7262d
+  interfaces:
+  - name: Args
+    kind: function
+    signature: func (p *Permissions) Args() ([]string, error)
+    file: common/denospec/denospec.go
+  - name: EffectiveRestartPolicy
+    kind: function
+    signature: func EffectiveRestartPolicy(policy RestartPolicy) RestartPolicy
+    file: common/denospec/denospec.go
+  - name: ExecProbe
+    kind: struct
+    signature: type ExecProbe struct
+    file: common/denospec/denospec.go
+  - name: Permission
+    kind: struct
+    signature: type Permission struct { Allow bool; AllowList []string; Deny bool;
+      DenyList []string }
+    file: common/denospec/denospec.go
+  - name: Permissions
+    kind: struct
+    signature: type Permissions struct { All bool; NoPrompt bool; HRTime bool; Read
+      *Permission; Write *Permission; Net *Permission; Env *Permission; Run *Permission;
+      FFI *Permission; Sys *Permission; Import *Permission; IgnoreEnv *Permission;
+      AllowScripts []string }
+    file: common/denospec/denospec.go
+  - name: PodTemplate
+    kind: struct
+    signature: type PodTemplate struct
+    file: common/denospec/denospec.go
+  - name: ProbeCommand
+    kind: function
+    signature: func ProbeCommand(runtime, shim, probe, name, path string, allowEnv
+      []string) []string
+    file: common/denospec/denospec.go
+  - name: RestartPolicy
+    kind: type_alias
+    signature: type RestartPolicy
+    file: common/denospec/denospec.go
+  - name: ServiceAccountRef
+    kind: struct
+    signature: type ServiceAccountRef struct { Name string; Namespace string }
+    file: common/denospec/denospec.go
+  - name: Validate
+    kind: function
+    signature: func (p *Permissions) Validate() error
+    file: common/denospec/denospec.go
 codeRefIndex:
 - file:common/denospec/denospec.go denospec.go@common/denospec/denospec.go
 - file:common/denospec/denospec_contract_test.go denospec_contract_test.go@common/denospec/denospec_contract_test.go
@@ -13,153 +163,3 @@ codeRefIndex:
 - struct:e63b3474fb8e8342ee8ddcbf9aeff650 ExecProbe@common/denospec/denospec.go:71
 - struct:ee22e42a28e08358a06298c6048e62e5 PodTemplate@common/denospec/denospec.go:55
 - type_alias:c9ed92b47f68b4cc5b0bb51223210dbb RestartPolicy@common/denospec/denospec.go:81
-kind: SystemContext
-metadata:
-  name: common-denospec
-  namespace: default
-spec:
-  intent: This context exists so that the deno workload vocabulary lives in one Go
-    package that both the KCP libraries and the Deno-side consumer agree on. The structs
-    are the wire contract; the contract test fails if the Go shapes drift from what
-    the consumer declares. Validate and Args exist so that a permission set declared
-    as data becomes a checked, runnable Deno command line rather than an ad-hoc string
-    built at each call site, and EffectiveRestartPolicy and ProbeCommand pin down
-    the remaining runtime decisions around restarts and probes.
-  interfaces:
-  - file: common/denospec/denospec.go
-    kind: function
-    name: Args
-    signature: func (p *Permissions) Args() ([]string, error)
-  - file: common/denospec/denospec.go
-    kind: function
-    name: EffectiveRestartPolicy
-    signature: func EffectiveRestartPolicy(policy RestartPolicy) RestartPolicy
-  - file: common/denospec/denospec.go
-    kind: struct
-    name: ExecProbe
-    signature: type ExecProbe struct
-  - file: common/denospec/denospec.go
-    kind: struct
-    name: Permission
-    signature: type Permission struct { Allow bool; AllowList []string; Deny bool;
-      DenyList []string }
-  - file: common/denospec/denospec.go
-    kind: struct
-    name: Permissions
-    signature: type Permissions struct { All bool; NoPrompt bool; HRTime bool; Read
-      *Permission; Write *Permission; Net *Permission; Env *Permission; Run *Permission;
-      FFI *Permission; Sys *Permission; Import *Permission; IgnoreEnv *Permission;
-      AllowScripts []string }
-  - file: common/denospec/denospec.go
-    kind: struct
-    name: PodTemplate
-    signature: type PodTemplate struct
-  - file: common/denospec/denospec.go
-    kind: function
-    name: ProbeCommand
-    signature: func ProbeCommand(runtime, shim, probe, name, path string, allowEnv
-      []string) []string
-  - file: common/denospec/denospec.go
-    kind: type_alias
-    name: RestartPolicy
-    signature: type RestartPolicy
-  - file: common/denospec/denospec.go
-    kind: struct
-    name: ServiceAccountRef
-    signature: type ServiceAccountRef struct { Name string; Namespace string }
-  - file: common/denospec/denospec.go
-    kind: function
-    name: Validate
-    signature: func (p *Permissions) Validate() error
-  repository: kcp-libs
-  requirements:
-  - codeRefs:
-    - file:common/denospec/denospec_test.go
-    - function:8d4402900d3462a266b3860020572db3
-    id: r.args-render-permission-flags
-    level: MUST
-    text: Permissions.Args must render the permission set into a Deno argument list
-      covering every flag form, returning an error rather than a partial list when
-      the permissions do not validate.
-  - codeRefs:
-    - file:common/denospec/denospec.go
-    - function:8c740b4bfa20b8c5c3abcbedabd84404
-    - type_alias:c9ed92b47f68b4cc5b0bb51223210dbb
-    id: r.effective-restart-policy-resolves-default
-    level: MUST
-    text: EffectiveRestartPolicy must resolve an unset or unrecognised RestartPolicy
-      to the policy the workload is actually restarted under, so callers need not
-      special-case the empty value.
-  - codeRefs:
-    - file:common/denospec/denospec_contract_test.go
-    - struct:e63b3474fb8e8342ee8ddcbf9aeff650
-    id: r.exec-probe-shape-matches-consumer
-    level: MUST
-    text: ExecProbe must carry the exec probe shape the consumer declares, so a probe
-      written on either side decodes on the other.
-  - codeRefs:
-    - file:common/denospec/denospec.go
-    id: r.no-workload-runtime-assumption-elsewhere
-    level: SHOULD
-    text: The deno vocabulary should stay in this package, so the generic library
-      layers keep naming no workload runtime and remain usable without deno.
-  - codeRefs:
-    - file:common/denospec/denospec.go
-    - struct:bbb7094c15f71e3d40b7bd6ef4ffad5e
-    id: r.permission-allow-and-deny-forms
-    level: MUST
-    text: Permission must express both the bare allow and deny booleans and their
-      AllowList and DenyList member lists, so a permission can be granted or refused
-      wholesale or narrowed to named members.
-  - codeRefs:
-    - file:common/denospec/denospec.go
-    - struct:37cfecc71eb8d4169a8fdffff71f2eb3
-    id: r.permissions-cover-deno-capabilities
-    level: MUST
-    text: 'Permissions must cover Deno''s capability set: All, NoPrompt, HRTime, and
-      the Read, Write, Net, Env, Run, FFI, Sys, Import and IgnoreEnv permissions,
-      plus AllowScripts for the named scripts that may run.'
-  - codeRefs:
-    - file:common/denospec/denospec.go
-    - struct:ee22e42a28e08358a06298c6048e62e5
-    id: r.pod-template-describes-workload
-    level: MUST
-    text: PodTemplate must describe the pod the deno workload runs in, including its
-      probe, so a consumer declares the pod in the same shape the Go side decodes.
-  - codeRefs:
-    - file:common/denospec/denospec.go
-    - function:10ed3675a84f3ace014b3a75a3e36f7c
-    - struct:e63b3474fb8e8342ee8ddcbf9aeff650
-    id: r.probe-command-is-issued-through-the-shim
-    level: MUST
-    text: ProbeCommand must build the probe invocation from the runtime, shim, probe,
-      name and path, passing only the environment names in allowEnv, so a probe runs
-      under the same runtime and shim as the workload with a bounded environment.
-  - codeRefs:
-    - file:common/denospec/denospec.go
-    - struct:81393b3c6451cfbfd692bcbb851b30a9
-    id: r.service-account-ref-names-identity
-    level: MUST
-    text: ServiceAccountRef must carry the service account Name and an optional Namespace,
-      so a workload can name the identity it runs as without pinning a namespace.
-  - codeRefs:
-    - file:common/denospec/denospec_contract_test.go
-    - struct:37cfecc71eb8d4169a8fdffff71f2eb3
-    - struct:81393b3c6451cfbfd692bcbb851b30a9
-    - struct:bbb7094c15f71e3d40b7bd6ef4ffad5e
-    - struct:e63b3474fb8e8342ee8ddcbf9aeff650
-    - struct:ee22e42a28e08358a06298c6048e62e5
-    id: r.shapes-match-consumer-declaration
-    level: MUST
-    text: Every exported shape in this package must carry exactly the field names
-      the TypeScript consumer declares for it, so a value written from one side decodes
-      as the other; the contract test fails when a shape here is invented or drifts.
-  - codeRefs:
-    - file:common/denospec/denospec_test.go
-    - function:961db49fe00a81882f3e64de7ff7262d
-    id: r.validate-rejects-unrepresentable-permissions
-    level: MUST
-    text: Permissions.Validate must return an error for permission values that cannot
-      be rendered as Deno flags, rejecting commas and empty values, and return nil
-      for a permission set that can be rendered.
-  upstream: self

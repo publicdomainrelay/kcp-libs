@@ -1,76 +1,76 @@
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: bfd8b4c73c3f78a083ad4cac2aed4ab85da7bbe52bc6c4a12d8ef7f520e9d4d5
+realizedSpecHash: fc95bf2e393d8c42145972e1fe47881ea1921d784dc9ab4f479fbf4b77077450
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
+- type: CodeSynced
+  status: "True"
   reason: InterfacesObserved
-  status: "True"
-  type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+  message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+- type: Drifted
   status: "False"
-  type: Drifted
-- message: the spec passes the validator
-  reason: ValidatorPassed
+  reason: FingerprintEqual
+  message: observed facts match the synced fingerprint
+- type: SpecValid
   status: "True"
-  type: SpecValid
+  reason: ValidatorPassed
+  message: the spec passes the validator
 observed:
   files:
   - impl/pkiprovisioner/pkiprovisioner.go
   - impl/pkiprovisioner/pkiprovisioner_test.go
-  fingerprint: bfd8b4c73c3f78a083ad4cac2aed4ab85da7bbe52bc6c4a12d8ef7f520e9d4d5
   interfaces:
-  - codegraphId: struct:d27d806e5c22258e2ce7cad7037a9dda
-    file: impl/pkiprovisioner/pkiprovisioner.go
+  - name: Options
     kind: struct
+    file: impl/pkiprovisioner/pkiprovisioner.go
     line: 19
-    name: Options
-  - codegraphId: struct:85d52f39514274817830fa863a880ebb
-    file: impl/pkiprovisioner/pkiprovisioner.go
+    codegraphId: struct:d27d806e5c22258e2ce7cad7037a9dda
+  - name: Provisioner
     kind: struct
+    file: impl/pkiprovisioner/pkiprovisioner.go
     line: 43
-    name: Provisioner
-  - codegraphId: function:30364e141ea2faa4b4234973c4a19b7f
-    file: impl/pkiprovisioner/pkiprovisioner.go
+    codegraphId: struct:85d52f39514274817830fa863a880ebb
+  - name: New
     kind: function
-    line: 55
-    name: New
     signature: (opts Options) (*Provisioner, error)
-  - codegraphId: method:4195ab23df62ee1db3840769986974c8
     file: impl/pkiprovisioner/pkiprovisioner.go
+    line: 55
+    codegraphId: function:30364e141ea2faa4b4234973c4a19b7f
+  - name: Provisioner.EnsureRoot
     kind: method
-    line: 86
-    name: Provisioner.EnsureRoot
     signature: (ctx context.Context) (pki.RootCA, error)
-  - codegraphId: method:dbce55e518a5f94002a8102e3348772c
     file: impl/pkiprovisioner/pkiprovisioner.go
+    line: 86
+    codegraphId: method:4195ab23df62ee1db3840769986974c8
+  - name: Provisioner.EnsureAuthority
     kind: method
-    line: 126
-    name: Provisioner.EnsureAuthority
     signature: (ctx context.Context, path string) (pki.Authority, error)
-  - codegraphId: method:4e00b7939435016777ed505a3c634185
     file: impl/pkiprovisioner/pkiprovisioner.go
+    line: 126
+    codegraphId: method:dbce55e518a5f94002a8102e3348772c
+  - name: Provisioner.Issue
     kind: method
-    line: 211
-    name: Provisioner.Issue
     signature: (ctx context.Context, path, commonName string, altNames, ips []string)
       (pki.Cert, error)
-  - codegraphId: method:d5967140fe7eb80411ee9ed7cc877c96
     file: impl/pkiprovisioner/pkiprovisioner.go
+    line: 211
+    codegraphId: method:4e00b7939435016777ed505a3c634185
+  - name: Provisioner.Delete
     kind: method
-    line: 230
-    name: Provisioner.Delete
     signature: (ctx context.Context, path string) error
-  - codegraphId: method:7aaa1b393f6662ecc89ab29299cbea68
     file: impl/pkiprovisioner/pkiprovisioner.go
+    line: 230
+    codegraphId: method:d5967140fe7eb80411ee9ed7cc877c96
+  - name: Provisioner.CachedRootPEM
     kind: method
-    line: 243
-    name: Provisioner.CachedRootPEM
     signature: () []byte
-  - codegraphId: function:d3c3c16dc7874b597b0ada7624dae197
     file: impl/pkiprovisioner/pkiprovisioner.go
+    line: 243
+    codegraphId: method:7aaa1b393f6662ecc89ab29299cbea68
+  - name: LeafChain
     kind: function
-    line: 252
-    name: LeafChain
     signature: (cert pki.Cert) string
-realizedSpecHash: fc95bf2e393d8c42145972e1fe47881ea1921d784dc9ab4f479fbf4b77077450
-syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-syncedFingerprint: bfd8b4c73c3f78a083ad4cac2aed4ab85da7bbe52bc6c4a12d8ef7f520e9d4d5
+    file: impl/pkiprovisioner/pkiprovisioner.go
+    line: 252
+    codegraphId: function:d3c3c16dc7874b597b0ada7624dae197
+  fingerprint: bfd8b4c73c3f78a083ad4cac2aed4ab85da7bbe52bc6c4a12d8ef7f520e9d4d5

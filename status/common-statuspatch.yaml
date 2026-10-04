@@ -1,58 +1,58 @@
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: 3880676db9d454ba90560a536907e8c20ab24c597b49c4d98873746a617c520e
+realizedSpecHash: cf5424b60990c5c197d26e985f1fe4858e811a248aab5262471c797e9b125118
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
+- type: CodeSynced
+  status: "True"
   reason: InterfacesObserved
-  status: "True"
-  type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+  message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+- type: Drifted
   status: "False"
-  type: Drifted
-- message: the spec passes the validator
-  reason: ValidatorPassed
+  reason: FingerprintEqual
+  message: observed facts match the synced fingerprint
+- type: SpecValid
   status: "True"
-  type: SpecValid
+  reason: ValidatorPassed
+  message: the spec passes the validator
 observed:
   files:
   - common/statuspatch/statuspatch.go
   - common/statuspatch/statuspatch_test.go
-  fingerprint: 3880676db9d454ba90560a536907e8c20ab24c597b49c4d98873746a617c520e
   interfaces:
-  - codegraphId: function:146b92aee570e1cccf066680c85a4988
-    file: common/statuspatch/statuspatch.go
+  - name: Merge
     kind: function
-    line: 8
-    name: Merge
     signature: (status map[string]any) ([]byte, error)
-  - codegraphId: function:e490ecee35ab297d47aa943e045c98b3
     file: common/statuspatch/statuspatch.go
+    line: 8
+    codegraphId: function:146b92aee570e1cccf066680c85a4988
+  - name: WithResourceVersion
     kind: function
-    line: 16
-    name: WithResourceVersion
     signature: (body []byte, version string) ([]byte, error)
-  - codegraphId: function:e6682cb9b4a0a03a95c84fedefb98805
     file: common/statuspatch/statuspatch.go
+    line: 16
+    codegraphId: function:e490ecee35ab297d47aa943e045c98b3
+  - name: FinalizerRemove
     kind: function
-    line: 32
-    name: FinalizerRemove
     signature: (current []string, dropped string) ([]byte, error)
-  - codegraphId: function:973dee6f0664f3fb6b8b0860b5ec3a25
     file: common/statuspatch/statuspatch.go
+    line: 32
+    codegraphId: function:e6682cb9b4a0a03a95c84fedefb98805
+  - name: FinalizerAdd
     kind: function
-    line: 48
-    name: FinalizerAdd
     signature: (finalizers []string) ([]byte, error)
-  - codegraphId: struct:9ddae76e6ab972a834ddad24d5320169
     file: common/statuspatch/statuspatch.go
+    line: 48
+    codegraphId: function:973dee6f0664f3fb6b8b0860b5ec3a25
+  - name: Metadata
     kind: struct
-    line: 58
-    name: Metadata
-  - codegraphId: function:a0ef10c6d57cf09c7ea23871b9b2c059
     file: common/statuspatch/statuspatch.go
+    line: 58
+    codegraphId: struct:9ddae76e6ab972a834ddad24d5320169
+  - name: FinalizersOf
     kind: function
-    line: 62
-    name: FinalizersOf
     signature: (body []byte) ([]string, error)
-realizedSpecHash: cf5424b60990c5c197d26e985f1fe4858e811a248aab5262471c797e9b125118
-syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-syncedFingerprint: 3880676db9d454ba90560a536907e8c20ab24c597b49c4d98873746a617c520e
+    file: common/statuspatch/statuspatch.go
+    line: 62
+    codegraphId: function:a0ef10c6d57cf09c7ea23871b9b2c059
+  fingerprint: 3880676db9d454ba90560a536907e8c20ab24c597b49c4d98873746a617c520e

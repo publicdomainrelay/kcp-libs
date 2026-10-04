@@ -1,89 +1,89 @@
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: a3b8b1bf4c8a97461206db33d56851c9b5ff8ddcdfe37452cda512f7637bcb8e
+realizedSpecHash: 23e3ca773c900d8f4a1a79afb04c11d00f5c6a1eb142fa880f2e2ef5ad21393c
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
+- type: CodeSynced
+  status: "True"
   reason: InterfacesObserved
-  status: "True"
-  type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+  message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+- type: Drifted
   status: "False"
-  type: Drifted
-- message: the spec passes the validator
-  reason: ValidatorPassed
+  reason: FingerprintEqual
+  message: observed facts match the synced fingerprint
+- type: SpecValid
   status: "True"
-  type: SpecValid
+  reason: ValidatorPassed
+  message: the spec passes the validator
 observed:
   files:
   - factory/controller/controller.go
   - factory/controller/controller_test.go
   - factory/controller/events.go
   - factory/controller/live_test.go
-  fingerprint: a3b8b1bf4c8a97461206db33d56851c9b5ff8ddcdfe37452cda512f7637bcb8e
   interfaces:
-  - codegraphId: struct:d2226a6c30fcfabce22cf7b5d8a0d19a
-    file: factory/controller/controller.go
+  - name: Options
     kind: struct
+    file: factory/controller/controller.go
     line: 25
-    name: Options
-  - codegraphId: struct:6973c4a29350d7c92098bf48291ceafd
-    file: factory/controller/controller.go
+    codegraphId: struct:d2226a6c30fcfabce22cf7b5d8a0d19a
+  - name: Controller
     kind: struct
+    file: factory/controller/controller.go
     line: 51
-    name: Controller
-  - codegraphId: function:e71a19275883cd3b3727e16c601067ec
-    file: factory/controller/controller.go
+    codegraphId: struct:6973c4a29350d7c92098bf48291ceafd
+  - name: New
     kind: function
-    line: 75
-    name: New
     signature: (opts Options) (*Controller, error)
-  - codegraphId: function:9074c79f1f56d6b08908fad3482eacf7
     file: factory/controller/controller.go
+    line: 75
+    codegraphId: function:e71a19275883cd3b3727e16c601067ec
+  - name: DefaultWorkers
     kind: function
+    signature: () int
+    file: factory/controller/controller.go
     line: 134
-    name: DefaultWorkers
-    signature: () int
-  - codegraphId: method:e5158999a5682e7a4c200ae884ceaaa7
-    file: factory/controller/controller.go
+    codegraphId: function:9074c79f1f56d6b08908fad3482eacf7
+  - name: Controller.Enqueue
     kind: method
-    line: 138
-    name: Controller.Enqueue
     signature: (kind string, r ref.Ref)
-  - codegraphId: method:627af13a96e55d3834be1684b1f3a926
     file: factory/controller/controller.go
+    line: 138
+    codegraphId: method:e5158999a5682e7a4c200ae884ceaaa7
+  - name: Controller.QueueDepth
     kind: method
-    line: 142
-    name: Controller.QueueDepth
     signature: () int
-  - codegraphId: method:e3736f862df6f3ade0940b347f611edb
     file: factory/controller/controller.go
+    line: 142
+    codegraphId: method:627af13a96e55d3834be1684b1f3a926
+  - name: Controller.Reconciles
     kind: method
+    signature: () uint64
+    file: factory/controller/controller.go
     line: 146
-    name: Controller.Reconciles
-    signature: () uint64
-  - codegraphId: method:1a8c9e2899cff2770239be37b7e2356e
-    file: factory/controller/controller.go
+    codegraphId: method:e3736f862df6f3ade0940b347f611edb
+  - name: Controller.Conflicts
     kind: method
+    signature: () uint64
+    file: factory/controller/controller.go
     line: 150
-    name: Controller.Conflicts
-    signature: () uint64
-  - codegraphId: method:ba8012ce4989a1a73fa61d029f34146c
-    file: factory/controller/controller.go
+    codegraphId: method:1a8c9e2899cff2770239be37b7e2356e
+  - name: Controller.Errors
     kind: method
+    signature: () uint64
+    file: factory/controller/controller.go
     line: 154
-    name: Controller.Errors
-    signature: () uint64
-  - codegraphId: method:7b04bad45e95e9143fa55f0f8586bbdb
-    file: factory/controller/controller.go
+    codegraphId: method:ba8012ce4989a1a73fa61d029f34146c
+  - name: Controller.Run
     kind: method
-    line: 158
-    name: Controller.Run
     signature: (ctx context.Context) error
-  - codegraphId: method:e95e98357d5f3058033476c49387e673
-    file: factory/controller/events.go
+    file: factory/controller/controller.go
+    line: 158
+    codegraphId: method:7b04bad45e95e9143fa55f0f8586bbdb
+  - name: Controller.CacheAge
     kind: method
-    line: 9
-    name: Controller.CacheAge
     signature: () time.Duration
-realizedSpecHash: 23e3ca773c900d8f4a1a79afb04c11d00f5c6a1eb142fa880f2e2ef5ad21393c
-syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-syncedFingerprint: a3b8b1bf4c8a97461206db33d56851c9b5ff8ddcdfe37452cda512f7637bcb8e
+    file: factory/controller/events.go
+    line: 9
+    codegraphId: method:e95e98357d5f3058033476c49387e673
+  fingerprint: a3b8b1bf4c8a97461206db33d56851c9b5ff8ddcdfe37452cda512f7637bcb8e

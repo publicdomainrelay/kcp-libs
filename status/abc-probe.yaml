@@ -1,63 +1,63 @@
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: 31ebd9edc1ccb9876f8b30ad6111099724736ced33cd2fc05028946c857d48f2
+realizedSpecHash: 2cbb3810fbb58b838868e88e65adc2c1ea454972065daaba8631da8ea622ffb3
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
+- type: CodeSynced
+  status: "True"
   reason: InterfacesObserved
-  status: "True"
-  type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+  message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+- type: Drifted
   status: "False"
-  type: Drifted
-- message: the spec passes the validator
-  reason: ValidatorPassed
+  reason: FingerprintEqual
+  message: observed facts match the synced fingerprint
+- type: SpecValid
   status: "True"
-  type: SpecValid
+  reason: ValidatorPassed
+  message: the spec passes the validator
 observed:
   files:
   - abc/probe/probe.go
   - abc/probe/probe_test.go
-  fingerprint: 31ebd9edc1ccb9876f8b30ad6111099724736ced33cd2fc05028946c857d48f2
   interfaces:
-  - codegraphId: struct:c82813d1c5f66d076eef090321523676
-    file: abc/probe/probe.go
+  - name: Counter
     kind: struct
+    file: abc/probe/probe.go
     line: 7
-    name: Counter
-  - codegraphId: struct:455c909dc9384fcb23e3388b626fe2ed
-    file: abc/probe/probe.go
+    codegraphId: struct:c82813d1c5f66d076eef090321523676
+  - name: Tracker
     kind: struct
+    file: abc/probe/probe.go
     line: 13
-    name: Tracker
-  - codegraphId: function:dd53e30fa995268962209545381294f4
-    file: abc/probe/probe.go
+    codegraphId: struct:455c909dc9384fcb23e3388b626fe2ed
+  - name: NewTracker
     kind: function
-    line: 19
-    name: NewTracker
     signature: () *Tracker
-  - codegraphId: method:3c2f19df0b852dd0e9aafecfd9d631a2
     file: abc/probe/probe.go
+    line: 19
+    codegraphId: function:dd53e30fa995268962209545381294f4
+  - name: Tracker.Record
     kind: method
-    line: 23
-    name: Tracker.Record
     signature: (key, runID string, passed bool, threshold int32) bool
-  - codegraphId: method:6e9f3e9deecbcb4ec14db06af7386ac7
     file: abc/probe/probe.go
+    line: 23
+    codegraphId: method:3c2f19df0b852dd0e9aafecfd9d631a2
+  - name: Tracker.Forget
     kind: method
-    line: 39
-    name: Tracker.Forget
     signature: (key string)
-  - codegraphId: method:6bdac2559baf52a89854a4b785722987
     file: abc/probe/probe.go
+    line: 39
+    codegraphId: method:6e9f3e9deecbcb4ec14db06af7386ac7
+  - name: Tracker.Len
     kind: method
-    line: 45
-    name: Tracker.Len
     signature: () int
-  - codegraphId: function:4fa0354f183a097615e79c3cd44dee84
     file: abc/probe/probe.go
+    line: 45
+    codegraphId: method:6bdac2559baf52a89854a4b785722987
+  - name: EffectiveThreshold
     kind: function
-    line: 51
-    name: EffectiveThreshold
     signature: (threshold int32) int32
-realizedSpecHash: 2cbb3810fbb58b838868e88e65adc2c1ea454972065daaba8631da8ea622ffb3
-syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-syncedFingerprint: 31ebd9edc1ccb9876f8b30ad6111099724736ced33cd2fc05028946c857d48f2
+    file: abc/probe/probe.go
+    line: 51
+    codegraphId: function:4fa0354f183a097615e79c3cd44dee84
+  fingerprint: 31ebd9edc1ccb9876f8b30ad6111099724736ced33cd2fc05028946c857d48f2
