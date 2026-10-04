@@ -5020,7 +5020,183 @@ system_contexts:
   - impl/openbaoclient/openbaoclient_test.go
   - impl/openbaoclient/testcert_test.go
   id: sc.impl-openbaoclient
+  intent: This context exists so that the rest of the library can treat OpenBao as
+    one interchangeable PKI backend behind a narrow Go surface. It separates OpenBao's
+    REST and HTTP error vocabulary from the domain types (pki.Health, pki.RootCA,
+    pki.IntermediateCSR, pki.Role, pki.Cert, pki.CertRequest), so consumers never
+    import the OpenBao SDK or inspect status codes, and so the same PKI workflows
+    can be exercised against an in-process test server.
+  interfaces:
+  - file: impl/openbaoclient/openbaoclient.go
+    kind: struct
+    name: Client
+    signature: type Client struct
+  - file: impl/openbaoclient/openbaoclient.go
+    kind: method
+    name: Client.CAChain
+    signature: func (c *Client) CAChain(ctx context.Context, namespace, mount string)
+      (string, error)
+  - file: impl/openbaoclient/openbaoclient.go
+    kind: method
+    name: Client.CASerial
+    signature: func (c *Client) CASerial(ctx context.Context, namespace, mount string)
+      (string, error)
+  - file: impl/openbaoclient/openbaoclient.go
+    kind: method
+    name: Client.DeleteNamespace
+    signature: func (c *Client) DeleteNamespace(ctx context.Context, path string)
+      error
+  - file: impl/openbaoclient/openbaoclient.go
+    kind: method
+    name: Client.EnsureMount
+    signature: func (c *Client) EnsureMount(ctx context.Context, namespace, path,
+      kind string) error
+  - file: impl/openbaoclient/openbaoclient.go
+    kind: method
+    name: Client.EnsureNamespace
+    signature: func (c *Client) EnsureNamespace(ctx context.Context, path string)
+      error
+  - file: impl/openbaoclient/openbaoclient.go
+    kind: method
+    name: Client.GenerateIntermediate
+    signature: func (c *Client) GenerateIntermediate(ctx context.Context, namespace,
+      mount, commonName string) (pki.IntermediateCSR, error)
+  - file: impl/openbaoclient/openbaoclient.go
+    kind: method
+    name: Client.GenerateRoot
+    signature: func (c *Client) GenerateRoot(ctx context.Context, namespace, mount,
+      commonName, ttl string) (pki.RootCA, error)
+  - file: impl/openbaoclient/openbaoclient.go
+    kind: method
+    name: Client.Health
+    signature: func (c *Client) Health(ctx context.Context) (pki.Health, error)
+  - file: impl/openbaoclient/openbaoclient.go
+    kind: method
+    name: Client.Issue
+    signature: func (c *Client) Issue(ctx context.Context, namespace, mount, role
+      string, req pki.CertRequest) (pki.Cert, error)
+  - file: impl/openbaoclient/openbaoclient.go
+    kind: method
+    name: Client.NamespaceExists
+    signature: func (c *Client) NamespaceExists(ctx context.Context, path string)
+      (bool, error)
+  - file: impl/openbaoclient/openbaoclient.go
+    kind: method
+    name: Client.SetSignedIntermediate
+    signature: func (c *Client) SetSignedIntermediate(ctx context.Context, namespace,
+      mount, chain string) error
+  - file: impl/openbaoclient/openbaoclient.go
+    kind: method
+    name: Client.SignIntermediate
+    signature: func (c *Client) SignIntermediate(ctx context.Context, rootNamespace,
+      mount, csr, commonName, ttl string) (string, error)
+  - file: impl/openbaoclient/openbaoclient.go
+    kind: method
+    name: Client.WriteRole
+    signature: func (c *Client) WriteRole(ctx context.Context, namespace, mount, name
+      string, role pki.Role) error
+  - file: impl/openbaoclient/openbaoclient.go
+    kind: function
+    name: New
+    signature: func New(opts Options) (*Client, error)
+  - file: impl/openbaoclient/openbaoclient.go
+    kind: struct
+    name: Options
+    signature: type Options struct
+  - file: impl/openbaoclient/openbaoclient.go
+    kind: struct
+    name: ResponseError
+    signature: type ResponseError struct { Method string; Path string; Status int;
+      Body string }
+  - file: impl/openbaoclient/openbaoclient.go
+    kind: method
+    name: ResponseError.Error
+    signature: func (e *ResponseError) Error() string
+  - file: impl/openbaoclient/openbaoclient.go
+    kind: method
+    name: ResponseError.Is
+    signature: func (e *ResponseError) Is(target error) bool
   name: impl-openbaoclient
+  requirements:
+  - codeRefs:
+    - function:97f09c010ce8629e3cb888dd53f5fe44
+    - struct:644a4d9f9b0e4ee3d1be7476cdc52999
+    - struct:d32e9faf15c28f010e9517f571192b92
+    id: r.client-construction
+    level: MUST
+    text: New builds a *Client from Options and returns an error when the options
+      are not usable.
+  - codeRefs:
+    - method:61f0984d8204ee9a9d2c470dc79017b6
+    id: r.health-mapping
+    level: MUST
+    text: Health queries sys/health and returns a pki.Health carrying initialized,
+      sealed, standby and version; a transport failure is translated into a ResponseError
+      naming GET sys/health.
+  - codeRefs:
+    - method:6ff60253ccaf2e7c0441bd69c2ba6e7f
+    - method:890d7a7eace7151f12a90cd55188fe44
+    - method:9694619ccbdd31bd588b00696f35e46c
+    id: r.intermediate-authority
+    level: SHOULD
+    text: GenerateIntermediate produces a pki.IntermediateCSR for a common name, SignIntermediate
+      signs that CSR on a root namespace and mount with a TTL and returns the chain,
+      and SetSignedIntermediate installs the chain into the intermediate mount.
+  - codeRefs:
+    - method:9040cc8dcc5c1972e362711cde609457
+    id: r.mount-provisioning
+    level: MUST
+    text: EnsureMount enables a PKI engine at the given namespace and path with the
+      given kind, and reports an error when an existing mount has a different type.
+  - codeRefs:
+    - method:039af99f5f709e24f2739149f0f619f7
+    - method:279ae14fb9a84351e08e13706a74777a
+    - method:308cced5879283d753eb43408c1645ba
+    id: r.namespace-lifecycle
+    level: MUST
+    text: The client can create a namespace, test whether a namespace exists, and
+      delete a namespace, each taking a namespace path and reporting a translated
+      error on failure.
+  - codeRefs:
+    - method:bc10c8978afe004cb92eee07347f2fbf
+    - struct:e00b5c976e1ed1448875b77d0cec020b
+    id: r.response-error-shape
+    level: MUST
+    text: 'A failed OpenBao request is reported as a *ResponseError that records the
+      HTTP method, the request path, the status code and the response body, and Error
+      formats them as "openbao: %s /v1/%s -> HTTP %d: %s".'
+  - codeRefs:
+    - method:d06e05f8cc830da5173bb7f340c18d37
+    - method:fdf9868ddff367c3a03b7e89abf414b8
+    id: r.role-and-issuance
+    level: MUST
+    text: WriteRole stores a pki.Role under a named role on a mount, and Issue requests
+      a certificate for that role from a pki.CertRequest, returning a pki.Cert.
+  - codeRefs:
+    - method:671d53de5144fe4d487f4388a0695574
+    - method:9355743912f96aae23c89c23f11437c6
+    - method:a078027b3f0dfe8153b040d123df1507
+    id: r.root-authority
+    level: MUST
+    text: GenerateRoot creates a root CA in the given namespace and mount from a common
+      name and TTL and returns a pki.RootCA; CASerial and CAChain read back the authority's
+      serial number and PEM chain.
+  - codeRefs:
+    - method:a100c179495b135b3fe2b971348dfedb
+    - struct:e00b5c976e1ed1448875b77d0cec020b
+    id: r.sentinel-error-matching
+    level: MUST
+    text: ResponseError.Is maps HTTP 404 to ErrNotFound and HTTP 403 to ErrForbidden,
+      and returns false for every other status, so callers can use errors.Is against
+      the sentinels.
+  - codeRefs:
+    - file:impl/openbaoclient/openbaoclient_test.go
+    - file:impl/openbaoclient/testcert_test.go
+    id: r.test-coverage
+    level: SHOULD
+    text: Behavior is exercised by tests against an in-process OpenBao-shaped server,
+      including a mount type mismatch reported through ResponseError, with certificate
+      fixtures supplied by the test certificate helper.
   upstream: self
 - code:
   - impl/pkiprovisioner/pkiprovisioner.go

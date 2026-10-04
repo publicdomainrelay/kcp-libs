@@ -1,11 +1,8 @@
 conditions:
-- message: 'undeclared: Client, Client.CAChain, Client.CASerial, Client.DeleteNamespace,
-    Client.EnsureMount, Client.EnsureNamespace, Client.GenerateIntermediate, Client.GenerateRoot,
-    Client.Health, Client.Issue, Client.NamespaceExists, Client.SetSignedIntermediate,
-    Client.SignIntermediate, Client.WriteRole, New, Options, ResponseError, ResponseError.Error,
-    ResponseError.Is'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -139,6 +136,6 @@ observed:
     signature: (ctx context.Context, namespace, mount, role string, req pki.CertRequest)
       (pki.Cert, error)
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: 143683aaa5116bbcdb86d300d36d4547a708d09c3f4f200e8544c331ffa5ed69
+realizedSpecHash: e6c46288ca6f9e49d0114f54c5634aa133b0168e46198f7158bf0a5b8c0fd772
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: 49bafc90190a24506ee81d65725c5786f33069e8da1609662b126e74ea7a460d
