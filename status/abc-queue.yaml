@@ -1,28 +1,11 @@
 conditions:
-- message: 'missing: Admission, Admission.Waiting, Blocker, Capacity, Decision, EffectivePolicy,
-    Lease, Leases, Leases.Count, Leases.Forget, Leases.Grant, Leases.Len, Lifecycle,
-    Limit, NewLeases, Order, Plan, PlanIndex, Policy, Run, WakeList; unresolved: r.admission-waiting:
-    method:8573365ee09dc1eb4cd105750db7d96a, r.admission-waiting: struct:792cc17bc63ccca0dcb38c0a64474daf,
-    r.decision-verdict: file:abc/queue/queue.go, r.decision-verdict: function:1c23c59b39afb3955d8fb1ef8262bec4,
-    r.leases-grant-forget-len: file:abc/queue/leases.go, r.leases-grant-forget-len:
-    method:7fcca607f05203909cae0e30fb95654f, r.leases-grant-forget-len: method:aaa78ff0e7191ff1df4b246d1a69c083,
-    r.leases-grant-forget-len: method:ebdc3f4b76becb1059271eec51c5af14, r.leases-parent-scoped-count:
-    file:abc/queue/leases_test.go, r.leases-parent-scoped-count: method:a57993a5f26e81ef1e6ae695a11d798d,
-    r.leases-parent-scoped-count: struct:ad8589e78e7c996950704e3f42b98e35, r.leases-release-on-observed:
-    struct:34632297f34c7dcc187beda5485fdc49, r.leases-ttl-expiry: function:2ae018e0f488c4c38974fe6ac10ac6b7,
-    r.leases-ttl-expiry: struct:2f6663c79d6e6a401d99f363c4816759, r.limit-resolution:
-    function:57b793729eefa74795369ef3ec3c5001, r.limit-resolution: struct:47c532cd8b7218bfdb153ed7bf19aa12,
-    r.plan-admissions: function:a64e06cf0280d641c63e9d6a29889ba2, r.plan-admissions:
-    function:cb491319026f10dd31ad43cb1a74a3e6, r.plan-admissions: struct:4921ee224c96b7635c2b202098cbeff3,
-    r.policy-defaulting: function:7ca241acd8161cba27ae96514598782f, r.policy-defaulting:
-    type_alias:be31cbc6c94318d5c5589f1e679d3f21, r.queue-purity: file:abc/queue/queue_test.go,
-    r.run-ordering: function:4a7ac07571d725f388963144fc298480, r.run-ordering: struct:6dd8d61ae12efdab874719004a369656,
-    r.wake-list: function:7c6d74ae07384500ff8262c7a120089c'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
-- message: no synced fingerprint has been recorded yet
-  reason: NotSyncedYet
+- message: observed facts match the synced fingerprint
+  reason: FingerprintEqual
   status: "False"
   type: Drifted
 - message: the spec passes the validator

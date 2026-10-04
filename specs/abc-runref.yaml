@@ -2,11 +2,22 @@ apiVersion: specs.publicdomainrelay.dev/v1alpha1
 codeRefIndex:
 - file:abc/runref/runref.go runref.go@abc/runref/runref.go
 - file:abc/runref/runref_test.go runref_test.go@abc/runref/runref_test.go
+- function:02b977ff8ed4f89bd7fb19f709f855a0 New@abc/runref/runref.go:34
+- function:b3be3bdb00e0f276639e92a391046532 AlreadyStarted@abc/runref/runref.go:83
+- method:31e9e3f14991919b8dc8c86a1ae20707 Index.Record@abc/runref/runref.go:38
+- method:a092ed399600f5b0fda4c653bab06826 Index.Lookup@abc/runref/runref.go:64
+- method:cae442026fb66407a9804c8987ffee8e Index.Forget@abc/runref/runref.go:49
+- method:f29af6e54699815a89e6dfded48853b8 Index.Keep@abc/runref/runref.go:56
+- method:f61f5a9ef40992f65bfc79298b0fc1b8 Index.Len@abc/runref/runref.go:79
+- struct:f9c19c773fc6457d35bf1a48e8d0750c Record@abc/runref/runref.go:10
 kind: SystemContext
 metadata:
   name: abc-runref
   namespace: default
 spec:
+  dependsOn:
+  - sc.common-expiringmap
+  - sc.common-ref
   intent: 'This context exists so a reconciler can tell a fresh start from a duplicate
     of a run that is already in flight. Records live only for the configured TTL,
     so the index is a cache of recent starts rather than durable state, and callers

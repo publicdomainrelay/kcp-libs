@@ -19,4 +19,70 @@ conditions:
   reason: ValidatorPassed
   status: "True"
   type: SpecValid
-observed: {}
+observed:
+  files:
+  - abc/runref/runref.go
+  - abc/runref/runref_test.go
+  fingerprint: fd398ffddc48fa1fcd271b99e24b3e03d7e4f7e0f77d12f6c2e4e532c00e8d2c
+  interfaces:
+  - codegraphId: struct:f9c19c773fc6457d35bf1a48e8d0750c
+    file: abc/runref/runref.go
+    kind: struct
+    line: 10
+    name: Record
+  - codegraphId: struct:47cf33792836866fa369462cf758f59b
+    file: abc/runref/runref.go
+    kind: struct
+    line: 20
+    name: Current
+  - codegraphId: struct:27d20ba09467d3ee31db323ffe88bc2d
+    file: abc/runref/runref.go
+    kind: struct
+    line: 30
+    name: Index
+  - codegraphId: function:02b977ff8ed4f89bd7fb19f709f855a0
+    file: abc/runref/runref.go
+    kind: function
+    line: 34
+    name: New
+    signature: (ttl time.Duration) *Index
+  - codegraphId: method:31e9e3f14991919b8dc8c86a1ae20707
+    file: abc/runref/runref.go
+    kind: method
+    line: 38
+    name: Index.Record
+    signature: (r ref.Ref, runID, uid string, now time.Time)
+  - codegraphId: method:cae442026fb66407a9804c8987ffee8e
+    file: abc/runref/runref.go
+    kind: method
+    line: 49
+    name: Index.Forget
+    signature: (r ref.Ref)
+  - codegraphId: method:f29af6e54699815a89e6dfded48853b8
+    file: abc/runref/runref.go
+    kind: method
+    line: 56
+    name: Index.Keep
+    signature: (r ref.Ref, runID, uid string, terminal bool, now time.Time)
+  - codegraphId: method:a092ed399600f5b0fda4c653bab06826
+    file: abc/runref/runref.go
+    kind: method
+    line: 64
+    name: Index.Lookup
+    signature: (r ref.Ref) (Record, bool)
+  - codegraphId: method:f61f5a9ef40992f65bfc79298b0fc1b8
+    file: abc/runref/runref.go
+    kind: method
+    line: 79
+    name: Index.Len
+    signature: () int
+  - codegraphId: function:b3be3bdb00e0f276639e92a391046532
+    file: abc/runref/runref.go
+    kind: function
+    line: 83
+    name: AlreadyStarted
+    signature: (known Record, found bool, current Current) bool
+observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+realizedSpecHash: 18db993f7105908cd0c1f8d42c2e5dfe04edaec762baaefa8aa99579b95e78b2
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: fd398ffddc48fa1fcd271b99e24b3e03d7e4f7e0f77d12f6c2e4e532c00e8d2c

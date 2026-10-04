@@ -2,11 +2,42 @@ apiVersion: specs.publicdomainrelay.dev/v1alpha1
 codeRefIndex:
 - file:abc/reconcile/handler.go handler.go@abc/reconcile/handler.go
 - file:abc/reconcile/reconcile.go reconcile.go@abc/reconcile/reconcile.go
+- file:abc/reconcile/reconcile_test.go reconcile_test.go@abc/reconcile/reconcile_test.go
+- function:a28981cbe7cb44daf4d0bad5e126a5dd Patch@abc/reconcile/reconcile.go:77
+- interface:acc76b971252c6bdba6da6e46cec7cdd Reconciler@abc/reconcile/reconcile.go:99
+- interface:b487203a74df196c4e2c24e2b4285338 Handler@abc/reconcile/handler.go:23
+- method:05d31eb2f71b4cd30406111a8bab5e42 Result.Deletes@abc/reconcile/reconcile.go:65
+- method:169f5c0dc59cff9f1c05e87da663b5ce Reconciler.Reconcile@abc/reconcile/reconcile.go:100
+- method:255c7ada4931d84cece692ee65f65dfc Result.Has@abc/reconcile/reconcile.go:56
+- method:3141eb8d60a3d8ca6bae7f985285e762 ReconcilerFunc.Reconcile@abc/reconcile/reconcile.go:105
+- method:38de4d26da42bde321cbbf51907e4d63 Policy.Next@abc/reconcile/handler.go:55
+- method:6b92208396da893648d337e25d5511de Policy.Default@abc/reconcile/handler.go:41
+- method:8d872cd3fe248f9c368a23eac9ee0b39 Result.AddFor@abc/reconcile/reconcile.go:52
+- method:9224182fbfdfdef452b5728e17d9ae4b Handler.Process@abc/reconcile/handler.go:24
+- method:9b7c06346e0708f14275e224237b1311 Key.String@abc/reconcile/handler.go:19
+- method:9f9066b546ded29a0050478bc6b96283 Result.ReleasesFinalizer@abc/reconcile/reconcile.go:69
+- method:b160656aa87cd0cfed9c4da489da5d55 Bridge.Process@abc/reconcile/handler.go:86
+- method:b1bc8546c9c8172b30083faf2e5c9f41 Result.Add@abc/reconcile/reconcile.go:48
+- method:c38c6e41af7aa850b3556c64dd441f00 Result.IsCleared@abc/reconcile/reconcile.go:73
+- method:c71227b4698175d8155a30f4dc3044c5 Policy.Clamp@abc/reconcile/handler.go:48
+- method:ca917977c112da3e838bc72e2e3a876a HandlerFunc.Process@abc/reconcile/handler.go:29
+- method:ef9418fe4b597f6af3ccdc81706f3418 Policy.ConflictAfter@abc/reconcile/handler.go:68
+- struct:311077d3b54038c2cab46c936ad32911 Key@abc/reconcile/handler.go:13
+- struct:4d372b9ebd4367461eb8d9017af139b9 Bridge@abc/reconcile/handler.go:76
+- struct:8aa75e5f31cd8916db4202af768a91df Operation@abc/reconcile/reconcile.go:30
+- struct:d87af6ffc4b07f462a71cc788c1cd06b Result@abc/reconcile/reconcile.go:36
+- struct:ff932dc480705dcd5cdfaddc8173a33d Policy@abc/reconcile/handler.go:33
+- type_alias:64c437b8143c22c0f14b5d784db5af07 Kind@abc/reconcile/reconcile.go:16
+- type_alias:d32f5b88a1070a50862dbe142558d9c4 ReconcilerFunc@abc/reconcile/reconcile.go:103
+- type_alias:f54cc75d5b03ae26342301628d11db2a HandlerFunc@abc/reconcile/handler.go:27
 kind: SystemContext
 metadata:
   name: abc-reconcile
   namespace: default
 spec:
+  dependsOn:
+  - sc.common-ref
+  - sc.common-statuspatch
   intent: 'This context exists to separate the decision half of a controller from
     the transport and runtime half. A Reconciler is pure: given the observed object
     it returns what it wants to happen, with no client, no workqueue and no dependency

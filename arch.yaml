@@ -1066,9 +1066,44 @@ system_contexts:
     text: WakeList must return the refs of the runs that should be woken given the
       runs, the lifecycle, and either a limit or the unlimited flag.
   upstream: self
-- codeRefIndex:
+- code:
+  - abc/reconcile/handler.go
+  - abc/reconcile/reconcile.go
+  - abc/reconcile/reconcile_test.go
+  codeRefIndex:
   - file:abc/reconcile/handler.go handler.go@abc/reconcile/handler.go
   - file:abc/reconcile/reconcile.go reconcile.go@abc/reconcile/reconcile.go
+  - file:abc/reconcile/reconcile_test.go reconcile_test.go@abc/reconcile/reconcile_test.go
+  - function:a28981cbe7cb44daf4d0bad5e126a5dd Patch@abc/reconcile/reconcile.go:77
+  - interface:acc76b971252c6bdba6da6e46cec7cdd Reconciler@abc/reconcile/reconcile.go:99
+  - interface:b487203a74df196c4e2c24e2b4285338 Handler@abc/reconcile/handler.go:23
+  - method:05d31eb2f71b4cd30406111a8bab5e42 Result.Deletes@abc/reconcile/reconcile.go:65
+  - method:169f5c0dc59cff9f1c05e87da663b5ce Reconciler.Reconcile@abc/reconcile/reconcile.go:100
+  - method:255c7ada4931d84cece692ee65f65dfc Result.Has@abc/reconcile/reconcile.go:56
+  - method:3141eb8d60a3d8ca6bae7f985285e762 ReconcilerFunc.Reconcile@abc/reconcile/reconcile.go:105
+  - method:38de4d26da42bde321cbbf51907e4d63 Policy.Next@abc/reconcile/handler.go:55
+  - method:6b92208396da893648d337e25d5511de Policy.Default@abc/reconcile/handler.go:41
+  - method:8d872cd3fe248f9c368a23eac9ee0b39 Result.AddFor@abc/reconcile/reconcile.go:52
+  - method:9224182fbfdfdef452b5728e17d9ae4b Handler.Process@abc/reconcile/handler.go:24
+  - method:9b7c06346e0708f14275e224237b1311 Key.String@abc/reconcile/handler.go:19
+  - method:9f9066b546ded29a0050478bc6b96283 Result.ReleasesFinalizer@abc/reconcile/reconcile.go:69
+  - method:b160656aa87cd0cfed9c4da489da5d55 Bridge.Process@abc/reconcile/handler.go:86
+  - method:b1bc8546c9c8172b30083faf2e5c9f41 Result.Add@abc/reconcile/reconcile.go:48
+  - method:c38c6e41af7aa850b3556c64dd441f00 Result.IsCleared@abc/reconcile/reconcile.go:73
+  - method:c71227b4698175d8155a30f4dc3044c5 Policy.Clamp@abc/reconcile/handler.go:48
+  - method:ca917977c112da3e838bc72e2e3a876a HandlerFunc.Process@abc/reconcile/handler.go:29
+  - method:ef9418fe4b597f6af3ccdc81706f3418 Policy.ConflictAfter@abc/reconcile/handler.go:68
+  - struct:311077d3b54038c2cab46c936ad32911 Key@abc/reconcile/handler.go:13
+  - struct:4d372b9ebd4367461eb8d9017af139b9 Bridge@abc/reconcile/handler.go:76
+  - struct:8aa75e5f31cd8916db4202af768a91df Operation@abc/reconcile/reconcile.go:30
+  - struct:d87af6ffc4b07f462a71cc788c1cd06b Result@abc/reconcile/reconcile.go:36
+  - struct:ff932dc480705dcd5cdfaddc8173a33d Policy@abc/reconcile/handler.go:33
+  - type_alias:64c437b8143c22c0f14b5d784db5af07 Kind@abc/reconcile/reconcile.go:16
+  - type_alias:d32f5b88a1070a50862dbe142558d9c4 ReconcilerFunc@abc/reconcile/reconcile.go:103
+  - type_alias:f54cc75d5b03ae26342301628d11db2a HandlerFunc@abc/reconcile/handler.go:27
+  depends_on:
+  - sc.common-ref
+  - sc.common-statuspatch
   id: sc.abc-reconcile
   intent: 'This context exists to separate the decision half of a controller from
     the transport and runtime half. A Reconciler is pure: given the observed object
@@ -1296,8 +1331,25 @@ system_contexts:
       the object is being deleted, ReleasesFinalizer reports whether the finalizer
       can be removed, and IsCleared reports whether a named status field was cleared.'
   upstream: self
-- codeRefIndex:
+- code:
+  - abc/runner/runner.go
+  codeRefIndex:
   - file:abc/runner/runner.go runner.go@abc/runner/runner.go
+  - interface:710591a1c2c64a81c34bf809d899679a PodRunner@abc/runner/runner.go:50
+  - interface:cee292400f7e239797b1b10cd6e5e2f3 EngineRunner@abc/runner/runner.go:76
+  - method:0dd0d42d1a37091f0638d086e94ed5c6 PodRunner.Observe@abc/runner/runner.go:53
+  - method:15f9ba905e255f2171396063a3091a74 PodRunner.Stop@abc/runner/runner.go:55
+  - method:193f9210bd1837651faf136898a881d1 EngineRunner.Observe@abc/runner/runner.go:79
+  - method:387e9c4ad715a0e08a6e5e5208da6a72 EngineRunner.Probe@abc/runner/runner.go:83
+  - method:405b17e18e48a4f4ac2253ec9ce449dd PodRunner.Probe@abc/runner/runner.go:57
+  - method:9b3f09bbc26d631a7a08a5c4713097bc EngineRunner.Start@abc/runner/runner.go:77
+  - method:fdb656c1b22baaa050976fef1ccc2950 PodRunner.Start@abc/runner/runner.go:51
+  - method:febb512db7e00e28129ca183c51968b0 EngineRunner.Stop@abc/runner/runner.go:81
+  - struct:46cec8074c83b78c8fabcd0fc4957e32 PodRequest@abc/runner/runner.go:18
+  - struct:5dc6f04f8f1d6725396ad778f57753ed PodStatus@abc/runner/runner.go:40
+  - struct:b8dec15e30496deaf9bd895e8e7218d8 EngineStatus@abc/runner/runner.go:70
+  - struct:bd7270a885b505237f5cd4d9038da86d EngineRequest@abc/runner/runner.go:60
+  - type_alias:5468a2c306be0c500554229bdda5aadd State@abc/runner/runner.go:8
   id: sc.abc-runner
   intent: 'This context exists to fix the boundary between the generic workload lifecycle
     and its concrete implementations. The package names no runtime beyond the field
@@ -1493,9 +1545,23 @@ system_contexts:
     text: State must be a string alias, so that status types can report a lifecycle
       phase as a plain string value.
   upstream: self
-- codeRefIndex:
+- code:
+  - abc/runref/runref.go
+  - abc/runref/runref_test.go
+  codeRefIndex:
   - file:abc/runref/runref.go runref.go@abc/runref/runref.go
   - file:abc/runref/runref_test.go runref_test.go@abc/runref/runref_test.go
+  - function:02b977ff8ed4f89bd7fb19f709f855a0 New@abc/runref/runref.go:34
+  - function:b3be3bdb00e0f276639e92a391046532 AlreadyStarted@abc/runref/runref.go:83
+  - method:31e9e3f14991919b8dc8c86a1ae20707 Index.Record@abc/runref/runref.go:38
+  - method:a092ed399600f5b0fda4c653bab06826 Index.Lookup@abc/runref/runref.go:64
+  - method:cae442026fb66407a9804c8987ffee8e Index.Forget@abc/runref/runref.go:49
+  - method:f29af6e54699815a89e6dfded48853b8 Index.Keep@abc/runref/runref.go:56
+  - method:f61f5a9ef40992f65bfc79298b0fc1b8 Index.Len@abc/runref/runref.go:79
+  - struct:f9c19c773fc6457d35bf1a48e8d0750c Record@abc/runref/runref.go:10
+  depends_on:
+  - sc.common-expiringmap
+  - sc.common-ref
   id: sc.abc-runref
   intent: 'This context exists so a reconciler can tell a fresh start from a duplicate
     of a run that is already in flight. Records live only for the configured TTL,
