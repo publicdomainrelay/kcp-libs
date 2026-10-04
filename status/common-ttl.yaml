@@ -43,7 +43,7 @@ observed:
     line: 39
     name: Deadline
     signature: (start *metav1.Time, seconds *int64, now time.Time) bool
-observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 realizedSpecHash: d0ea5f2ceada2c1a5504eaa5ad9f6d3bc65999a10d0f215eaad1ae2c0f781b12
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: 1bbbebd686b542eb40b525e9155f001af945a2e02e2f267a990db213b67e592b

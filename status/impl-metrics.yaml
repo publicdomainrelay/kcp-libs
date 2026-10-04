@@ -100,7 +100,7 @@ observed:
     line: 119
     name: Server.Close
     signature: () error
-observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 realizedSpecHash: e1d963de8db84e29744312e48f4d728ebb4aee74144a9321fe75daab9813dabd
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: 24d04ad5674a078ef487488f75f3606f7539a9c056ef1b72f63d77320f2df886

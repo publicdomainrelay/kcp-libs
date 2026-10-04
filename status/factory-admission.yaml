@@ -76,7 +76,7 @@ observed:
     line: 87
     name: Admitter.Wake
     signature: (ctx context.Context, parent ref.Ref) error
-observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 realizedSpecHash: b7c63e2f3e3bff74aaf870dd2f59ca849d96a2f9b0146e3a583531cf1c19e2d2
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: 8902e5bebe10316fa7f25c8a35498921516e9767fc598fe977fd6a395c05cc3d

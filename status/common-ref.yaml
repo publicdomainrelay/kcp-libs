@@ -65,7 +65,7 @@ observed:
     line: 47
     name: ClusterURL
     signature: (host, logicalCluster string) string
-observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 realizedSpecHash: 22100e7e3a84f1ddbdb05ecad45e47b8c488e0eaba043e3d177920147a350266
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: 461cb3f0a9b1e4164f7b1cacf9176c6814707b5d9ebc22890a5d675fe6e1210f

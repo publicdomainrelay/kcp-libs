@@ -142,7 +142,7 @@ observed:
     line: 188
     name: WakeList
     signature: (runs []Run, lifecycle Lifecycle, limit int32, unlimited bool) []ref.Ref
-observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 realizedSpecHash: cafda2642eaae247fdfd007eaffbc760c6d7617b4dbb06dd51f5ebb45cb00fa2
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: f2d774bdc38d3397173f5829a1b29b0f40eec73062fe6ed3c6621a7c06c92c49

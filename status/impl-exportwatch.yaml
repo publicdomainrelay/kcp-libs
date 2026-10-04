@@ -69,7 +69,7 @@ observed:
     line: 187
     name: Paths
     signature: (endpoints Endpoints, export string) []string
-observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 realizedSpecHash: 9301cec75b954c4221cd573ad32c06718f36c374bce5eb0a7e3ca007af18efb8
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: defbb3cd65e176b025a937894473fa6859e92a80e3fdf30891082e604ed10f3b

@@ -70,7 +70,7 @@ observed:
     line: 75
     name: MergeNames
     signature: (groups ...[]string) []string
-observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 realizedSpecHash: c807e358153585c2ec314bd2629c0500dec43bd1c595d38c13442fe9c113caf8
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: 9507bb1af103d77777996e8721bf31e436d53f131d16287076439df8d208c1be

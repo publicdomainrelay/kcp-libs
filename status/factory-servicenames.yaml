@@ -110,7 +110,7 @@ observed:
     line: 166
     name: AdvertisedAddress
     signature: (argsJSON, envJSON string) string
-observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
 realizedSpecHash: 37415eb0c8ff7589994e8c2ce145d7b07e799e3ad730fd84317cb098bc43c4b8
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: b82792fd142a2e2a51b90788af96c30a625b6639391e9709b5cc1cadfd50e421
