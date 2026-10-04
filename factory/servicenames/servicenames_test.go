@@ -222,4 +222,3 @@ func TestAWorkspaceNamedTwiceIsMintedOnce(t *testing.T) {
 		t.Fatalf("minted for %v, want cluster-a once and the target once", minter.clusters)
 	}
 }
-
