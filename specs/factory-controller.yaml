@@ -4,11 +4,33 @@ codeRefIndex:
 - file:factory/controller/controller_test.go controller_test.go@factory/controller/controller_test.go
 - file:factory/controller/events.go events.go@factory/controller/events.go
 - file:factory/controller/live_test.go live_test.go@factory/controller/live_test.go
+- function:9074c79f1f56d6b08908fad3482eacf7 DefaultWorkers@factory/controller/controller.go:134
+- function:e71a19275883cd3b3727e16c601067ec New@factory/controller/controller.go:75
+- method:1a8c9e2899cff2770239be37b7e2356e Controller.Conflicts@factory/controller/controller.go:150
+- method:627af13a96e55d3834be1684b1f3a926 Controller.QueueDepth@factory/controller/controller.go:142
+- method:7b04bad45e95e9143fa55f0f8586bbdb Controller.Run@factory/controller/controller.go:158
+- method:ba8012ce4989a1a73fa61d029f34146c Controller.Errors@factory/controller/controller.go:154
+- method:e3736f862df6f3ade0940b347f611edb Controller.Reconciles@factory/controller/controller.go:146
+- method:e5158999a5682e7a4c200ae884ceaaa7 Controller.Enqueue@factory/controller/controller.go:138
+- method:e95e98357d5f3058033476c49387e673 Controller.CacheAge@factory/controller/events.go:9
+- struct:6973c4a29350d7c92098bf48291ceafd Controller@factory/controller/controller.go:51
 kind: SystemContext
 metadata:
   name: factory-controller
   namespace: default
 spec:
+  dependsOn:
+  - sc.abc-cache
+  - sc.abc-reconcile
+  - sc.common-logging
+  - sc.common-ref
+  - sc.common-statuspatch
+  - sc.impl-exportwatch
+  - sc.impl-informerwatch
+  - sc.impl-kcpstore
+  - sc.impl-metrics
+  - sc.internal-livekcp
+  - sc.internal-livekcp-livetest
   intent: 'This context is the controller runtime of kcp-libs: the generic work-queue
     driver that turns watched kcp resources into reconcile invocations. It exists
     so the deno workload packages and downstream consumers can share one tested scheduling

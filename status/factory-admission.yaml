@@ -1,17 +1,11 @@
 conditions:
-- message: 'missing: Admitter, Admitter.Admit, Admitter.Leases, Admitter.Wake, New,
-    Options, Source, Source.Capacity, Source.Parent, Source.Runs; unresolved: r.admit-grant:
-    interface:9c23d5af968c6dcd87d996b5fb785c81, r.admit-grant: method:9b26f8dc3db4f420718a3ae685d15ea8,
-    r.admit-no-parent: function:4204d25ce951cefafd1bb89729e7bd03, r.admit-plan: struct:c62339005d8ea8281d87db8bcb56a638,
-    r.leases-accessor: method:e452266abf564c3d1e61f18fb3d426f6, r.new-defaults: struct:3aede7d4f92074172612567f434a4408,
-    r.source-capacity: method:d3904e1762452936d94101cc4cfc4bbe, r.source-parent: method:596d1d41bb4565e406b326020ce25a82,
-    r.source-port: file:factory/admission/admission.go, r.source-runs: method:0d37cff2d12a3e38aa4393696696d4c5,
-    r.test-coverage: file:factory/admission/admission_test.go, r.wake-noop: method:fb3c595a96a98de51678ad45702f4519'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
-- message: no synced fingerprint has been recorded yet
-  reason: NotSyncedYet
+- message: observed facts match the synced fingerprint
+  reason: FingerprintEqual
   status: "False"
   type: Drifted
 - message: the spec passes the validator

@@ -2,11 +2,32 @@ apiVersion: specs.publicdomainrelay.dev/v1alpha1
 codeRefIndex:
 - file:factory/servicenames/servicenames.go servicenames.go@factory/servicenames/servicenames.go
 - file:factory/servicenames/servicenames_test.go servicenames_test.go@factory/servicenames/servicenames_test.go
+- function:07389965e6b38ea0b3612bdad786929e AdvertisedAddress@factory/servicenames/servicenames.go:166
+- function:b19b27cc115a548b83269276a58c99fc New@factory/servicenames/servicenames.go:73
+- interface:3f1bd9500073f2f4d05118ef71f4e7fa Source@factory/servicenames/servicenames.go:33
+- interface:519ba0a5dc01e2e03c8ae8130b661f15 PathResolver@factory/servicenames/servicenames.go:43
+- method:1d9eaefc92217c5a7cc9fcb25ad6cf14 Resolver.Tokens@factory/servicenames/servicenames.go:118
+- method:3bf4a3c644a5c736a402c5c943469567 PathResolver.Lookup@factory/servicenames/servicenames.go:44
+- method:4278b3fe1612ff604bfe889cf282fc0d Resolver.Name@factory/servicenames/servicenames.go:83
+- method:9f382eff81d8cc14c42263ff6cc96655 SourceFunc.Pods@factory/servicenames/servicenames.go:39
+- method:ad5afdbf8721ab5ce7a03ba3ddcd30e4 Resolver.Env@factory/servicenames/servicenames.go:140
+- method:af52145174fd9601d169c4b0b89a4a1a Resolver.Table@factory/servicenames/servicenames.go:93
+- method:ccfd372e76badab8463bd241875ea2cd PathResolverFunc.Lookup@factory/servicenames/servicenames.go:49
+- method:ec3d149f59e5f08d064d8abb43c7b47e Source.Pods@factory/servicenames/servicenames.go:34
+- struct:3112320f513f73cfe648eedde3b1fdc4 Resolver@factory/servicenames/servicenames.go:69
+- struct:cea2d734e279f4a25d0548390b498f77 Options@factory/servicenames/servicenames.go:53
+- type_alias:3403f9a23dfea8c2fabcfb5d23057f58 SourceFunc@factory/servicenames/servicenames.go:37
+- type_alias:d0b47bece9defe5890614e1e7fd29a77 PathResolverFunc@factory/servicenames/servicenames.go:47
 kind: SystemContext
 metadata:
   name: factory-servicenames
   namespace: default
 spec:
+  dependsOn:
+  - sc.abc-store
+  - sc.common-denospec
+  - sc.common-kcp
+  - sc.common-ref
   intent: This context exists so that workloads running under kcp can discover each
     other by name without a hand-written DNS configuration. It converts the pods a
     cluster controller already observes into a service table (name to advertised host:port),

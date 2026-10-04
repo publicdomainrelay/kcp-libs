@@ -3852,11 +3852,38 @@ system_contexts:
       for each run returned by queue.WakeList for the free slot count, where free
       is the limit minus the running count and is clamped at zero.
   upstream: self
-- codeRefIndex:
+- code:
+  - factory/controller/controller.go
+  - factory/controller/controller_test.go
+  - factory/controller/events.go
+  - factory/controller/live_test.go
+  codeRefIndex:
   - file:factory/controller/controller.go controller.go@factory/controller/controller.go
   - file:factory/controller/controller_test.go controller_test.go@factory/controller/controller_test.go
   - file:factory/controller/events.go events.go@factory/controller/events.go
   - file:factory/controller/live_test.go live_test.go@factory/controller/live_test.go
+  - function:9074c79f1f56d6b08908fad3482eacf7 DefaultWorkers@factory/controller/controller.go:134
+  - function:e71a19275883cd3b3727e16c601067ec New@factory/controller/controller.go:75
+  - method:1a8c9e2899cff2770239be37b7e2356e Controller.Conflicts@factory/controller/controller.go:150
+  - method:627af13a96e55d3834be1684b1f3a926 Controller.QueueDepth@factory/controller/controller.go:142
+  - method:7b04bad45e95e9143fa55f0f8586bbdb Controller.Run@factory/controller/controller.go:158
+  - method:ba8012ce4989a1a73fa61d029f34146c Controller.Errors@factory/controller/controller.go:154
+  - method:e3736f862df6f3ade0940b347f611edb Controller.Reconciles@factory/controller/controller.go:146
+  - method:e5158999a5682e7a4c200ae884ceaaa7 Controller.Enqueue@factory/controller/controller.go:138
+  - method:e95e98357d5f3058033476c49387e673 Controller.CacheAge@factory/controller/events.go:9
+  - struct:6973c4a29350d7c92098bf48291ceafd Controller@factory/controller/controller.go:51
+  depends_on:
+  - sc.abc-cache
+  - sc.abc-reconcile
+  - sc.common-logging
+  - sc.common-ref
+  - sc.common-statuspatch
+  - sc.impl-exportwatch
+  - sc.impl-informerwatch
+  - sc.impl-kcpstore
+  - sc.impl-metrics
+  - sc.internal-livekcp
+  - sc.internal-livekcp-livetest
   id: sc.factory-controller
   intent: 'This context is the controller runtime of kcp-libs: the generic work-queue
     driver that turns watched kcp resources into reconcile invocations. It exists
@@ -4018,9 +4045,33 @@ system_contexts:
       after, terminal) for a delay and requeue decision, and re-queues the key after
       that delay only when requeue is true.
   upstream: self
-- codeRefIndex:
+- code:
+  - factory/servicenames/servicenames.go
+  - factory/servicenames/servicenames_test.go
+  codeRefIndex:
   - file:factory/servicenames/servicenames.go servicenames.go@factory/servicenames/servicenames.go
   - file:factory/servicenames/servicenames_test.go servicenames_test.go@factory/servicenames/servicenames_test.go
+  - function:07389965e6b38ea0b3612bdad786929e AdvertisedAddress@factory/servicenames/servicenames.go:166
+  - function:b19b27cc115a548b83269276a58c99fc New@factory/servicenames/servicenames.go:73
+  - interface:3f1bd9500073f2f4d05118ef71f4e7fa Source@factory/servicenames/servicenames.go:33
+  - interface:519ba0a5dc01e2e03c8ae8130b661f15 PathResolver@factory/servicenames/servicenames.go:43
+  - method:1d9eaefc92217c5a7cc9fcb25ad6cf14 Resolver.Tokens@factory/servicenames/servicenames.go:118
+  - method:3bf4a3c644a5c736a402c5c943469567 PathResolver.Lookup@factory/servicenames/servicenames.go:44
+  - method:4278b3fe1612ff604bfe889cf282fc0d Resolver.Name@factory/servicenames/servicenames.go:83
+  - method:9f382eff81d8cc14c42263ff6cc96655 SourceFunc.Pods@factory/servicenames/servicenames.go:39
+  - method:ad5afdbf8721ab5ce7a03ba3ddcd30e4 Resolver.Env@factory/servicenames/servicenames.go:140
+  - method:af52145174fd9601d169c4b0b89a4a1a Resolver.Table@factory/servicenames/servicenames.go:93
+  - method:ccfd372e76badab8463bd241875ea2cd PathResolverFunc.Lookup@factory/servicenames/servicenames.go:49
+  - method:ec3d149f59e5f08d064d8abb43c7b47e Source.Pods@factory/servicenames/servicenames.go:34
+  - struct:3112320f513f73cfe648eedde3b1fdc4 Resolver@factory/servicenames/servicenames.go:69
+  - struct:cea2d734e279f4a25d0548390b498f77 Options@factory/servicenames/servicenames.go:53
+  - type_alias:3403f9a23dfea8c2fabcfb5d23057f58 SourceFunc@factory/servicenames/servicenames.go:37
+  - type_alias:d0b47bece9defe5890614e1e7fd29a77 PathResolverFunc@factory/servicenames/servicenames.go:47
+  depends_on:
+  - sc.abc-store
+  - sc.common-denospec
+  - sc.common-kcp
+  - sc.common-ref
   id: sc.factory-servicenames
   intent: This context exists so that workloads running under kcp can discover each
     other by name without a hand-written DNS configuration. It converts the pods a
@@ -4185,11 +4236,27 @@ system_contexts:
       result as a JSON object string, or "{}" when marshalling fails. It mints nothing
       when the account is nil or no Minter is set.
   upstream: self
-- codeRefIndex:
+- code:
+  - impl/assets/assets.go
+  - impl/assets/assets_test.go
+  - impl/assets/dns.go
+  - impl/assets/dns_test.go
+  - impl/assets/dnsprobe.ts
+  - impl/assets/dnsshim.ts
+  codeRefIndex:
   - file:impl/assets/assets.go assets.go@impl/assets/assets.go
+  - file:impl/assets/assets_test.go assets_test.go@impl/assets/assets_test.go
   - file:impl/assets/dns.go dns.go@impl/assets/dns.go
+  - file:impl/assets/dns_test.go dns_test.go@impl/assets/dns_test.go
   - file:impl/assets/dnsprobe.ts dnsprobe.ts@impl/assets/dnsprobe.ts
   - file:impl/assets/dnsshim.ts dnsshim.ts@impl/assets/dnsshim.ts
+  - function:d3ebda2faf6210986c5ca5687c578339 DNSSet@impl/assets/dns.go:18
+  - method:459575a1ced2aec2dc09df6c846496d1 Set.Materialise@impl/assets/assets.go:30
+  - method:621b8207809a46a163d2af9949761ea0 Set.Rewrite@impl/assets/assets.go:44
+  - method:dfdb88e0a88513d22977521f62fadc3c Set.Path@impl/assets/assets.go:65
+  - struct:6a6e6a1cca0d3f0928da5e266ee9e2da Set@impl/assets/assets.go:12
+  depends_on:
+  - sc.common-denospec
   id: sc.impl-assets
   intent: This context exists so callers can hand a declarative set of asset files
     to one object and get back a stable name-to-path map, without caring when or how
@@ -4279,8 +4346,33 @@ system_contexts:
     text: Set guards its written flag, path cache, and error with a mutex so concurrent
       Materialise, Rewrite, and Path calls stay consistent.
   upstream: self
-- codeRefIndex:
+- code:
+  - impl/execrunner/engine.go
+  - impl/execrunner/pod.go
+  - impl/execrunner/pod_test.go
+  - impl/execrunner/supervisor.go
+  codeRefIndex:
+  - file:impl/execrunner/engine.go engine.go@impl/execrunner/engine.go
+  - file:impl/execrunner/pod.go pod.go@impl/execrunner/pod.go
+  - file:impl/execrunner/pod_test.go pod_test.go@impl/execrunner/pod_test.go
   - file:impl/execrunner/supervisor.go supervisor.go@impl/execrunner/supervisor.go
+  - function:00b074a7109347b2daa577f4bdc75467 NewPod@impl/execrunner/pod.go:51
+  - function:4c978aedd11952f3ee6365eb5898c321 NewEngine@impl/execrunner/engine.go:37
+  - method:0cfcac9db3f96294b49ce881bee14d93 Pod.Observe@impl/execrunner/pod.go:95
+  - method:2beee7604d9afe94ca0951259ecada45 Engine.Start@impl/execrunner/engine.go:63
+  - method:42a8aeb02623810d653a714732142368 Engine.Stop@impl/execrunner/engine.go:106
+  - method:53d6600d1f29a1f604f9fe12de4fe3df Engine.Probe@impl/execrunner/engine.go:110
+  - method:55c0a5d0dd6cf0808dd2503822444b65 Pod.Stop@impl/execrunner/pod.go:114
+  - method:e4363e67372d0067b655391e57db53ed Pod.Start@impl/execrunner/pod.go:72
+  - method:e837684e27d5363ecf736c655e7e5b24 Engine.Observe@impl/execrunner/engine.go:84
+  - method:ef6ab966433b9776496a384adb8cf1e1 Pod.Probe@impl/execrunner/pod.go:118
+  - struct:5a9b7da405a97b69724f6f93d52cf4ab Engine@impl/execrunner/engine.go:29
+  - struct:6aef5701957707ea4bef629407cabc37 EngineOptions@impl/execrunner/engine.go:15
+  - struct:aa3532720785693eda3016d5bd68272c Pod@impl/execrunner/pod.go:39
+  - struct:c617bd87489adfc74952ca77d12f02ae PodOptions@impl/execrunner/pod.go:21
+  depends_on:
+  - sc.abc-runner
+  - sc.common-outputs
   id: sc.impl-execrunner
   intent: 'This context exists so the execrunner package has a written specification
     of the process-execution engine and pod: what the two option structs and their
@@ -4458,8 +4550,22 @@ system_contexts:
     text: When a timeout is configured, the engine must enforce it against the running
       process.
   upstream: self
-- codeRefIndex:
+- code:
+  - impl/exportwatch/exportwatch.go
+  codeRefIndex:
   - file:impl/exportwatch/exportwatch.go exportwatch.go@impl/exportwatch/exportwatch.go
+  - function:0e22ac2739d17dd3caab2abd75c390e0 Discover@impl/exportwatch/exportwatch.go:63
+  - function:4855b61ac47e7bbc0bb211b8661e9d59 FromList@impl/exportwatch/exportwatch.go:75
+  - function:48d584db657cf9d26e0c376b34aa6773 Await@impl/exportwatch/exportwatch.go:107
+  - function:96edd4eb5a20bcded694ab307fa5f365 Paths@impl/exportwatch/exportwatch.go:187
+  - function:b185d3ac6de1d5bfcfd671f7afeca0c2 WatchEndpointSlices@impl/exportwatch/exportwatch.go:141
+  - function:efb61af66b10e227581818288975a28e Client@impl/exportwatch/exportwatch.go:50
+  - method:631983bf08fd7d3133061275ab1f910d Endpoints.Ready@impl/exportwatch/exportwatch.go:98
+  - struct:99a8a7585a6b5d30375c471a8fb38c71 Options@impl/exportwatch/exportwatch.go:29
+  - type_alias:94252f87faff3176628078b9500af709 Endpoints@impl/exportwatch/exportwatch.go:27
+  depends_on:
+  - sc.common-clientlimit
+  - sc.common-ref
   id: sc.impl-exportwatch
   intent: 'This context exists so callers can wait until a provider''s exports are
     actually reachable before proceeding: it isolates the endpoint-slice discovery,

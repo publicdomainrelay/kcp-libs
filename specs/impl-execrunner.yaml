@@ -1,11 +1,31 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
 codeRefIndex:
+- file:impl/execrunner/engine.go engine.go@impl/execrunner/engine.go
+- file:impl/execrunner/pod.go pod.go@impl/execrunner/pod.go
+- file:impl/execrunner/pod_test.go pod_test.go@impl/execrunner/pod_test.go
 - file:impl/execrunner/supervisor.go supervisor.go@impl/execrunner/supervisor.go
+- function:00b074a7109347b2daa577f4bdc75467 NewPod@impl/execrunner/pod.go:51
+- function:4c978aedd11952f3ee6365eb5898c321 NewEngine@impl/execrunner/engine.go:37
+- method:0cfcac9db3f96294b49ce881bee14d93 Pod.Observe@impl/execrunner/pod.go:95
+- method:2beee7604d9afe94ca0951259ecada45 Engine.Start@impl/execrunner/engine.go:63
+- method:42a8aeb02623810d653a714732142368 Engine.Stop@impl/execrunner/engine.go:106
+- method:53d6600d1f29a1f604f9fe12de4fe3df Engine.Probe@impl/execrunner/engine.go:110
+- method:55c0a5d0dd6cf0808dd2503822444b65 Pod.Stop@impl/execrunner/pod.go:114
+- method:e4363e67372d0067b655391e57db53ed Pod.Start@impl/execrunner/pod.go:72
+- method:e837684e27d5363ecf736c655e7e5b24 Engine.Observe@impl/execrunner/engine.go:84
+- method:ef6ab966433b9776496a384adb8cf1e1 Pod.Probe@impl/execrunner/pod.go:118
+- struct:5a9b7da405a97b69724f6f93d52cf4ab Engine@impl/execrunner/engine.go:29
+- struct:6aef5701957707ea4bef629407cabc37 EngineOptions@impl/execrunner/engine.go:15
+- struct:aa3532720785693eda3016d5bd68272c Pod@impl/execrunner/pod.go:39
+- struct:c617bd87489adfc74952ca77d12f02ae PodOptions@impl/execrunner/pod.go:21
 kind: SystemContext
 metadata:
   name: impl-execrunner
   namespace: default
 spec:
+  dependsOn:
+  - sc.abc-runner
+  - sc.common-outputs
   intent: 'This context exists so the execrunner package has a written specification
     of the process-execution engine and pod: what the two option structs and their
     constructors require and default, and what the four lifecycle operations on each
