@@ -1156,7 +1156,13 @@ system_contexts:
     level: MUST
   - id: r.table-skips-unlabelled-and-unadvertised
     level: MUST
+  - id: r.token-keys-agree-with-the-service-name
+    level: MUST
   - id: r.tokens-per-workspace
+    level: MUST
+  - id: r.workspace-source-tests
+    level: MUST
+  - id: r.workspace-source-widens-the-token-set
     level: MUST
   codeRefIndex:
   - file:factory/servicenames/servicenames.go servicenames.go@factory/servicenames/servicenames.go

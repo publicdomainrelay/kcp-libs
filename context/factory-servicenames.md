@@ -2,7 +2,7 @@
 
 Repository: `kcp-libs`
 
-This context exists so that workloads running under kcp can discover each other by name without a hand-written DNS configuration. It converts the pods a cluster controller already observes into a service table (name to advertised host:port), the workspace list worth addressing, and the service account tokens needed to reach them, then hands that whole bundle to a workload as environment variables. It also defines the seams (Source, PathResolver, TokenMinter) that keep the package free of any particular client, so a caller supplies real store-backed pods and paths while tests supply plain functions.
+This context exists so that workloads running under kcp can discover each other by name without a hand-written DNS configuration. It converts the pods a cluster controller already observes into a service table (name to advertised host:port), the workspace list worth addressing, and the service account tokens needed to reach them, then hands that whole bundle to a workload as environment variables. It also defines the seams (Source, PathResolver, TokenMinter, the workspace source) that keep the package free of any particular client, so a caller supplies real store-backed pods, paths and workspaces while tests supply plain functions. The token map and the service names agree on one cluster naming on purpose: a workload discovers a peer by parsing the peer's name back to its cluster and looking the token up by it, so a token keyed any other way is a peer it can never reach.
 
 _The resolved code references are regenerated on every run. Cite the ids above rather than writing them here._
 

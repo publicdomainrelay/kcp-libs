@@ -1,0 +1,20 @@
+apiVersion: specs.publicdomainrelay.dev/v1alpha1
+kind: SpecChange
+metadata:
+  name: factory-servicenames-s2c-d6893cea853e
+  namespace: default
+spec:
+  systemContext: factory-servicenames
+  direction: SpecToCode
+  fromSpecHash: 4d1c0cbdbbf743fa9968ac7eddf2dae33e4e822cabc33c65fbba9880b814ff98
+  toSpecHash: d6893cea853eaeaec46fd99256a613f34f7ded50328129c95a7d723966cbff18
+  delta:
+    counts:
+      added: 3
+      changed: 1
+    requirements:
+    - +r.token-keys-agree-with-the-service-name
+    - +r.workspace-source-tests
+    - +r.workspace-source-widens-the-token-set
+status:
+  phase: Pending
