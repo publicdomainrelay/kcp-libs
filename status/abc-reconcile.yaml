@@ -1,0 +1,181 @@
+conditions:
+- message: 'undeclared: Bridge, Bridge.Process, Handler, Handler.Process, HandlerFunc,
+    HandlerFunc.Process, Key, Key.String, Kind, Operation, Patch, Policy, Policy.Clamp,
+    Policy.ConflictAfter, Policy.Default, Policy.Next, Reconciler, Reconciler.Reconcile,
+    ReconcilerFunc, ReconcilerFunc.Reconcile, Result, Result.Add, Result.AddFor, Result.Deletes,
+    Result.Has, Result.IsCleared, Result.ReleasesFinalizer'
+  reason: InterfacesMissing
+  status: "False"
+  type: CodeSynced
+- message: observed facts match the synced fingerprint
+  reason: FingerprintEqual
+  status: "False"
+  type: Drifted
+- message: the spec passes the validator
+  reason: ValidatorPassed
+  status: "True"
+  type: SpecValid
+observed:
+  files:
+  - abc/reconcile/handler.go
+  - abc/reconcile/reconcile.go
+  - abc/reconcile/reconcile_test.go
+  fingerprint: 7c683198c743c51ac982ede698fa067db256417452c9a127d93da74ad792438a
+  interfaces:
+  - codegraphId: struct:311077d3b54038c2cab46c936ad32911
+    file: abc/reconcile/handler.go
+    kind: struct
+    line: 13
+    name: Key
+  - codegraphId: method:9b7c06346e0708f14275e224237b1311
+    file: abc/reconcile/handler.go
+    kind: method
+    line: 19
+    name: Key.String
+    signature: () string
+  - codegraphId: interface:b487203a74df196c4e2c24e2b4285338
+    file: abc/reconcile/handler.go
+    kind: interface
+    line: 23
+    name: Handler
+  - codegraphId: method:9224182fbfdfdef452b5728e17d9ae4b
+    file: abc/reconcile/handler.go
+    kind: method
+    line: 24
+    name: Handler.Process
+    signature: (ctx context.Context, key Key) (after time.Duration, terminal bool,
+      err error)
+  - codegraphId: type_alias:f54cc75d5b03ae26342301628d11db2a
+    file: abc/reconcile/handler.go
+    kind: type_alias
+    line: 27
+    name: HandlerFunc
+  - codegraphId: method:ca917977c112da3e838bc72e2e3a876a
+    file: abc/reconcile/handler.go
+    kind: method
+    line: 29
+    name: HandlerFunc.Process
+    signature: (ctx context.Context, key Key) (time.Duration, bool, error)
+  - codegraphId: struct:ff932dc480705dcd5cdfaddc8173a33d
+    file: abc/reconcile/handler.go
+    kind: struct
+    line: 33
+    name: Policy
+  - codegraphId: method:6b92208396da893648d337e25d5511de
+    file: abc/reconcile/handler.go
+    kind: method
+    line: 41
+    name: Policy.Default
+    signature: () time.Duration
+  - codegraphId: method:c71227b4698175d8155a30f4dc3044c5
+    file: abc/reconcile/handler.go
+    kind: method
+    line: 48
+    name: Policy.Clamp
+    signature: () time.Duration
+  - codegraphId: method:38de4d26da42bde321cbbf51907e4d63
+    file: abc/reconcile/handler.go
+    kind: method
+    line: 55
+    name: Policy.Next
+    signature: (key Key, after time.Duration, terminal bool) (time.Duration, bool)
+  - codegraphId: method:ef9418fe4b597f6af3ccdc81706f3418
+    file: abc/reconcile/handler.go
+    kind: method
+    line: 68
+    name: Policy.ConflictAfter
+    signature: () time.Duration
+  - codegraphId: struct:4d372b9ebd4367461eb8d9017af139b9
+    file: abc/reconcile/handler.go
+    kind: struct
+    line: 76
+    name: Bridge
+  - codegraphId: method:b160656aa87cd0cfed9c4da489da5d55
+    file: abc/reconcile/handler.go
+    kind: method
+    line: 86
+    name: Bridge.Process
+    signature: (ctx context.Context, key Key) (time.Duration, bool, error)
+  - codegraphId: type_alias:64c437b8143c22c0f14b5d784db5af07
+    file: abc/reconcile/reconcile.go
+    kind: type_alias
+    line: 16
+    name: Kind
+  - codegraphId: struct:8aa75e5f31cd8916db4202af768a91df
+    file: abc/reconcile/reconcile.go
+    kind: struct
+    line: 30
+    name: Operation
+  - codegraphId: struct:d87af6ffc4b07f462a71cc788c1cd06b
+    file: abc/reconcile/reconcile.go
+    kind: struct
+    line: 36
+    name: Result
+  - codegraphId: method:b1bc8546c9c8172b30083faf2e5c9f41
+    file: abc/reconcile/reconcile.go
+    kind: method
+    line: 48
+    name: Result.Add
+    signature: (kind Kind)
+  - codegraphId: method:8d872cd3fe248f9c368a23eac9ee0b39
+    file: abc/reconcile/reconcile.go
+    kind: method
+    line: 52
+    name: Result.AddFor
+    signature: (kind Kind, target ref.Ref)
+  - codegraphId: method:255c7ada4931d84cece692ee65f65dfc
+    file: abc/reconcile/reconcile.go
+    kind: method
+    line: 56
+    name: Result.Has
+    signature: (kind Kind) bool
+  - codegraphId: method:05d31eb2f71b4cd30406111a8bab5e42
+    file: abc/reconcile/reconcile.go
+    kind: method
+    line: 65
+    name: Result.Deletes
+    signature: () bool
+  - codegraphId: method:9f9066b546ded29a0050478bc6b96283
+    file: abc/reconcile/reconcile.go
+    kind: method
+    line: 69
+    name: Result.ReleasesFinalizer
+    signature: () bool
+  - codegraphId: method:c38c6e41af7aa850b3556c64dd441f00
+    file: abc/reconcile/reconcile.go
+    kind: method
+    line: 73
+    name: Result.IsCleared
+    signature: (field string) bool
+  - codegraphId: function:a28981cbe7cb44daf4d0bad5e126a5dd
+    file: abc/reconcile/reconcile.go
+    kind: function
+    line: 77
+    name: Patch
+    signature: (result Result[Status]) ([]byte, error)
+  - codegraphId: interface:acc76b971252c6bdba6da6e46cec7cdd
+    file: abc/reconcile/reconcile.go
+    kind: interface
+    line: 99
+    name: Reconciler
+  - codegraphId: method:169f5c0dc59cff9f1c05e87da663b5ce
+    file: abc/reconcile/reconcile.go
+    kind: method
+    line: 100
+    name: Reconciler.Reconcile
+    signature: (ctx context.Context, observed Observed) (Result[Status], error)
+  - codegraphId: type_alias:d32f5b88a1070a50862dbe142558d9c4
+    file: abc/reconcile/reconcile.go
+    kind: type_alias
+    line: 103
+    name: ReconcilerFunc
+  - codegraphId: method:3141eb8d60a3d8ca6bae7f985285e762
+    file: abc/reconcile/reconcile.go
+    kind: method
+    line: 105
+    name: ReconcilerFunc.Reconcile
+    signature: (ctx context.Context, observed Observed) (Result[Status], error)
+observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+realizedSpecHash: 2b22e8669e5b26b1639fe255adcffc7fd88aa2b71683d83b2ebd96a787c81e0d
+syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+syncedFingerprint: 7c683198c743c51ac982ede698fa067db256417452c9a127d93da74ad792438a

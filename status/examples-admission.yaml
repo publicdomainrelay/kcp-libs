@@ -1,0 +1,48 @@
+conditions:
+- message: 'undeclared: Run, source.Capacity, source.Parent, source.Runs'
+  reason: InterfacesMissing
+  status: "False"
+  type: CodeSynced
+- message: observed facts match the synced fingerprint
+  reason: FingerprintEqual
+  status: "False"
+  type: Drifted
+- message: the spec passes the validator
+  reason: ValidatorPassed
+  status: "True"
+  type: SpecValid
+observed:
+  files:
+  - examples/admission/main.go
+  - examples/admission/main_test.go
+  fingerprint: 5e60d39798956a1481ad6d9cac338e793d3cd4fd79476f9d9ed982303f6eb75a
+  interfaces:
+  - codegraphId: method:9391ce08b0aaa1ca190f09656b2de077
+    file: examples/admission/main.go
+    kind: method
+    line: 62
+    name: source.Parent
+    signature: (ctx context.Context, run queue.Run) (ref.Ref, bool, error)
+  - codegraphId: method:e222d2ede890130c86294ba108430575
+    file: examples/admission/main.go
+    kind: method
+    line: 74
+    name: source.Runs
+    signature: (ctx context.Context, parent ref.Ref) ([]queue.Run, error)
+  - codegraphId: method:4b1c829db1dd2db486e75edae8ec99f8
+    file: examples/admission/main.go
+    kind: method
+    line: 95
+    name: source.Capacity
+    signature: (ctx context.Context, parent ref.Ref) (queue.Capacity, *queue.Blocker,
+      error)
+  - codegraphId: function:382c144be35e7a3b04857018760f4c2b
+    file: examples/admission/main.go
+    kind: function
+    line: 126
+    name: Run
+    signature: (ctx context.Context, out io.Writer) error
+observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+realizedSpecHash: 845e26d6cbfd6210fa2dc387d251248ed375d30bcabd920cde3dfd9cccdff022
+syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+syncedFingerprint: 5e60d39798956a1481ad6d9cac338e793d3cd4fd79476f9d9ed982303f6eb75a

@@ -1,0 +1,109 @@
+conditions:
+- message: 'undeclared: EngineRequest, EngineRunner, EngineRunner.Observe, EngineRunner.Probe,
+    EngineRunner.Start, EngineRunner.Stop, EngineStatus, PodRequest, PodRunner, PodRunner.Observe,
+    PodRunner.Probe, PodRunner.Start, PodRunner.Stop, PodStatus, State'
+  reason: InterfacesMissing
+  status: "False"
+  type: CodeSynced
+- message: observed facts match the synced fingerprint
+  reason: FingerprintEqual
+  status: "False"
+  type: Drifted
+- message: the spec passes the validator
+  reason: ValidatorPassed
+  status: "True"
+  type: SpecValid
+observed:
+  files:
+  - abc/runner/runner.go
+  fingerprint: 015e905df3adaf5c0e59ed3512ffdd239cfda4c9a8539d17e943a50e261e6afb
+  interfaces:
+  - codegraphId: type_alias:5468a2c306be0c500554229bdda5aadd
+    file: abc/runner/runner.go
+    kind: type_alias
+    line: 8
+    name: State
+  - codegraphId: struct:46cec8074c83b78c8fabcd0fc4957e32
+    file: abc/runner/runner.go
+    kind: struct
+    line: 18
+    name: PodRequest
+  - codegraphId: struct:5dc6f04f8f1d6725396ad778f57753ed
+    file: abc/runner/runner.go
+    kind: struct
+    line: 40
+    name: PodStatus
+  - codegraphId: interface:710591a1c2c64a81c34bf809d899679a
+    file: abc/runner/runner.go
+    kind: interface
+    line: 50
+    name: PodRunner
+  - codegraphId: method:fdb656c1b22baaa050976fef1ccc2950
+    file: abc/runner/runner.go
+    kind: method
+    line: 51
+    name: PodRunner.Start
+    signature: (ctx context.Context, req PodRequest) (string, error)
+  - codegraphId: method:0dd0d42d1a37091f0638d086e94ed5c6
+    file: abc/runner/runner.go
+    kind: method
+    line: 53
+    name: PodRunner.Observe
+    signature: (ctx context.Context, runID string) (PodStatus, error)
+  - codegraphId: method:15f9ba905e255f2171396063a3091a74
+    file: abc/runner/runner.go
+    kind: method
+    line: 55
+    name: PodRunner.Stop
+    signature: (ctx context.Context, runID string) error
+  - codegraphId: method:405b17e18e48a4f4ac2253ec9ce449dd
+    file: abc/runner/runner.go
+    kind: method
+    line: 57
+    name: PodRunner.Probe
+    signature: (ctx context.Context, runID string, command []string, timeout time.Duration)
+      (bool, error)
+  - codegraphId: struct:bd7270a885b505237f5cd4d9038da86d
+    file: abc/runner/runner.go
+    kind: struct
+    line: 60
+    name: EngineRequest
+  - codegraphId: struct:b8dec15e30496deaf9bd895e8e7218d8
+    file: abc/runner/runner.go
+    kind: struct
+    line: 70
+    name: EngineStatus
+  - codegraphId: interface:cee292400f7e239797b1b10cd6e5e2f3
+    file: abc/runner/runner.go
+    kind: interface
+    line: 76
+    name: EngineRunner
+  - codegraphId: method:9b3f09bbc26d631a7a08a5c4713097bc
+    file: abc/runner/runner.go
+    kind: method
+    line: 77
+    name: EngineRunner.Start
+    signature: (ctx context.Context, req EngineRequest) (string, error)
+  - codegraphId: method:193f9210bd1837651faf136898a881d1
+    file: abc/runner/runner.go
+    kind: method
+    line: 79
+    name: EngineRunner.Observe
+    signature: (ctx context.Context, runID string) (EngineStatus, error)
+  - codegraphId: method:febb512db7e00e28129ca183c51968b0
+    file: abc/runner/runner.go
+    kind: method
+    line: 81
+    name: EngineRunner.Stop
+    signature: (ctx context.Context, runID string) error
+  - codegraphId: method:387e9c4ad715a0e08a6e5e5208da6a72
+    file: abc/runner/runner.go
+    kind: method
+    line: 83
+    name: EngineRunner.Probe
+    signature: (ctx context.Context, runID string, command []string, timeout time.Duration)
+      (bool, error)
+observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+realizedSpecHash: 7e3c6667e97be86e3709b5b9a4e6699a4ad7482c2a87e5adbeaaa0f85be64643
+syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+syncedFingerprint: 015e905df3adaf5c0e59ed3512ffdd239cfda4c9a8539d17e943a50e261e6afb

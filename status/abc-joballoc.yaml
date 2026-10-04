@@ -1,0 +1,76 @@
+conditions:
+- message: 'undeclared: Allocation, Allocator, Allocator.Allocate, Allocator.Forget,
+    Allocator.Len, Allocator.Names, Allocator.Pending, MergeNames, New'
+  reason: InterfacesMissing
+  status: "False"
+  type: CodeSynced
+- message: observed facts match the synced fingerprint
+  reason: FingerprintEqual
+  status: "False"
+  type: Drifted
+- message: the spec passes the validator
+  reason: ValidatorPassed
+  status: "True"
+  type: SpecValid
+observed:
+  files:
+  - abc/joballoc/joballoc.go
+  - abc/joballoc/joballoc_test.go
+  fingerprint: 9507bb1af103d77777996e8721bf31e436d53f131d16287076439df8d208c1be
+  interfaces:
+  - codegraphId: struct:c6c45587967912c642f434fc5c395fac
+    file: abc/joballoc/joballoc.go
+    kind: struct
+    line: 10
+    name: Allocation
+  - codegraphId: struct:81a3d6c6679a07f9c85fcbb079cd24ef
+    file: abc/joballoc/joballoc.go
+    kind: struct
+    line: 16
+    name: Allocator
+  - codegraphId: function:e5835aa23953e8fe5e8ba0521c6f6305
+    file: abc/joballoc/joballoc.go
+    kind: function
+    line: 20
+    name: New
+    signature: (ttl time.Duration) *Allocator
+  - codegraphId: method:1d809a0f9cc0db66dd09568aab52e10e
+    file: abc/joballoc/joballoc.go
+    kind: method
+    line: 24
+    name: Allocator.Allocate
+    signature: (r ref.Ref, names []string, now time.Time)
+  - codegraphId: method:2fe2fe5409de2aff6260db2ad57424e1
+    file: abc/joballoc/joballoc.go
+    kind: method
+    line: 35
+    name: Allocator.Names
+    signature: (r ref.Ref, now time.Time) []string
+  - codegraphId: method:9c2e809f72d7951e74cf7925860610ec
+    file: abc/joballoc/joballoc.go
+    kind: method
+    line: 47
+    name: Allocator.Pending
+    signature: (r ref.Ref, observed []string, now time.Time) []string
+  - codegraphId: method:10aee9a9b59c82c429e59eda7063cff2
+    file: abc/joballoc/joballoc.go
+    kind: method
+    line: 67
+    name: Allocator.Forget
+    signature: (r ref.Ref)
+  - codegraphId: method:99144fd4f43e31bdffe2206a3a99a050
+    file: abc/joballoc/joballoc.go
+    kind: method
+    line: 71
+    name: Allocator.Len
+    signature: () int
+  - codegraphId: function:3f2d8c8fe1fe9a1ffe2aec6ae9cb21b1
+    file: abc/joballoc/joballoc.go
+    kind: function
+    line: 75
+    name: MergeNames
+    signature: (groups ...[]string) []string
+observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+realizedSpecHash: ef1e5e31345d5e43632e10acbd66bde62d48d729cf5b146618ddc49f362787ca
+syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+syncedFingerprint: 9507bb1af103d77777996e8721bf31e436d53f131d16287076439df8d208c1be

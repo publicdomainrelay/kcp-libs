@@ -1,0 +1,141 @@
+apiVersion: open-architecture.dffml.github.io/v0alpha1
+kind: OpenArchitecture
+metadata:
+  branch: open-architecture/kcp-libs
+  name: kcp-libs
+system_contexts:
+- code:
+  - abc/cache/cache.go
+  - abc/cache/cache_test.go
+  id: sc.abc-cache
+  name: abc-cache
+  upstream: self
+- code:
+  - abc/joballoc/joballoc.go
+  - abc/joballoc/joballoc_test.go
+  id: sc.abc-joballoc
+  name: abc-joballoc
+  upstream: self
+- code:
+  - abc/pki/pki.go
+  id: sc.abc-pki
+  name: abc-pki
+  upstream: self
+- code:
+  - abc/policy/policy.go
+  id: sc.abc-policy
+  name: abc-policy
+  upstream: self
+- code:
+  - abc/probe/probe.go
+  - abc/probe/probe_test.go
+  id: sc.abc-probe
+  name: abc-probe
+  upstream: self
+- code:
+  - abc/queue/leases.go
+  - abc/queue/leases_test.go
+  - abc/queue/queue.go
+  - abc/queue/queue_test.go
+  id: sc.abc-queue
+  name: abc-queue
+  upstream: self
+- code:
+  - abc/reconcile/handler.go
+  - abc/reconcile/reconcile.go
+  - abc/reconcile/reconcile_test.go
+  id: sc.abc-reconcile
+  name: abc-reconcile
+  upstream: self
+- code:
+  - abc/runner/runner.go
+  id: sc.abc-runner
+  name: abc-runner
+  upstream: self
+- code:
+  - abc/runref/runref.go
+  - abc/runref/runref_test.go
+  id: sc.abc-runref
+  name: abc-runref
+  upstream: self
+- code:
+  - abc/store/store.go
+  - abc/store/store_test.go
+  id: sc.abc-store
+  name: abc-store
+  upstream: self
+- code:
+  - common/clientlimit/clientlimit.go
+  - common/clientlimit/clientlimit_test.go
+  id: sc.common-clientlimit
+  name: common-clientlimit
+  upstream: self
+- code:
+  - common/condition/condition.go
+  - common/condition/condition_test.go
+  id: sc.common-condition
+  name: common-condition
+  upstream: self
+- code:
+  - common/denocomputer/denocomputer.go
+  - common/denocomputer/denocomputer_test.go
+  id: sc.common-denocomputer
+  name: common-denocomputer
+  upstream: self
+- code:
+  - common/denospec/denospec.go
+  - common/denospec/denospec_contract_test.go
+  - common/denospec/denospec_test.go
+  id: sc.common-denospec
+  name: common-denospec
+  upstream: self
+- code:
+  - common/expiringmap/expiringmap.go
+  - common/expiringmap/expiringmap_test.go
+  id: sc.common-expiringmap
+  name: common-expiringmap
+  upstream: self
+- code:
+  - common/kcp/kcp.go
+  - common/kcp/kcp_test.go
+  id: sc.common-kcp
+  name: common-kcp
+  upstream: self
+- code:
+  - common/logging/logging.go
+  id: sc.common-logging
+  name: common-logging
+  upstream: self
+- code:
+  - common/outputs/outputs.go
+  - common/outputs/outputs_test.go
+  id: sc.common-outputs
+  name: common-outputs
+  upstream: self
+- code:
+  - common/ref/ref.go
+  - common/ref/ref_test.go
+  id: sc.common-ref
+  name: common-ref
+  upstream: self
+- code:
+  - common/statuspatch/statuspatch.go
+  - common/statuspatch/statuspatch_test.go
+  id: sc.common-statuspatch
+  name: common-statuspatch
+  upstream: self
+- code:
+  - common/ttl/ttl.go
+  - common/ttl/ttl_test.go
+  id: sc.common-ttl
+  name: common-ttl
+  upstream: self
+- code:
+  - examples/admission/main.go
+  - examples/admission/main_test.go
+  id: sc.examples-admission
+  name: examples-admission
+  upstream: self
+- id: sc.examples-controller
+  name: examples-controller
+  upstream: self

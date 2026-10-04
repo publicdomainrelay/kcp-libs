@@ -1,0 +1,29 @@
+conditions:
+- message: 'undeclared: Apply'
+  reason: InterfacesMissing
+  status: "False"
+  type: CodeSynced
+- message: observed facts match the synced fingerprint
+  reason: FingerprintEqual
+  status: "False"
+  type: Drifted
+- message: the spec passes the validator
+  reason: ValidatorPassed
+  status: "True"
+  type: SpecValid
+observed:
+  files:
+  - common/clientlimit/clientlimit.go
+  - common/clientlimit/clientlimit_test.go
+  fingerprint: 716b8dee84234787d3493b101d1d71e70c6765f5df72112d5870cbbb783a9ee5
+  interfaces:
+  - codegraphId: function:67bc041de773d39e4803a9795f096d96
+    file: common/clientlimit/clientlimit.go
+    kind: function
+    line: 9
+    name: Apply
+    signature: (cfg *rest.Config, qps float32, burst int) *rest.Config
+observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+realizedSpecHash: 3415f1e3bb152ff7ed5f7f0d08db658e1cf0ef30ecd3f7c38d6d7308dad8cf64
+syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+syncedFingerprint: 716b8dee84234787d3493b101d1d71e70c6765f5df72112d5870cbbb783a9ee5

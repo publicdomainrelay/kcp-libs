@@ -1,0 +1,59 @@
+conditions:
+- message: 'undeclared: FinalizerAdd, FinalizerRemove, FinalizersOf, Merge, Metadata,
+    WithResourceVersion'
+  reason: InterfacesMissing
+  status: "False"
+  type: CodeSynced
+- message: observed facts match the synced fingerprint
+  reason: FingerprintEqual
+  status: "False"
+  type: Drifted
+- message: the spec passes the validator
+  reason: ValidatorPassed
+  status: "True"
+  type: SpecValid
+observed:
+  files:
+  - common/statuspatch/statuspatch.go
+  - common/statuspatch/statuspatch_test.go
+  fingerprint: 3880676db9d454ba90560a536907e8c20ab24c597b49c4d98873746a617c520e
+  interfaces:
+  - codegraphId: function:146b92aee570e1cccf066680c85a4988
+    file: common/statuspatch/statuspatch.go
+    kind: function
+    line: 8
+    name: Merge
+    signature: (status map[string]any) ([]byte, error)
+  - codegraphId: function:e490ecee35ab297d47aa943e045c98b3
+    file: common/statuspatch/statuspatch.go
+    kind: function
+    line: 16
+    name: WithResourceVersion
+    signature: (body []byte, version string) ([]byte, error)
+  - codegraphId: function:e6682cb9b4a0a03a95c84fedefb98805
+    file: common/statuspatch/statuspatch.go
+    kind: function
+    line: 32
+    name: FinalizerRemove
+    signature: (current []string, dropped string) ([]byte, error)
+  - codegraphId: function:973dee6f0664f3fb6b8b0860b5ec3a25
+    file: common/statuspatch/statuspatch.go
+    kind: function
+    line: 48
+    name: FinalizerAdd
+    signature: (finalizers []string) ([]byte, error)
+  - codegraphId: struct:9ddae76e6ab972a834ddad24d5320169
+    file: common/statuspatch/statuspatch.go
+    kind: struct
+    line: 58
+    name: Metadata
+  - codegraphId: function:a0ef10c6d57cf09c7ea23871b9b2c059
+    file: common/statuspatch/statuspatch.go
+    kind: function
+    line: 62
+    name: FinalizersOf
+    signature: (body []byte) ([]string, error)
+observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+realizedSpecHash: 69034002f26bf7f25ee137ee76eb9ee3791e662a43aa3ef3732dc9be28f05e66
+syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+syncedFingerprint: 3880676db9d454ba90560a536907e8c20ab24c597b49c4d98873746a617c520e

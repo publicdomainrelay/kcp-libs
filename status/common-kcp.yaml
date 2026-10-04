@@ -1,0 +1,35 @@
+conditions:
+- message: 'undeclared: ServiceFQDN, ServiceLabels'
+  reason: InterfacesMissing
+  status: "False"
+  type: CodeSynced
+- message: observed facts match the synced fingerprint
+  reason: FingerprintEqual
+  status: "False"
+  type: Drifted
+- message: the spec passes the validator
+  reason: ValidatorPassed
+  status: "True"
+  type: SpecValid
+observed:
+  files:
+  - common/kcp/kcp.go
+  - common/kcp/kcp_test.go
+  fingerprint: f02d64cd71c3557976f663f2fa352997f5ef648661b81a2e7e87d3fd236e75ad
+  interfaces:
+  - codegraphId: function:0b14d327c26ec834adfa4a6551d0fc8c
+    file: common/kcp/kcp.go
+    kind: function
+    line: 17
+    name: ServiceLabels
+    signature: (logicalCluster string) string
+  - codegraphId: function:027166c10dcc0d8f2f48420216ff5951
+    file: common/kcp/kcp.go
+    kind: function
+    line: 29
+    name: ServiceFQDN
+    signature: (name, namespace, logicalCluster, domain string) string
+observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+realizedSpecHash: f17dce116ac26682c6b2621f5421d7b885872a9153cb240d84873b931b19a856
+syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+syncedFingerprint: f02d64cd71c3557976f663f2fa352997f5ef648661b81a2e7e87d3fd236e75ad

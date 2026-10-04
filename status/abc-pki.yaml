@@ -1,0 +1,173 @@
+conditions:
+- message: 'undeclared: Authority, Cert, CertRequest, Client, Client.CAChain, Client.CASerial,
+    Client.DeleteNamespace, Client.EnsureMount, Client.EnsureNamespace, Client.GenerateIntermediate,
+    Client.GenerateRoot, Client.Issue, Client.SetSignedIntermediate, Client.SignIntermediate,
+    Client.WriteRole, Health, IntermediateCSR, Provisioner, Provisioner.CachedRootPEM,
+    Provisioner.Delete, Provisioner.EnsureAuthority, Provisioner.EnsureRoot, Provisioner.Issue,
+    Role, RootCA'
+  reason: InterfacesMissing
+  status: "False"
+  type: CodeSynced
+- message: observed facts match the synced fingerprint
+  reason: FingerprintEqual
+  status: "False"
+  type: Drifted
+- message: the spec passes the validator
+  reason: ValidatorPassed
+  status: "True"
+  type: SpecValid
+observed:
+  files:
+  - abc/pki/pki.go
+  fingerprint: 9a9beb8817f32ef2af001d30765cf57cb4080960f29c3cdfaa3a8f062b64464b
+  interfaces:
+  - codegraphId: struct:faad17686720ec66a377bf0b42fa729b
+    file: abc/pki/pki.go
+    kind: struct
+    line: 24
+    name: Cert
+  - codegraphId: struct:8a0cbed52cfc7319d1c688ca4591bcde
+    file: abc/pki/pki.go
+    kind: struct
+    line: 36
+    name: RootCA
+  - codegraphId: struct:dde1ada7f0bec070360f060f452e6f67
+    file: abc/pki/pki.go
+    kind: struct
+    line: 42
+    name: IntermediateCSR
+  - codegraphId: struct:1331436d9816e3e86d68a77c31bda5af
+    file: abc/pki/pki.go
+    kind: struct
+    line: 48
+    name: Role
+  - codegraphId: struct:6183e1fd5203660f7cc37a020f980a05
+    file: abc/pki/pki.go
+    kind: struct
+    line: 64
+    name: CertRequest
+  - codegraphId: struct:af3fa7e349cc30c48784cf7c88c90f63
+    file: abc/pki/pki.go
+    kind: struct
+    line: 74
+    name: Authority
+  - codegraphId: struct:5cbcf189d4f2f7d225d0f3a6d193daba
+    file: abc/pki/pki.go
+    kind: struct
+    line: 84
+    name: Health
+  - codegraphId: interface:ac9976ef68ff95155562e01eac46ed64
+    file: abc/pki/pki.go
+    kind: interface
+    line: 94
+    name: Client
+  - codegraphId: method:a0ac8a2dec0c7669af33019b4b3f3f11
+    file: abc/pki/pki.go
+    kind: method
+    line: 95
+    name: Client.EnsureNamespace
+    signature: (ctx context.Context, path string) error
+  - codegraphId: method:b8d03e6b65634b9f495bc2f2a1019a7a
+    file: abc/pki/pki.go
+    kind: method
+    line: 97
+    name: Client.EnsureMount
+    signature: (ctx context.Context, namespace, path, kind string) error
+  - codegraphId: method:4d425dba0f4b78f1a408107711c732c9
+    file: abc/pki/pki.go
+    kind: method
+    line: 99
+    name: Client.GenerateRoot
+    signature: (ctx context.Context, namespace, mount, commonName, ttl string) (RootCA,
+      error)
+  - codegraphId: method:1e2aa7ebdb54224f489e406f6f3fbef3
+    file: abc/pki/pki.go
+    kind: method
+    line: 101
+    name: Client.CASerial
+    signature: (ctx context.Context, namespace, mount string) (string, error)
+  - codegraphId: method:1ef93b250b4f7c625d04067f81349bf9
+    file: abc/pki/pki.go
+    kind: method
+    line: 103
+    name: Client.CAChain
+    signature: (ctx context.Context, namespace, mount string) (string, error)
+  - codegraphId: method:98d06874b98400ca735ca49933dad7ef
+    file: abc/pki/pki.go
+    kind: method
+    line: 105
+    name: Client.GenerateIntermediate
+    signature: (ctx context.Context, namespace, mount, commonName string) (IntermediateCSR,
+      error)
+  - codegraphId: method:1a3b315f017de0b6363a1ddf04e98077
+    file: abc/pki/pki.go
+    kind: method
+    line: 107
+    name: Client.SignIntermediate
+    signature: (ctx context.Context, rootNamespace, mount, csr, commonName, ttl string)
+      (string, error)
+  - codegraphId: method:ee3e7f50bd6547ee6827b49a28baa253
+    file: abc/pki/pki.go
+    kind: method
+    line: 109
+    name: Client.SetSignedIntermediate
+    signature: (ctx context.Context, namespace, mount, chain string) error
+  - codegraphId: method:eb7720c010c0ac34cb5e99ee48495951
+    file: abc/pki/pki.go
+    kind: method
+    line: 111
+    name: Client.WriteRole
+    signature: (ctx context.Context, namespace, mount, name string, role Role) error
+  - codegraphId: method:d58fe4f006f8d8e6d8b06298f11c8b3b
+    file: abc/pki/pki.go
+    kind: method
+    line: 113
+    name: Client.Issue
+    signature: (ctx context.Context, namespace, mount, role string, req CertRequest)
+      (Cert, error)
+  - codegraphId: method:07fd1814798e353c56f080d20975fb4b
+    file: abc/pki/pki.go
+    kind: method
+    line: 115
+    name: Client.DeleteNamespace
+    signature: (ctx context.Context, path string) error
+  - codegraphId: interface:44a17e9c183e31e9b666d01dca913cc8
+    file: abc/pki/pki.go
+    kind: interface
+    line: 118
+    name: Provisioner
+  - codegraphId: method:e4543be178161016ecceb88b21d2e99b
+    file: abc/pki/pki.go
+    kind: method
+    line: 119
+    name: Provisioner.EnsureRoot
+    signature: (ctx context.Context) (RootCA, error)
+  - codegraphId: method:fd34639484fd56a10516d8affbd6fdcf
+    file: abc/pki/pki.go
+    kind: method
+    line: 121
+    name: Provisioner.EnsureAuthority
+    signature: (ctx context.Context, path string) (Authority, error)
+  - codegraphId: method:1f9f2bb7abd96f807c5e53ee523f2708
+    file: abc/pki/pki.go
+    kind: method
+    line: 123
+    name: Provisioner.Issue
+    signature: (ctx context.Context, path, commonName string, altNames, ips []string)
+      (Cert, error)
+  - codegraphId: method:808f1bb5f4e1aa53fcaf0a2c6358d976
+    file: abc/pki/pki.go
+    kind: method
+    line: 125
+    name: Provisioner.Delete
+    signature: (ctx context.Context, path string) error
+  - codegraphId: method:17a2eb40b863f13c4652261820c10201
+    file: abc/pki/pki.go
+    kind: method
+    line: 127
+    name: Provisioner.CachedRootPEM
+    signature: () []byte
+observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+realizedSpecHash: 25d1af638d3056930d486c0ddd85d75bde52394d914a534019b0ee93042f1b67
+syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+syncedFingerprint: 9a9beb8817f32ef2af001d30765cf57cb4080960f29c3cdfaa3a8f062b64464b

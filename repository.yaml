@@ -1,0 +1,19 @@
+apiVersion: specs.publicdomainrelay.dev/v1alpha1
+kind: Repository
+metadata:
+  name: kcp-libs
+  namespace: default
+spec:
+  branch: fix/openbao-no-default-issuer
+  populate:
+    partition: directory
+    summarize: true
+  source: {}
+  verify:
+  - go
+  - test
+  - ./...
+status:
+  headCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+  indexedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+  phase: Indexing

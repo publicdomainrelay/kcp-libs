@@ -1,0 +1,45 @@
+conditions:
+- message: 'undeclared: Client, Client.Status, Client.Submit, Task'
+  reason: InterfacesMissing
+  status: "False"
+  type: CodeSynced
+- message: observed facts match the synced fingerprint
+  reason: FingerprintEqual
+  status: "False"
+  type: Drifted
+- message: the spec passes the validator
+  reason: ValidatorPassed
+  status: "True"
+  type: SpecValid
+observed:
+  files:
+  - abc/policy/policy.go
+  fingerprint: 6ff489849d0bb602a22a2c89ce44795daeca1c04342c44f31437b98ae0e93a9c
+  interfaces:
+  - codegraphId: struct:c1003284dadd5dbd150449f4f9af4ddc
+    file: abc/policy/policy.go
+    kind: struct
+    line: 13
+    name: Task
+  - codegraphId: interface:3ec82f13ff355ba5c823fadd91cbc034
+    file: abc/policy/policy.go
+    kind: interface
+    line: 23
+    name: Client
+  - codegraphId: method:60e85e0780bae7128346127fea69a2e3
+    file: abc/policy/policy.go
+    kind: method
+    line: 24
+    name: Client.Submit
+    signature: (ctx context.Context, endpoint string, workflow []byte, inputs map[string]string)
+      (string, error)
+  - codegraphId: method:e1e87944f71f145e385b7bc3db9a5588
+    file: abc/policy/policy.go
+    kind: method
+    line: 26
+    name: Client.Status
+    signature: (ctx context.Context, endpoint, taskID string) (Task, error)
+observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+realizedSpecHash: 5c23c561e34658b8a66261fd0c4bee867bca74492c465f9bf57992c7e8845655
+syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+syncedFingerprint: 6ff489849d0bb602a22a2c89ce44795daeca1c04342c44f31437b98ae0e93a9c

@@ -1,0 +1,71 @@
+conditions:
+- message: 'undeclared: BaseHost, ClusterURL, Key, New, Ref, Ref.Key, Ref.WithNamespace,
+    Ref.WithResourceVersion'
+  reason: InterfacesMissing
+  status: "False"
+  type: CodeSynced
+- message: observed facts match the synced fingerprint
+  reason: FingerprintEqual
+  status: "False"
+  type: Drifted
+- message: the spec passes the validator
+  reason: ValidatorPassed
+  status: "True"
+  type: SpecValid
+observed:
+  files:
+  - common/ref/ref.go
+  - common/ref/ref_test.go
+  fingerprint: 461cb3f0a9b1e4164f7b1cacf9176c6814707b5d9ebc22890a5d675fe6e1210f
+  interfaces:
+  - codegraphId: struct:d0d183e54e296ffe32b06ffd08b347ca
+    file: common/ref/ref.go
+    kind: struct
+    line: 7
+    name: Ref
+  - codegraphId: function:7999d84f451c59ca6a03577995281764
+    file: common/ref/ref.go
+    kind: function
+    line: 17
+    name: New
+    signature: (logicalCluster, namespace, name string) Ref
+  - codegraphId: function:a77844fa6f24528303d849e5ed956c3c
+    file: common/ref/ref.go
+    kind: function
+    line: 21
+    name: Key
+    signature: (logicalCluster, namespace, name string) string
+  - codegraphId: method:4e7c59fd75778a303dccf1476257f32b
+    file: common/ref/ref.go
+    kind: method
+    line: 25
+    name: Ref.Key
+    signature: () string
+  - codegraphId: method:a10e7cf01872c2cd075539e6dba8e9f4
+    file: common/ref/ref.go
+    kind: method
+    line: 29
+    name: Ref.WithResourceVersion
+    signature: (version string) Ref
+  - codegraphId: method:2948085699170c0e8f98592fb74fedb5
+    file: common/ref/ref.go
+    kind: method
+    line: 34
+    name: Ref.WithNamespace
+    signature: (namespace string) Ref
+  - codegraphId: function:757cbe1304d5ad40e0627224acf0be64
+    file: common/ref/ref.go
+    kind: function
+    line: 39
+    name: BaseHost
+    signature: (host string) string
+  - codegraphId: function:4c5cf31e71ec19179fbbb42d890195d5
+    file: common/ref/ref.go
+    kind: function
+    line: 47
+    name: ClusterURL
+    signature: (host, logicalCluster string) string
+observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+realizedSpecHash: 149629ba4d6bf71cadbb26d3e75026c1e39b9dbfa28d6f292cedc1104890500d
+syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+syncedFingerprint: 461cb3f0a9b1e4164f7b1cacf9176c6814707b5d9ebc22890a5d675fe6e1210f

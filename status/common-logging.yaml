@@ -1,0 +1,39 @@
+conditions:
+- message: 'undeclared: Discard, New, Options'
+  reason: InterfacesMissing
+  status: "False"
+  type: CodeSynced
+- message: observed facts match the synced fingerprint
+  reason: FingerprintEqual
+  status: "False"
+  type: Drifted
+- message: the spec passes the validator
+  reason: ValidatorPassed
+  status: "True"
+  type: SpecValid
+observed:
+  files:
+  - common/logging/logging.go
+  fingerprint: d291177aa9649b3089a9ccef3f20d5605ccb1ef08e5415c915f5a58cf547de4d
+  interfaces:
+  - codegraphId: struct:e5309481f2a5ce717212c88d3d90aa51
+    file: common/logging/logging.go
+    kind: struct
+    line: 8
+    name: Options
+  - codegraphId: function:630830e31f658442858bdfe9d070a2bd
+    file: common/logging/logging.go
+    kind: function
+    line: 16
+    name: New
+    signature: (opts Options) *slog.Logger
+  - codegraphId: function:7e515b3fbe4a91f9d8b15bdd7d149aca
+    file: common/logging/logging.go
+    kind: function
+    line: 28
+    name: Discard
+    signature: () *slog.Logger
+observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+realizedSpecHash: a57eb0e45ca66f347c51046418e53d23d38cf950c4e0f88421c7f58b417de68e
+syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+syncedFingerprint: d291177aa9649b3089a9ccef3f20d5605ccb1ef08e5415c915f5a58cf547de4d
