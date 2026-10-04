@@ -2,13 +2,135 @@
 
 Repository: `kcp-libs`
 
-_(empty: write what this context is for)_
+This context exists to give the rest of the repository one place that speaks the policy engine's HTTP protocol, so callers depend on the abc/policy.Client interface and never build requests themselves. It exists because policy runs are submitted as JSON workflows to an engine endpoint and their verdicts come back as task status, and both halves need the same validation, error wrapping and output flattening.
 
 _Write the prose above and the fields in the spec block. `codeRefs` and the resolved references below are maintained by the tool; an edit there is lost._
 
 ## spec
 
 ```yaml spec
+interfaces:
+- file: impl/policyclient/policyclient.go
+  kind: struct
+  name: Client
+  signature: type Client struct { http *http.Client }
+- file: impl/policyclient/policyclient.go
+  kind: method
+  name: Client.Status
+  signature: func (c *Client) Status(ctx context.Context, endpoint, taskID string)
+    (policy.Task, error)
+- file: impl/policyclient/policyclient.go
+  kind: method
+  name: Client.Submit
+  signature: func (c *Client) Submit(ctx context.Context, endpoint string, workflow
+    []byte, inputs map[string]string) (string, error)
+- file: impl/policyclient/policyclient.go
+  kind: function
+  name: New
+  signature: func New() *Client
+- file: impl/policyclient/policyclient.go
+  kind: function
+  name: Outputs
+  signature: func Outputs(response statusResponse) map[string]string
+- file: impl/policyclient/policyclient.go
+  kind: function
+  name: PolicyName
+  signature: func PolicyName(cacheKey string) string
+requirements:
+- codeRefs:
+  - file:impl/policyclient/policyclient.go
+  - function:ceea74205a5754163b309ccbb838c89a
+  - struct:cadc1b79f4d841a6641b1b7ed9b4d3ec
+  id: r.new-builds-a-client-with-a-bounded-timeout
+  level: MUST
+  text: New returns a Client whose HTTP client has a 30 second timeout, so no policy
+    call can hang without bound.
+- codeRefs:
+  - file:impl/policyclient/policyclient.go
+  - function:54f3e1e2bd8e260021c98693f9a2c90a
+  - function:b98ae160f1fe55260dca95e09986a5bb
+  id: r.outputs-prefixes-verdicts-when-more-than-one-policy
+  level: MUST
+  text: Outputs leaves verdict keys unprefixed when exactly one policy cache key is
+    present, and otherwise prefixes them with PolicyName of the cache key plus a slash.
+- codeRefs:
+  - file:impl/policyclient/policyclient.go
+  - function:54f3e1e2bd8e260021c98693f9a2c90a
+  id: r.outputs-reads-policy-verdicts-from-the-cache
+  level: MUST
+  text: Outputs considers only cache keys with the policy/ prefix, sorted, reads each
+    entry's result.json, skips entries that are missing or unparseable, and exports
+    the verdict's allow flag and non-null violations.
+- codeRefs:
+  - file:impl/policyclient/policyclient.go
+  - function:54f3e1e2bd8e260021c98693f9a2c90a
+  id: r.outputs-returns-nil-when-empty
+  level: MUST
+  text: Outputs returns a nil map when nothing was collected, so callers can distinguish
+    an empty result from a populated one.
+- codeRefs:
+  - file:impl/policyclient/policyclient.go
+  - function:54f3e1e2bd8e260021c98693f9a2c90a
+  id: r.outputs-stringifies-every-engine-output
+  level: MUST
+  text: Outputs maps every entry of the response's outputs object into the result
+    map through outputs.StringifyValue.
+- codeRefs:
+  - file:impl/policyclient/policyclient.go
+  - function:b98ae160f1fe55260dca95e09986a5bb
+  id: r.policy-name-reads-the-second-path-segment
+  level: MUST
+  text: PolicyName splits the cache key on slashes and returns the second segment
+    when it exists and is non-empty, otherwise the literal "policy".
+- codeRefs:
+  - file:impl/policyclient/policyclient.go
+  - method:4e934ce27e912f8b62f60030591215cc
+  id: r.status-reads-a-task-from-an-endpoint
+  level: MUST
+  text: Status takes a context, an engine endpoint and a task id, and returns the
+    policy.Task the engine reports for that task.
+- codeRefs:
+  - file:impl/policyclient/policyclient.go
+  - method:19f667c165b3c1a5fd0e639d57f02e89
+  id: r.submit-posts-to-request-create
+  level: MUST
+  text: Submit POSTs the workflow and inputs as a JSON body to the endpoint with any
+    trailing slash trimmed, suffixed with /request/create, and with Content-Type application/json.
+- codeRefs:
+  - file:impl/policyclient/policyclient.go
+  - method:19f667c165b3c1a5fd0e639d57f02e89
+  id: r.submit-propagates-context-cancellation
+  level: MUST
+  text: When the transport call fails and the context carries an error, Submit returns
+    the context error itself, not a wrapped transport error.
+- codeRefs:
+  - file:impl/policyclient/policyclient.go
+  - method:19f667c165b3c1a5fd0e639d57f02e89
+  id: r.submit-rejects-a-missing-endpoint
+  level: MUST
+  text: Submit returns an error naming the missing engine endpoint when the endpoint
+    is empty, and sends no request.
+- codeRefs:
+  - file:impl/policyclient/policyclient.go
+  - method:19f667c165b3c1a5fd0e639d57f02e89
+  id: r.submit-requires-a-task-id
+  level: MUST
+  text: Submit returns the task id only when the parsed response carries a non-empty
+    detail id, and errors when the engine returned no task id.
+- codeRefs:
+  - file:impl/policyclient/policyclient.go
+  - method:19f667c165b3c1a5fd0e639d57f02e89
+  id: r.submit-requires-a-valid-json-workflow
+  level: MUST
+  text: Submit refuses a workflow that is not valid JSON, before any request is built
+    or sent.
+- codeRefs:
+  - file:impl/policyclient/policyclient.go
+  - method:19f667c165b3c1a5fd0e639d57f02e89
+  id: r.submit-treats-4xx-and-5xx-as-refusals
+  level: MUST
+  text: Submit returns an error carrying the status code and the trimmed response
+    body when the engine answers with status 400 or above.
 upstream: self
 ```
 

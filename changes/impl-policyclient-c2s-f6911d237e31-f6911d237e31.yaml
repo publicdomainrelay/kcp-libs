@@ -10,5 +10,15 @@ spec:
   systemContext: impl-policyclient
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing impl-policyclient
-  phase: Running
+  agentLog: 'impl/policyclient is the concrete HTTP client for the policy engine.
+    Client holds one *http.Client, built by New with a 30 second timeout. Submit validates
+    the engine endpoint and the workflow JSON, posts a submitRequest carrying the
+    workflow and inputs to <endpoint>/request/create, and returns the task id from
+    the response detail. Status fetches a policy.Task from an endpoint for a task
+    id. Outputs flattens a status response into a string map: every value in the engine''s
+    outputs object is stringified, and every cache entry under the policy/ prefix
+    is read for a result.json verdict whose allow flag and violations are exported,
+    prefixed by PolicyName when more than one policy exists. PolicyName takes the
+    policy segment out of a cache key and falls back to the literal "policy".'
+  message: wrote 13 requirement(s) and 6 interface(s) for impl-policyclient
+  phase: Succeeded
