@@ -1,7 +1,8 @@
 conditions:
-- message: 'undeclared: Client, Client.Status, Client.Submit, Task'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -40,6 +41,6 @@ observed:
     name: Client.Status
     signature: (ctx context.Context, endpoint, taskID string) (Task, error)
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: 5c23c561e34658b8a66261fd0c4bee867bca74492c465f9bf57992c7e8845655
+realizedSpecHash: 2dedaf5bb5fcf8246b9983b15fe1e0acdf1818f0d921011871fe7c0644ab928c
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: 6ff489849d0bb602a22a2c89ce44795daeca1c04342c44f31437b98ae0e93a9c
