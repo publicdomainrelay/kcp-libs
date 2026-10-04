@@ -1,0 +1,63 @@
+apiVersion: specs.publicdomainrelay.dev/v1alpha1
+kind: SpecChange
+metadata:
+  name: impl-openbaoclient-s2c-024f19fa6e14
+  namespace: default
+spec:
+  delta:
+    requirements:
+    - id: r.no-default-issuer-is-no-authority
+      op: added
+      to:
+        codeRefs:
+        - method:9355743912f96aae23c89c23f11437c6
+        - method:a078027b3f0dfe8153b040d123df1507
+        - method:a100c179495b135b3fe2b971348dfedb
+        id: r.no-default-issuer-is-no-authority
+        level: MUST
+        text: An HTTP 400 whose body reports that no default issuer is currently configured
+          means the pki mount holds no authority yet, exactly like an HTTP 404, so
+          errors.Is(err, pki.ErrNoAuthority) is true for CASerial and for CAChain
+          when the mount exists and has no issuer. Every other HTTP 400 stays an error
+          that is neither pki.ErrNoAuthority nor ErrNotFound, and its ResponseError
+          still records the method, the path, the status and the body.
+    - id: r.no-default-issuer-tests
+      op: added
+      to:
+        codeRefs:
+        - file:impl/openbaoclient/openbaoclient_test.go
+        id: r.no-default-issuer-tests
+        level: MUST
+        text: Tests against the in-process OpenBao-shaped server cover both halves.
+          A 400 whose body says no default issuer is currently configured makes CASerial
+          report pki.ErrNoAuthority, and an unrelated 400 does not report pki.ErrNoAuthority
+          and does not report ErrNotFound.
+    - fields:
+      - text
+      from:
+        codeRefs:
+        - method:a100c179495b135b3fe2b971348dfedb
+        - struct:e00b5c976e1ed1448875b77d0cec020b
+        id: r.sentinel-error-matching
+        level: MUST
+        text: ResponseError.Is maps HTTP 404 to ErrNotFound and HTTP 403 to ErrForbidden,
+          and returns false for every other status, so callers can use errors.Is against
+          the sentinels.
+      id: r.sentinel-error-matching
+      op: changed
+      to:
+        codeRefs:
+        - method:a100c179495b135b3fe2b971348dfedb
+        - struct:e00b5c976e1ed1448875b77d0cec020b
+        id: r.sentinel-error-matching
+        level: MUST
+        text: ResponseError.Is maps HTTP 404 to ErrNotFound, HTTP 403 to ErrForbidden
+          and an HTTP 400 that reports no default issuer as pki.ErrNoAuthority, and
+          returns false for every other status, so callers can use errors.Is against
+          the sentinels.
+  direction: SpecToCode
+  fromSpecHash: e6c46288ca6f9e49d0114f54c5634aa133b0168e46198f7158bf0a5b8c0fd772
+  systemContext: impl-openbaoclient
+  toSpecHash: 024f19fa6e145862872bf79ff90782bc7bb6e0d4c3d7ee43236a36f794204f92
+status:
+  phase: Pending

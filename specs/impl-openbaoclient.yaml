@@ -142,6 +142,26 @@ spec:
       delete a namespace, each taking a namespace path and reporting a translated
       error on failure.
   - codeRefs:
+    - method:9355743912f96aae23c89c23f11437c6
+    - method:a078027b3f0dfe8153b040d123df1507
+    - method:a100c179495b135b3fe2b971348dfedb
+    id: r.no-default-issuer-is-no-authority
+    level: MUST
+    text: An HTTP 400 whose body reports that no default issuer is currently configured
+      means the pki mount holds no authority yet, exactly like an HTTP 404, so errors.Is(err,
+      pki.ErrNoAuthority) is true for CASerial and for CAChain when the mount exists
+      and has no issuer. Every other HTTP 400 stays an error that is neither pki.ErrNoAuthority
+      nor ErrNotFound, and its ResponseError still records the method, the path, the
+      status and the body.
+  - codeRefs:
+    - file:impl/openbaoclient/openbaoclient_test.go
+    id: r.no-default-issuer-tests
+    level: MUST
+    text: Tests against the in-process OpenBao-shaped server cover both halves. A
+      400 whose body says no default issuer is currently configured makes CASerial
+      report pki.ErrNoAuthority, and an unrelated 400 does not report pki.ErrNoAuthority
+      and does not report ErrNotFound.
+  - codeRefs:
     - method:bc10c8978afe004cb92eee07347f2fbf
     - struct:e00b5c976e1ed1448875b77d0cec020b
     id: r.response-error-shape
@@ -170,9 +190,9 @@ spec:
     - struct:e00b5c976e1ed1448875b77d0cec020b
     id: r.sentinel-error-matching
     level: MUST
-    text: ResponseError.Is maps HTTP 404 to ErrNotFound and HTTP 403 to ErrForbidden,
-      and returns false for every other status, so callers can use errors.Is against
-      the sentinels.
+    text: ResponseError.Is maps HTTP 404 to ErrNotFound, HTTP 403 to ErrForbidden
+      and an HTTP 400 that reports no default issuer as pki.ErrNoAuthority, and returns
+      false for every other status, so callers can use errors.Is against the sentinels.
   - codeRefs:
     - file:impl/openbaoclient/openbaoclient_test.go
     - file:impl/openbaoclient/testcert_test.go
