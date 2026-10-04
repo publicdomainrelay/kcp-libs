@@ -15,4 +15,5 @@ spec:
     - +r.dnsshim-discovers-a-name-absent-from-the-table-test
     - +r.dnsshim-token-key-matches-the-name
 status:
-  phase: Pending
+  phase: Running
+  message: the agent is realizing impl-assets
