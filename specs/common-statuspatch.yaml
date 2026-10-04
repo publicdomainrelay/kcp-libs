@@ -2,6 +2,12 @@ apiVersion: specs.publicdomainrelay.dev/v1alpha1
 codeRefIndex:
 - file:common/statuspatch/statuspatch.go statuspatch.go@common/statuspatch/statuspatch.go
 - file:common/statuspatch/statuspatch_test.go statuspatch_test.go@common/statuspatch/statuspatch_test.go
+- function:146b92aee570e1cccf066680c85a4988 Merge@common/statuspatch/statuspatch.go:8
+- function:973dee6f0664f3fb6b8b0860b5ec3a25 FinalizerAdd@common/statuspatch/statuspatch.go:48
+- function:a0ef10c6d57cf09c7ea23871b9b2c059 FinalizersOf@common/statuspatch/statuspatch.go:62
+- function:e490ecee35ab297d47aa943e045c98b3 WithResourceVersion@common/statuspatch/statuspatch.go:16
+- function:e6682cb9b4a0a03a95c84fedefb98805 FinalizerRemove@common/statuspatch/statuspatch.go:32
+- struct:9ddae76e6ab972a834ddad24d5320169 Metadata@common/statuspatch/statuspatch.go:58
 kind: SystemContext
 metadata:
   name: common-statuspatch

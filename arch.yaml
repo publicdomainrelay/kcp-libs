@@ -2753,9 +2753,20 @@ system_contexts:
     text: StringifyValue returns a value whose dynamic type is string unchanged, without
       quoting or escaping it.
   upstream: self
-- codeRefIndex:
+- code:
+  - common/ref/ref.go
+  - common/ref/ref_test.go
+  codeRefIndex:
   - file:common/ref/ref.go ref.go@common/ref/ref.go
   - file:common/ref/ref_test.go ref_test.go@common/ref/ref_test.go
+  - function:4c5cf31e71ec19179fbbb42d890195d5 ClusterURL@common/ref/ref.go:47
+  - function:757cbe1304d5ad40e0627224acf0be64 BaseHost@common/ref/ref.go:39
+  - function:7999d84f451c59ca6a03577995281764 New@common/ref/ref.go:17
+  - function:a77844fa6f24528303d849e5ed956c3c Key@common/ref/ref.go:21
+  - method:2948085699170c0e8f98592fb74fedb5 Ref.WithNamespace@common/ref/ref.go:34
+  - method:4e7c59fd75778a303dccf1476257f32b Ref.Key@common/ref/ref.go:25
+  - method:a10e7cf01872c2cd075539e6dba8e9f4 Ref.WithResourceVersion@common/ref/ref.go:29
+  - struct:d0d183e54e296ffe32b06ffd08b347ca Ref@common/ref/ref.go:7
   id: sc.common-ref
   intent: This context exists so that every layer of kcp-libs agrees on the identity
     and the transport address of a KCP object. A Ref is the identity used as a map
@@ -2865,9 +2876,18 @@ system_contexts:
     text: WithResourceVersion must return a Ref that carries the given version and
       otherwise keeps the receiver's identity unchanged, and must not mutate the receiver.
   upstream: self
-- codeRefIndex:
+- code:
+  - common/statuspatch/statuspatch.go
+  - common/statuspatch/statuspatch_test.go
+  codeRefIndex:
   - file:common/statuspatch/statuspatch.go statuspatch.go@common/statuspatch/statuspatch.go
   - file:common/statuspatch/statuspatch_test.go statuspatch_test.go@common/statuspatch/statuspatch_test.go
+  - function:146b92aee570e1cccf066680c85a4988 Merge@common/statuspatch/statuspatch.go:8
+  - function:973dee6f0664f3fb6b8b0860b5ec3a25 FinalizerAdd@common/statuspatch/statuspatch.go:48
+  - function:a0ef10c6d57cf09c7ea23871b9b2c059 FinalizersOf@common/statuspatch/statuspatch.go:62
+  - function:e490ecee35ab297d47aa943e045c98b3 WithResourceVersion@common/statuspatch/statuspatch.go:16
+  - function:e6682cb9b4a0a03a95c84fedefb98805 FinalizerRemove@common/statuspatch/statuspatch.go:32
+  - struct:9ddae76e6ab972a834ddad24d5320169 Metadata@common/statuspatch/statuspatch.go:58
   id: sc.common-statuspatch
   intent: This context exists to specify the reusable patch-construction vocabulary
     shared by every reconcile and store layer in kcp-libs. It keeps the generic JSON-patch
@@ -2984,9 +3004,16 @@ system_contexts:
       the test-and-replace finalizer patch, the absent-finalizer nil patch, the single
       add op, and reading finalizers from an object body.
   upstream: self
-- codeRefIndex:
+- code:
+  - common/ttl/ttl.go
+  - common/ttl/ttl_test.go
+  codeRefIndex:
   - file:common/ttl/ttl.go ttl.go@common/ttl/ttl.go
   - file:common/ttl/ttl_test.go ttl_test.go@common/ttl/ttl_test.go
+  - function:503ea477e92bcc1bc7f9bdba99922323 Expiry@common/ttl/ttl.go:21
+  - function:9fdc74d33c3a88840f75732e3c0170bb Deadline@common/ttl/ttl.go:39
+  - function:a0c1200f8b55a18bfa918f1f0cee7615 Expired@common/ttl/ttl.go:28
+  - function:d687afb3744f79be091b78a990794a9d Effective@common/ttl/ttl.go:9
   id: sc.common-ttl
   intent: This context exists so callers do not each re-derive TTL semantics from
     raw pointers. Kubernetes-style APIs express TTLs as optional seconds on a timestamp,
@@ -3065,9 +3092,26 @@ system_contexts:
       a future expiry, a past expiry and a missing completion time in Expired, and
       a future deadline, a reached deadline and a missing start time in Deadline.
   upstream: self
-- codeRefIndex:
+- code:
+  - examples/admission/main.go
+  - examples/admission/main_test.go
+  codeRefIndex:
   - file:examples/admission/main.go main.go@examples/admission/main.go
   - file:examples/admission/main_test.go main_test.go@examples/admission/main_test.go
+  - function:382c144be35e7a3b04857018760f4c2b Run@examples/admission/main.go:126
+  - method:4b1c829db1dd2db486e75edae8ec99f8 source.Capacity@examples/admission/main.go:95
+  - method:9391ce08b0aaa1ca190f09656b2de077 source.Parent@examples/admission/main.go:62
+  - method:e222d2ede890130c86294ba108430575 source.Runs@examples/admission/main.go:74
+  depends_on:
+  - sc.abc-queue
+  - sc.abc-runref
+  - sc.common-denocomputer
+  - sc.common-ref
+  - sc.common-statuspatch
+  - sc.factory-admission
+  - sc.impl-kcpstore
+  - sc.internal-livekcp
+  - sc.internal-livekcp-livetest
   id: sc.examples-admission
   intent: 'This context exists so that the admission example can be described and
     regenerated as a compile-checked demonstration of the admission Source interface.
@@ -3163,9 +3207,28 @@ system_contexts:
     text: source.Runs must parse the object creation timestamp with time.RFC3339Nano
       and leave the zero time when parsing fails rather than returning an error.
   upstream: self
-- codeRefIndex:
+- code:
+  - examples/controller/main.go
+  - examples/controller/main_test.go
+  codeRefIndex:
   - file:examples/controller/main.go main.go@examples/controller/main.go
   - file:examples/controller/main_test.go main_test.go@examples/controller/main_test.go
+  - function:23c706f296c8210aa4211fe5ad7815cf Run@examples/controller/main.go:121
+  depends_on:
+  - sc.abc-cache
+  - sc.abc-reconcile
+  - sc.abc-store
+  - sc.common-condition
+  - sc.common-denocomputer
+  - sc.common-logging
+  - sc.common-ref
+  - sc.factory-controller
+  - sc.impl-exportwatch
+  - sc.impl-informerwatch
+  - sc.impl-kcpstore
+  - sc.impl-metrics
+  - sc.internal-livekcp
+  - sc.internal-livekcp-livetest
   id: sc.examples-controller
   intent: 'This context exists to demonstrate, end to end and against a real kcp instance,
     that the generic controller layer works: a store backed by kcp, an export watch

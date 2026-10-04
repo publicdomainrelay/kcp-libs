@@ -1,22 +1,71 @@
 conditions:
-- message: 'missing: BaseHost, ClusterURL, Key, New, Ref, Ref.Key, Ref.WithNamespace,
-    Ref.WithResourceVersion; unresolved: r.base-host-normalization: file:common/ref/ref_test.go,
-    r.base-host-normalization: function:757cbe1304d5ad40e0627224acf0be64, r.cluster-url-build:
-    function:4c5cf31e71ec19179fbbb42d890195d5, r.key-format: function:a77844fa6f24528303d849e5ed956c3c,
-    r.key-format: method:4e7c59fd75778a303dccf1476257f32b, r.new-leaves-resource-version-empty:
-    file:common/ref/ref.go, r.new-leaves-resource-version-empty: function:7999d84f451c59ca6a03577995281764,
-    r.ref-carries-identity: struct:d0d183e54e296ffe32b06ffd08b347ca, r.with-namespace-returns-copy:
-    method:2948085699170c0e8f98592fb74fedb5, r.with-resource-version-returns-copy:
-    method:a10e7cf01872c2cd075539e6dba8e9f4'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
-- message: no synced fingerprint has been recorded yet
-  reason: NotSyncedYet
+- message: observed facts match the synced fingerprint
+  reason: FingerprintEqual
   status: "False"
   type: Drifted
 - message: the spec passes the validator
   reason: ValidatorPassed
   status: "True"
   type: SpecValid
-observed: {}
+observed:
+  files:
+  - common/ref/ref.go
+  - common/ref/ref_test.go
+  fingerprint: 461cb3f0a9b1e4164f7b1cacf9176c6814707b5d9ebc22890a5d675fe6e1210f
+  interfaces:
+  - codegraphId: struct:d0d183e54e296ffe32b06ffd08b347ca
+    file: common/ref/ref.go
+    kind: struct
+    line: 7
+    name: Ref
+  - codegraphId: function:7999d84f451c59ca6a03577995281764
+    file: common/ref/ref.go
+    kind: function
+    line: 17
+    name: New
+    signature: (logicalCluster, namespace, name string) Ref
+  - codegraphId: function:a77844fa6f24528303d849e5ed956c3c
+    file: common/ref/ref.go
+    kind: function
+    line: 21
+    name: Key
+    signature: (logicalCluster, namespace, name string) string
+  - codegraphId: method:4e7c59fd75778a303dccf1476257f32b
+    file: common/ref/ref.go
+    kind: method
+    line: 25
+    name: Ref.Key
+    signature: () string
+  - codegraphId: method:a10e7cf01872c2cd075539e6dba8e9f4
+    file: common/ref/ref.go
+    kind: method
+    line: 29
+    name: Ref.WithResourceVersion
+    signature: (version string) Ref
+  - codegraphId: method:2948085699170c0e8f98592fb74fedb5
+    file: common/ref/ref.go
+    kind: method
+    line: 34
+    name: Ref.WithNamespace
+    signature: (namespace string) Ref
+  - codegraphId: function:757cbe1304d5ad40e0627224acf0be64
+    file: common/ref/ref.go
+    kind: function
+    line: 39
+    name: BaseHost
+    signature: (host string) string
+  - codegraphId: function:4c5cf31e71ec19179fbbb42d890195d5
+    file: common/ref/ref.go
+    kind: function
+    line: 47
+    name: ClusterURL
+    signature: (host, logicalCluster string) string
+observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+realizedSpecHash: 22100e7e3a84f1ddbdb05ecad45e47b8c488e0eaba043e3d177920147a350266
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: 461cb3f0a9b1e4164f7b1cacf9176c6814707b5d9ebc22890a5d675fe6e1210f

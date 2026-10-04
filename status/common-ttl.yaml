@@ -1,18 +1,49 @@
 conditions:
-- message: 'missing: Deadline, Effective, Expired, Expiry; unresolved: r.deadline-unknown-without-start:
-    file:common/ttl/ttl.go, r.deadline-unknown-without-start: function:9fdc74d33c3a88840f75732e3c0170bb,
-    r.effective-prefers-override: function:d687afb3744f79be091b78a990794a9d, r.expired-reports-unknown:
-    function:503ea477e92bcc1bc7f9bdba99922323, r.expired-reports-unknown: function:a0c1200f8b55a18bfa918f1f0cee7615,
-    r.tests-cover-boundaries: file:common/ttl/ttl_test.go'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
-- message: no synced fingerprint has been recorded yet
-  reason: NotSyncedYet
+- message: observed facts match the synced fingerprint
+  reason: FingerprintEqual
   status: "False"
   type: Drifted
 - message: the spec passes the validator
   reason: ValidatorPassed
   status: "True"
   type: SpecValid
-observed: {}
+observed:
+  files:
+  - common/ttl/ttl.go
+  - common/ttl/ttl_test.go
+  fingerprint: 1bbbebd686b542eb40b525e9155f001af945a2e02e2f267a990db213b67e592b
+  interfaces:
+  - codegraphId: function:d687afb3744f79be091b78a990794a9d
+    file: common/ttl/ttl.go
+    kind: function
+    line: 9
+    name: Effective
+    signature: (override, fallback *int64) *int64
+  - codegraphId: function:503ea477e92bcc1bc7f9bdba99922323
+    file: common/ttl/ttl.go
+    kind: function
+    line: 21
+    name: Expiry
+    signature: (completion *metav1.Time, seconds *int64) (time.Time, bool)
+  - codegraphId: function:a0c1200f8b55a18bfa918f1f0cee7615
+    file: common/ttl/ttl.go
+    kind: function
+    line: 28
+    name: Expired
+    signature: (completion *metav1.Time, seconds *int64, now time.Time) (expired bool,
+      after time.Duration, known bool)
+  - codegraphId: function:9fdc74d33c3a88840f75732e3c0170bb
+    file: common/ttl/ttl.go
+    kind: function
+    line: 39
+    name: Deadline
+    signature: (start *metav1.Time, seconds *int64, now time.Time) bool
+observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+realizedSpecHash: d0ea5f2ceada2c1a5504eaa5ad9f6d3bc65999a10d0f215eaad1ae2c0f781b12
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: 1bbbebd686b542eb40b525e9155f001af945a2e02e2f267a990db213b67e592b

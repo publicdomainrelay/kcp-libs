@@ -2,6 +2,14 @@ apiVersion: specs.publicdomainrelay.dev/v1alpha1
 codeRefIndex:
 - file:common/ref/ref.go ref.go@common/ref/ref.go
 - file:common/ref/ref_test.go ref_test.go@common/ref/ref_test.go
+- function:4c5cf31e71ec19179fbbb42d890195d5 ClusterURL@common/ref/ref.go:47
+- function:757cbe1304d5ad40e0627224acf0be64 BaseHost@common/ref/ref.go:39
+- function:7999d84f451c59ca6a03577995281764 New@common/ref/ref.go:17
+- function:a77844fa6f24528303d849e5ed956c3c Key@common/ref/ref.go:21
+- method:2948085699170c0e8f98592fb74fedb5 Ref.WithNamespace@common/ref/ref.go:34
+- method:4e7c59fd75778a303dccf1476257f32b Ref.Key@common/ref/ref.go:25
+- method:a10e7cf01872c2cd075539e6dba8e9f4 Ref.WithResourceVersion@common/ref/ref.go:29
+- struct:d0d183e54e296ffe32b06ffd08b347ca Ref@common/ref/ref.go:7
 kind: SystemContext
 metadata:
   name: common-ref

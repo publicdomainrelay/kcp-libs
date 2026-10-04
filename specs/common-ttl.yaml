@@ -2,6 +2,10 @@ apiVersion: specs.publicdomainrelay.dev/v1alpha1
 codeRefIndex:
 - file:common/ttl/ttl.go ttl.go@common/ttl/ttl.go
 - file:common/ttl/ttl_test.go ttl_test.go@common/ttl/ttl_test.go
+- function:503ea477e92bcc1bc7f9bdba99922323 Expiry@common/ttl/ttl.go:21
+- function:9fdc74d33c3a88840f75732e3c0170bb Deadline@common/ttl/ttl.go:39
+- function:a0c1200f8b55a18bfa918f1f0cee7615 Expired@common/ttl/ttl.go:28
+- function:d687afb3744f79be091b78a990794a9d Effective@common/ttl/ttl.go:9
 kind: SystemContext
 metadata:
   name: common-ttl

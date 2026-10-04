@@ -13,4 +13,19 @@ conditions:
   reason: ValidatorPassed
   status: "True"
   type: SpecValid
-observed: {}
+observed:
+  files:
+  - examples/controller/main.go
+  - examples/controller/main_test.go
+  fingerprint: 882dba9bdedcea1e63e92bb22e1463ae695e06ddd657c91302b903fb6294c52a
+  interfaces:
+  - codegraphId: function:23c706f296c8210aa4211fe5ad7815cf
+    file: examples/controller/main.go
+    kind: function
+    line: 121
+    name: Run
+    signature: (ctx context.Context, out io.Writer) error
+observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+realizedSpecHash: edee0fbadb661a472249f92ea307f52e2a584de4f4ae1d12fd936abc5266d09c
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: 882dba9bdedcea1e63e92bb22e1463ae695e06ddd657c91302b903fb6294c52a

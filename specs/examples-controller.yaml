@@ -2,11 +2,27 @@ apiVersion: specs.publicdomainrelay.dev/v1alpha1
 codeRefIndex:
 - file:examples/controller/main.go main.go@examples/controller/main.go
 - file:examples/controller/main_test.go main_test.go@examples/controller/main_test.go
+- function:23c706f296c8210aa4211fe5ad7815cf Run@examples/controller/main.go:121
 kind: SystemContext
 metadata:
   name: examples-controller
   namespace: default
 spec:
+  dependsOn:
+  - sc.abc-cache
+  - sc.abc-reconcile
+  - sc.abc-store
+  - sc.common-condition
+  - sc.common-denocomputer
+  - sc.common-logging
+  - sc.common-ref
+  - sc.factory-controller
+  - sc.impl-exportwatch
+  - sc.impl-informerwatch
+  - sc.impl-kcpstore
+  - sc.impl-metrics
+  - sc.internal-livekcp
+  - sc.internal-livekcp-livetest
   intent: 'This context exists to demonstrate, end to end and against a real kcp instance,
     that the generic controller layer works: a store backed by kcp, an export watch
     that discovers the virtual workspace URL, an informer-based controller with indexers
