@@ -1,17 +1,46 @@
 conditions:
-- message: 'missing: Client, Client.Status, Client.Submit, Task; unresolved: r.client-contract:
-    interface:3ec82f13ff355ba5c823fadd91cbc034, r.client-contract: method:60e85e0780bae7128346127fea69a2e3,
-    r.client-contract: method:e1e87944f71f145e385b7bc3db9a5588, r.state-vocabulary:
-    file:abc/policy/policy.go, r.task-shape: struct:c1003284dadd5dbd150449f4f9af4ddc'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
-- message: no synced fingerprint has been recorded yet
-  reason: NotSyncedYet
+- message: observed facts match the synced fingerprint
+  reason: FingerprintEqual
   status: "False"
   type: Drifted
 - message: the spec passes the validator
   reason: ValidatorPassed
   status: "True"
   type: SpecValid
-observed: {}
+observed:
+  files:
+  - abc/policy/policy.go
+  fingerprint: 6ff489849d0bb602a22a2c89ce44795daeca1c04342c44f31437b98ae0e93a9c
+  interfaces:
+  - codegraphId: struct:c1003284dadd5dbd150449f4f9af4ddc
+    file: abc/policy/policy.go
+    kind: struct
+    line: 13
+    name: Task
+  - codegraphId: interface:3ec82f13ff355ba5c823fadd91cbc034
+    file: abc/policy/policy.go
+    kind: interface
+    line: 23
+    name: Client
+  - codegraphId: method:60e85e0780bae7128346127fea69a2e3
+    file: abc/policy/policy.go
+    kind: method
+    line: 24
+    name: Client.Submit
+    signature: (ctx context.Context, endpoint string, workflow []byte, inputs map[string]string)
+      (string, error)
+  - codegraphId: method:e1e87944f71f145e385b7bc3db9a5588
+    file: abc/policy/policy.go
+    kind: method
+    line: 26
+    name: Client.Status
+    signature: (ctx context.Context, endpoint, taskID string) (Task, error)
+observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+realizedSpecHash: 2dedaf5bb5fcf8246b9983b15fe1e0acdf1818f0d921011871fe7c0644ab928c
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: 6ff489849d0bb602a22a2c89ce44795daeca1c04342c44f31437b98ae0e93a9c

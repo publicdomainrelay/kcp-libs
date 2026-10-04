@@ -1,6 +1,10 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
 codeRefIndex:
 - file:abc/policy/policy.go policy.go@abc/policy/policy.go
+- interface:3ec82f13ff355ba5c823fadd91cbc034 Client@abc/policy/policy.go:23
+- method:60e85e0780bae7128346127fea69a2e3 Client.Submit@abc/policy/policy.go:24
+- method:e1e87944f71f145e385b7bc3db9a5588 Client.Status@abc/policy/policy.go:26
+- struct:c1003284dadd5dbd150449f4f9af4ddc Task@abc/policy/policy.go:13
 kind: SystemContext
 metadata:
   name: abc-policy

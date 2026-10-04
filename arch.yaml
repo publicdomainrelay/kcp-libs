@@ -629,8 +629,14 @@ system_contexts:
       and mount; Role carries AllowedDomains, AllowSubdomains, AllowBareDomains, EnforceHostnames,
       KeyType, KeyBits and MaxTTL.
   upstream: self
-- codeRefIndex:
+- code:
+  - abc/policy/policy.go
+  codeRefIndex:
   - file:abc/policy/policy.go policy.go@abc/policy/policy.go
+  - interface:3ec82f13ff355ba5c823fadd91cbc034 Client@abc/policy/policy.go:23
+  - method:60e85e0780bae7128346127fea69a2e3 Client.Submit@abc/policy/policy.go:24
+  - method:e1e87944f71f145e385b7bc3db9a5588 Client.Status@abc/policy/policy.go:26
+  - struct:c1003284dadd5dbd150449f4f9af4ddc Task@abc/policy/policy.go:13
   id: sc.abc-policy
   intent: This context exists so that consumers of a policy engine depend on a stable,
     transport-free contract instead of a concrete HTTP client. It defines the vocabulary
@@ -697,9 +703,19 @@ system_contexts:
     text: Task MUST carry State, ExitStatus, Outputs as a map[string]string, and Message,
       all as plain string or map fields.
   upstream: self
-- codeRefIndex:
+- code:
+  - abc/probe/probe.go
+  - abc/probe/probe_test.go
+  codeRefIndex:
   - file:abc/probe/probe.go probe.go@abc/probe/probe.go
   - file:abc/probe/probe_test.go probe_test.go@abc/probe/probe_test.go
+  - function:4fa0354f183a097615e79c3cd44dee84 EffectiveThreshold@abc/probe/probe.go:51
+  - function:dd53e30fa995268962209545381294f4 NewTracker@abc/probe/probe.go:19
+  - method:3c2f19df0b852dd0e9aafecfd9d631a2 Tracker.Record@abc/probe/probe.go:23
+  - method:6bdac2559baf52a89854a4b785722987 Tracker.Len@abc/probe/probe.go:45
+  - method:6e9f3e9deecbcb4ec14db06af7386ac7 Tracker.Forget@abc/probe/probe.go:39
+  - struct:455c909dc9384fcb23e3388b626fe2ed Tracker@abc/probe/probe.go:13
+  - struct:c82813d1c5f66d076eef090321523676 Counter@abc/probe/probe.go:7
   id: sc.abc-probe
   intent: 'This context exists to specify the consecutive-failure probe abstraction:
     a shared, concurrency-safe place where repeated observations about a named probe
@@ -813,11 +829,41 @@ system_contexts:
       guard every access with a mutex, so Record, Forget and Len are safe to call
       concurrently.
   upstream: self
-- codeRefIndex:
+- code:
+  - abc/queue/leases.go
+  - abc/queue/leases_test.go
+  - abc/queue/queue.go
+  - abc/queue/queue_test.go
+  codeRefIndex:
   - file:abc/queue/leases.go leases.go@abc/queue/leases.go
   - file:abc/queue/leases_test.go leases_test.go@abc/queue/leases_test.go
   - file:abc/queue/queue.go queue.go@abc/queue/queue.go
   - file:abc/queue/queue_test.go queue_test.go@abc/queue/queue_test.go
+  - function:1c23c59b39afb3955d8fb1ef8262bec4 Decision@abc/queue/queue.go:94
+  - function:2ae018e0f488c4c38974fe6ac10ac6b7 NewLeases@abc/queue/leases.go:18
+  - function:4a7ac07571d725f388963144fc298480 Order@abc/queue/queue.go:107
+  - function:57b793729eefa74795369ef3ec3c5001 Limit@abc/queue/queue.go:84
+  - function:7c6d74ae07384500ff8262c7a120089c WakeList@abc/queue/queue.go:188
+  - function:7ca241acd8161cba27ae96514598782f EffectivePolicy@abc/queue/queue.go:25
+  - function:a64e06cf0280d641c63e9d6a29889ba2 Plan@abc/queue/queue.go:116
+  - function:cb491319026f10dd31ad43cb1a74a3e6 PlanIndex@abc/queue/queue.go:177
+  - method:7fcca607f05203909cae0e30fb95654f Leases.Grant@abc/queue/leases.go:22
+  - method:8573365ee09dc1eb4cd105750db7d96a Admission.Waiting@abc/queue/queue.go:80
+  - method:a57993a5f26e81ef1e6ae695a11d798d Leases.Count@abc/queue/leases.go:30
+  - method:aaa78ff0e7191ff1df4b246d1a69c083 Leases.Len@abc/queue/leases.go:49
+  - method:ebdc3f4b76becb1059271eec51c5af14 Leases.Forget@abc/queue/leases.go:26
+  - struct:2f6663c79d6e6a401d99f363c4816759 Leases@abc/queue/leases.go:14
+  - struct:34632297f34c7dcc187beda5485fdc49 Lifecycle@abc/queue/queue.go:17
+  - struct:47c532cd8b7218bfdb153ed7bf19aa12 Capacity@abc/queue/queue.go:48
+  - struct:4921ee224c96b7635c2b202098cbeff3 Blocker@abc/queue/queue.go:54
+  - struct:6dd8d61ae12efdab874719004a369656 Run@abc/queue/queue.go:40
+  - struct:792cc17bc63ccca0dcb38c0a64474daf Admission@abc/queue/queue.go:60
+  - struct:ad8589e78e7c996950704e3f42b98e35 Lease@abc/queue/leases.go:10
+  - type_alias:be31cbc6c94318d5c5589f1e679d3f21 Policy@abc/queue/queue.go:23
+  depends_on:
+  - sc.common-denocomputer
+  - sc.common-expiringmap
+  - sc.common-ref
   id: sc.abc-queue
   intent: 'This context exists to specify the admission/lease contract of the abc
     queue: what a Run must look like to be planned, how Policy defaults resolve, how
