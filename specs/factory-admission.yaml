@@ -2,11 +2,25 @@ apiVersion: specs.publicdomainrelay.dev/v1alpha1
 codeRefIndex:
 - file:factory/admission/admission.go admission.go@factory/admission/admission.go
 - file:factory/admission/admission_test.go admission_test.go@factory/admission/admission_test.go
+- function:4204d25ce951cefafd1bb89729e7bd03 New@factory/admission/admission.go:41
+- interface:9c23d5af968c6dcd87d996b5fb785c81 Source@factory/admission/admission.go:11
+- method:0d37cff2d12a3e38aa4393696696d4c5 Source.Runs@factory/admission/admission.go:14
+- method:596d1d41bb4565e406b326020ce25a82 Source.Parent@factory/admission/admission.go:12
+- method:9b26f8dc3db4f420718a3ae685d15ea8 Admitter.Admit@factory/admission/admission.go:55
+- method:d3904e1762452936d94101cc4cfc4bbe Source.Capacity@factory/admission/admission.go:16
+- method:e452266abf564c3d1e61f18fb3d426f6 Admitter.Leases@factory/admission/admission.go:51
+- method:fb3c595a96a98de51678ad45702f4519 Admitter.Wake@factory/admission/admission.go:87
+- struct:3aede7d4f92074172612567f434a4408 Options@factory/admission/admission.go:19
+- struct:c62339005d8ea8281d87db8bcb56a638 Admitter@factory/admission/admission.go:37
 kind: SystemContext
 metadata:
   name: factory-admission
   namespace: default
 spec:
+  dependsOn:
+  - sc.abc-queue
+  - sc.common-denocomputer
+  - sc.common-ref
   intent: This context exists to describe the admission gate that sits between a queue
     and the workloads it schedules. It defines the Source port through which the gate
     reads cluster state (parent, siblings, capacity) without knowing any workload

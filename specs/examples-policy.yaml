@@ -3,11 +3,19 @@ codeRefIndex:
 - file:examples/policy/engine.go engine.go@examples/policy/engine.go
 - file:examples/policy/main.go main.go@examples/policy/main.go
 - file:examples/policy/main_test.go main_test.go@examples/policy/main_test.go
+- function:4cf3070e763136f1251e403942485497 Run@examples/policy/main.go:18
+- method:5e7dd0b9cb49339a8dce6360d81790ab engine.Submits@examples/policy/engine.go:66
+- method:8adc047283ab850bffddf2fa6d30a23c engine.URL@examples/policy/engine.go:58
+- method:8efb924d3babc92148f8bda3b2d45469 engine.Close@examples/policy/engine.go:62
+- method:dd19ad85f3bd4cb7b58e6d21d7d16180 engine.ServeHTTP@examples/policy/engine.go:72
 kind: SystemContext
 metadata:
   name: examples-policy
   namespace: default
 spec:
+  dependsOn:
+  - sc.abc-policy
+  - sc.impl-policyclient
   intent: 'This context documents the examples/policy package: the runnable demonstration
     of the policy engine surface. It exists so the exported behaviour of that example
     — the engine''s URL accessor, its Close, its submitted-run counter, its HTTP handler,

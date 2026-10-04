@@ -9,5 +9,7 @@ _The resolved code references are regenerated on every run. Cite the ids above r
 <!-- SPECD_MANAGED_BEGIN -->
 ## Resolved code references
 
-_None yet._
+- `file:examples/workloads/main.go` file main.go (examples/workloads/main.go)
+- `file:examples/workloads/main_test.go` file main_test.go (examples/workloads/main_test.go)
+- `function:4f9e3c5199d0b48e53740bacffb4b9ac` function Run (examples/workloads/main.go)
 <!-- SPECD_MANAGED_END -->

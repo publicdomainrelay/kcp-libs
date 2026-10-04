@@ -3289,9 +3289,23 @@ system_contexts:
     text: Run must start a live kcp cluster and stop it on return, and must return
       the error if the cluster fails to start.
   upstream: self
-- codeRefIndex:
+- code:
+  - examples/dns/main.go
+  - examples/dns/main_test.go
+  codeRefIndex:
   - file:examples/dns/main.go main.go@examples/dns/main.go
   - file:examples/dns/main_test.go main_test.go@examples/dns/main_test.go
+  - function:91d47a59cae63290c441f196217cef7e Run@examples/dns/main.go:48
+  depends_on:
+  - sc.abc-store
+  - sc.common-denospec
+  - sc.common-kcp
+  - sc.common-ref
+  - sc.factory-servicenames
+  - sc.impl-assets
+  - sc.impl-kcpstore
+  - sc.internal-livekcp
+  - sc.internal-livekcp-livetest
   id: sc.examples-dns
   intent: 'This context exists to demonstrate and verify the DNS and service-name
     resolution behaviour of kcp-libs end to end. It is an executable example rather
@@ -3383,11 +3397,26 @@ system_contexts:
     text: The resolver must mint tokens through the kcp store with a one hour TTL,
       and its environment output must carry a token for each covered workspace.
   upstream: self
-- codeRefIndex:
+- code:
+  - examples/pki/certs.go
+  - examples/pki/main.go
+  - examples/pki/main_test.go
+  - examples/pki/vault.go
+  codeRefIndex:
   - file:examples/pki/certs.go certs.go@examples/pki/certs.go
   - file:examples/pki/main.go main.go@examples/pki/main.go
   - file:examples/pki/main_test.go main_test.go@examples/pki/main_test.go
   - file:examples/pki/vault.go vault.go@examples/pki/vault.go
+  - function:ee6adf675850825fe2a3b3696b991879 Run@examples/pki/main.go:26
+  - method:147b7070b45be7c13a88225e5f5c7e37 vault.ServeHTTP@examples/pki/vault.go:69
+  - method:1a848c7f40482ad066fc74dd3ef4c787 vault.URL@examples/pki/vault.go:55
+  - method:864fe0fd004ec6e68a16c123dd516ef4 vault.CallCount@examples/pki/vault.go:63
+  - method:aae965e31b6d34cc2cc7c5d18d44f176 vault.Close@examples/pki/vault.go:59
+  depends_on:
+  - sc.abc-pki
+  - sc.common-kcp
+  - sc.impl-openbaoclient
+  - sc.impl-pkiprovisioner
   id: sc.examples-pki
   intent: 'This context exists to document the examples/pki example: an executable
     end-to-end demonstration that provisions a PKI setup through KCP and issues certificates,
@@ -3465,10 +3494,22 @@ system_contexts:
     text: The fake vault MUST expose URL, returning the base URL the example uses
       to reach it.
   upstream: self
-- codeRefIndex:
+- code:
+  - examples/policy/engine.go
+  - examples/policy/main.go
+  - examples/policy/main_test.go
+  codeRefIndex:
   - file:examples/policy/engine.go engine.go@examples/policy/engine.go
   - file:examples/policy/main.go main.go@examples/policy/main.go
   - file:examples/policy/main_test.go main_test.go@examples/policy/main_test.go
+  - function:4cf3070e763136f1251e403942485497 Run@examples/policy/main.go:18
+  - method:5e7dd0b9cb49339a8dce6360d81790ab engine.Submits@examples/policy/engine.go:66
+  - method:8adc047283ab850bffddf2fa6d30a23c engine.URL@examples/policy/engine.go:58
+  - method:8efb924d3babc92148f8bda3b2d45469 engine.Close@examples/policy/engine.go:62
+  - method:dd19ad85f3bd4cb7b58e6d21d7d16180 engine.ServeHTTP@examples/policy/engine.go:72
+  depends_on:
+  - sc.abc-policy
+  - sc.impl-policyclient
   id: sc.examples-policy
   intent: 'This context documents the examples/policy package: the runnable demonstration
     of the policy engine surface. It exists so the exported behaviour of that example
@@ -3541,9 +3582,23 @@ system_contexts:
       and returning an error; it must use the engine's URL, Close and Submits methods
       to drive and verify the run.
   upstream: self
-- codeRefIndex:
+- code:
+  - examples/workloads/main.go
+  - examples/workloads/main_test.go
+  codeRefIndex:
   - file:examples/workloads/main.go main.go@examples/workloads/main.go
   - file:examples/workloads/main_test.go main_test.go@examples/workloads/main_test.go
+  - function:4f9e3c5199d0b48e53740bacffb4b9ac Run@examples/workloads/main.go:31
+  depends_on:
+  - sc.abc-joballoc
+  - sc.abc-probe
+  - sc.abc-runner
+  - sc.common-denospec
+  - sc.common-ref
+  - sc.common-ttl
+  - sc.impl-assets
+  - sc.impl-execrunner
+  - sc.impl-memoryrunner
   id: sc.examples-workloads
   intent: 'This context exists to prove the workload packages compose in one place
     and to serve as living documentation for callers. It is an example, not a library:
@@ -3614,9 +3669,26 @@ system_contexts:
     text: Run evaluates ttl.Expired for a past completion time and uses joballoc to
       allocate a job's names and report the still-pending subset.
   upstream: self
-- codeRefIndex:
+- code:
+  - factory/admission/admission.go
+  - factory/admission/admission_test.go
+  codeRefIndex:
   - file:factory/admission/admission.go admission.go@factory/admission/admission.go
   - file:factory/admission/admission_test.go admission_test.go@factory/admission/admission_test.go
+  - function:4204d25ce951cefafd1bb89729e7bd03 New@factory/admission/admission.go:41
+  - interface:9c23d5af968c6dcd87d996b5fb785c81 Source@factory/admission/admission.go:11
+  - method:0d37cff2d12a3e38aa4393696696d4c5 Source.Runs@factory/admission/admission.go:14
+  - method:596d1d41bb4565e406b326020ce25a82 Source.Parent@factory/admission/admission.go:12
+  - method:9b26f8dc3db4f420718a3ae685d15ea8 Admitter.Admit@factory/admission/admission.go:55
+  - method:d3904e1762452936d94101cc4cfc4bbe Source.Capacity@factory/admission/admission.go:16
+  - method:e452266abf564c3d1e61f18fb3d426f6 Admitter.Leases@factory/admission/admission.go:51
+  - method:fb3c595a96a98de51678ad45702f4519 Admitter.Wake@factory/admission/admission.go:87
+  - struct:3aede7d4f92074172612567f434a4408 Options@factory/admission/admission.go:19
+  - struct:c62339005d8ea8281d87db8bcb56a638 Admitter@factory/admission/admission.go:37
+  depends_on:
+  - sc.abc-queue
+  - sc.common-denocomputer
+  - sc.common-ref
   id: sc.factory-admission
   intent: This context exists to describe the admission gate that sits between a queue
     and the workloads it schedules. It defines the Source port through which the gate

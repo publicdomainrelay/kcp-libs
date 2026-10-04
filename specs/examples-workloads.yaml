@@ -2,11 +2,22 @@ apiVersion: specs.publicdomainrelay.dev/v1alpha1
 codeRefIndex:
 - file:examples/workloads/main.go main.go@examples/workloads/main.go
 - file:examples/workloads/main_test.go main_test.go@examples/workloads/main_test.go
+- function:4f9e3c5199d0b48e53740bacffb4b9ac Run@examples/workloads/main.go:31
 kind: SystemContext
 metadata:
   name: examples-workloads
   namespace: default
 spec:
+  dependsOn:
+  - sc.abc-joballoc
+  - sc.abc-probe
+  - sc.abc-runner
+  - sc.common-denospec
+  - sc.common-ref
+  - sc.common-ttl
+  - sc.impl-assets
+  - sc.impl-execrunner
+  - sc.impl-memoryrunner
   intent: 'This context exists to prove the workload packages compose in one place
     and to serve as living documentation for callers. It is an example, not a library:
     it is a package main whose only exported symbol is Run, deliberately taking a

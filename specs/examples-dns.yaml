@@ -2,11 +2,22 @@ apiVersion: specs.publicdomainrelay.dev/v1alpha1
 codeRefIndex:
 - file:examples/dns/main.go main.go@examples/dns/main.go
 - file:examples/dns/main_test.go main_test.go@examples/dns/main_test.go
+- function:91d47a59cae63290c441f196217cef7e Run@examples/dns/main.go:48
 kind: SystemContext
 metadata:
   name: examples-dns
   namespace: default
 spec:
+  dependsOn:
+  - sc.abc-store
+  - sc.common-denospec
+  - sc.common-kcp
+  - sc.common-ref
+  - sc.factory-servicenames
+  - sc.impl-assets
+  - sc.impl-kcpstore
+  - sc.internal-livekcp
+  - sc.internal-livekcp-livetest
   intent: 'This context exists to demonstrate and verify the DNS and service-name
     resolution behaviour of kcp-libs end to end. It is an executable example rather
     than library code: it shows a consumer of `servicenames` how to assemble a resolver

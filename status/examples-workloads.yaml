@@ -1,16 +1,30 @@
 conditions:
-- message: 'missing: Run; unresolved: r.exec-pod-lifecycle: file:examples/workloads/main.go,
-    r.run-is-the-entry-point: function:4f9e3c5199d0b48e53740bacffb4b9ac, r.test-pins-printed-output:
-    file:examples/workloads/main_test.go'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
-- message: no synced fingerprint has been recorded yet
-  reason: NotSyncedYet
+- message: observed facts match the synced fingerprint
+  reason: FingerprintEqual
   status: "False"
   type: Drifted
 - message: the spec passes the validator
   reason: ValidatorPassed
   status: "True"
   type: SpecValid
-observed: {}
+observed:
+  files:
+  - examples/workloads/main.go
+  - examples/workloads/main_test.go
+  fingerprint: 16c8c60e95de84b7eb85aa4fb34af6dea416b90635aee149692b8019b61be63e
+  interfaces:
+  - codegraphId: function:4f9e3c5199d0b48e53740bacffb4b9ac
+    file: examples/workloads/main.go
+    kind: function
+    line: 31
+    name: Run
+    signature: (ctx context.Context, out io.Writer) error
+observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+realizedSpecHash: 7aaa5e3e129a47dd417acfd13426053ee4c34283e67e849dec3788f424af2cee
+syncedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
+syncedFingerprint: 16c8c60e95de84b7eb85aa4fb34af6dea416b90635aee149692b8019b61be63e

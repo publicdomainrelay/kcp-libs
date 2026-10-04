@@ -4,11 +4,21 @@ codeRefIndex:
 - file:examples/pki/main.go main.go@examples/pki/main.go
 - file:examples/pki/main_test.go main_test.go@examples/pki/main_test.go
 - file:examples/pki/vault.go vault.go@examples/pki/vault.go
+- function:ee6adf675850825fe2a3b3696b991879 Run@examples/pki/main.go:26
+- method:147b7070b45be7c13a88225e5f5c7e37 vault.ServeHTTP@examples/pki/vault.go:69
+- method:1a848c7f40482ad066fc74dd3ef4c787 vault.URL@examples/pki/vault.go:55
+- method:864fe0fd004ec6e68a16c123dd516ef4 vault.CallCount@examples/pki/vault.go:63
+- method:aae965e31b6d34cc2cc7c5d18d44f176 vault.Close@examples/pki/vault.go:59
 kind: SystemContext
 metadata:
   name: examples-pki
   namespace: default
 spec:
+  dependsOn:
+  - sc.abc-pki
+  - sc.common-kcp
+  - sc.impl-openbaoclient
+  - sc.impl-pkiprovisioner
   intent: 'This context exists to document the examples/pki example: an executable
     end-to-end demonstration that provisions a PKI setup through KCP and issues certificates,
     backed by an in-process fake Vault. The fake Vault exists so the example and its
