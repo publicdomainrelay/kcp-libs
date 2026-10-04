@@ -2,13 +2,69 @@
 
 Repository: `kcp-libs`
 
-_(empty: write what this context is for)_
+This context exists so that consumers of a policy engine depend on a stable, transport-free contract instead of a concrete HTTP client. It defines the vocabulary and signatures that an implementation such as impl/policyclient must satisfy, and the shape of the task status that callers poll after submission. Keeping the contract in abc/policy lets the engine endpoint stay a per-call argument, so one Client talks to many policy engines.
 
 _Write the prose above and the fields in the spec block. `codeRefs` and the resolved references below are maintained by the tool; an edit there is lost._
 
 ## spec
 
 ```yaml spec
+interfaces:
+- file: abc/policy/policy.go
+  kind: interface
+  name: Client
+  signature: type Client interface { Submit(ctx context.Context, endpoint string,
+    workflow []byte, inputs map[string]string) (string, error); Status(ctx context.Context,
+    endpoint, taskID string) (Task, error) }
+- file: abc/policy/policy.go
+  kind: method
+  name: Client.Status
+  signature: Status(ctx context.Context, endpoint, taskID string) (Task, error)
+- file: abc/policy/policy.go
+  kind: method
+  name: Client.Submit
+  signature: Submit(ctx context.Context, endpoint string, workflow []byte, inputs
+    map[string]string) (string, error)
+- file: abc/policy/policy.go
+  kind: struct
+  name: Task
+  signature: type Task struct { State string; ExitStatus string; Outputs map[string]string;
+    Message string }
+requirements:
+- codeRefs:
+  - interface:3ec82f13ff355ba5c823fadd91cbc034
+  - method:60e85e0780bae7128346127fea69a2e3
+  - method:e1e87944f71f145e385b7bc3db9a5588
+  id: r.client-contract
+  level: MUST
+  text: The package MUST export a Client interface whose Submit call returns a task
+    identifier string and an error, and whose Status call returns a Task and an error.
+- codeRefs:
+  - file:abc/policy/policy.go
+  id: r.state-vocabulary
+  level: MUST
+  text: 'The package MUST define exactly three run states as string constants: StateRunning
+    with value "running", StateSucceeded with value "succeeded", and StateFailed with
+    value "failed".'
+- codeRefs:
+  - method:e1e87944f71f145e385b7bc3db9a5588
+  id: r.status-lookup
+  level: MUST
+  text: Status MUST identify a run by the engine endpoint plus the task identifier
+    returned from Submit, and MUST accept a context for cancellation.
+- codeRefs:
+  - method:60e85e0780bae7128346127fea69a2e3
+  id: r.submit-inputs
+  level: MUST
+  text: Submit MUST take the engine endpoint as a string, the workflow as raw JSON
+    bytes, and the run inputs as a map[string]string, and MUST accept a context for
+    cancellation.
+- codeRefs:
+  - struct:c1003284dadd5dbd150449f4f9af4ddc
+  id: r.task-shape
+  level: MUST
+  text: Task MUST carry State, ExitStatus, Outputs as a map[string]string, and Message,
+    all as plain string or map fields.
 upstream: self
 ```
 

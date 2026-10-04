@@ -10,5 +10,18 @@ spec:
   systemContext: abc-joballoc
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: waiting for the agent that summarizes abc-joballoc
-  phase: Pending
+  agentLog: abc/joballoc is a small in-memory allocation ledger for the abc layer
+    of kcp-libs. It records which job names have been handed out for a given ref.Ref
+    and remembers when each was handed out, so callers can ask what was allocated,
+    what is still pending, and can forget a job when it ends. State lives in a single
+    expiringmap.Map keyed by ref.Ref holding a slice of Allocation values, so every
+    entry carries the TTL passed to New and reads take an explicit now for expiry.
+    Allocate appends to the existing slice rather than replacing it and is a no-op
+    for an empty name list; Names returns the allocated names or nil when the entry
+    is missing or empty; Pending returns the allocated names that the caller has not
+    yet observed, de-duplicating both the observed list and the result; Forget deletes
+    the entry and Len reports how many jobs are held. Allocation pairs a Name with
+    the time At it was allocated. MergeNames is a free function that flattens several
+    name groups into one order-preserving list, dropping empty names and later duplicates.
+  message: wrote 8 requirement(s) and 9 interface(s) for abc-joballoc
+  phase: Succeeded

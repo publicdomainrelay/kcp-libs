@@ -1,8 +1,8 @@
 conditions:
-- message: 'undeclared: Allocation, Allocator, Allocator.Allocate, Allocator.Forget,
-    Allocator.Len, Allocator.Names, Allocator.Pending, MergeNames, New'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -71,6 +71,6 @@ observed:
     name: MergeNames
     signature: (groups ...[]string) []string
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: ef1e5e31345d5e43632e10acbd66bde62d48d729cf5b146618ddc49f362787ca
+realizedSpecHash: c807e358153585c2ec314bd2629c0500dec43bd1c595d38c13442fe9c113caf8
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: 9507bb1af103d77777996e8721bf31e436d53f131d16287076439df8d208c1be

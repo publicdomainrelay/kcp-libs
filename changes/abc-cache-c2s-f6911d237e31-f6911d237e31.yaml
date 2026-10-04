@@ -10,5 +10,5 @@ spec:
   systemContext: abc-cache
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: waiting for the agent that summarizes abc-cache
-  phase: Pending
+  message: the agent is summarizing abc-cache
+  phase: Running

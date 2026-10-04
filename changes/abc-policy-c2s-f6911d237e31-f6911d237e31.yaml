@@ -1,0 +1,23 @@
+apiVersion: specs.publicdomainrelay.dev/v1alpha1
+kind: SpecChange
+metadata:
+  name: abc-policy-c2s-f6911d237e31-f6911d237e31
+  namespace: default
+spec:
+  delta: {}
+  direction: CodeToSpec
+  fromCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+  systemContext: abc-policy
+  toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+status:
+  agentLog: 'The abc/policy package is the abstract contract for talking to a policy
+    engine. It declares a Client interface with two operations, Submit and Status,
+    and a Task struct that carries the result of a submitted workflow run. Submit
+    takes a context, an engine endpoint, the workflow document as raw JSON bytes,
+    and a map of string inputs, and returns the engine''s task identifier. Status
+    takes a context, the engine endpoint and a task identifier, and returns a Task
+    with its state, exit status, outputs and message. The package also fixes the state
+    vocabulary as three string constants: running, succeeded and failed. This file
+    holds only the interface layer, with no transport or encoding logic.'
+  message: wrote 5 requirement(s) and 4 interface(s) for abc-policy
+  phase: Succeeded

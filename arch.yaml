@@ -14,7 +14,108 @@ system_contexts:
   - abc/joballoc/joballoc.go
   - abc/joballoc/joballoc_test.go
   id: sc.abc-joballoc
+  intent: 'This context exists so the abc layer has one place that answers which names
+    a job already holds and which of those a controller has not yet seen, without
+    each consumer keeping its own bookkeeping. It is deliberately runtime-agnostic:
+    it names no workload runtime and depends only on common/ref and common/expiringmap,
+    so any reconciler in the repo can use it. Expiry comes from the shared expiringmap
+    rather than from a timer here, which keeps the allocator free of goroutines and
+    makes every read testable against an explicit now.'
+  interfaces:
+  - file: abc/joballoc/joballoc.go
+    kind: struct
+    name: Allocation
+    signature: type Allocation struct { Name string; At time.Time }
+  - file: abc/joballoc/joballoc.go
+    kind: struct
+    name: Allocator
+    signature: type Allocator struct { byJob *expiringmap.Map[ref.Ref, []Allocation]
+      }
+  - file: abc/joballoc/joballoc.go
+    kind: method
+    name: Allocator.Allocate
+    signature: func (a *Allocator) Allocate(r ref.Ref, names []string, now time.Time)
+  - file: abc/joballoc/joballoc.go
+    kind: method
+    name: Allocator.Forget
+    signature: func (a *Allocator) Forget(r ref.Ref)
+  - file: abc/joballoc/joballoc.go
+    kind: method
+    name: Allocator.Len
+    signature: func (a *Allocator) Len() int
+  - file: abc/joballoc/joballoc.go
+    kind: method
+    name: Allocator.Names
+    signature: func (a *Allocator) Names(r ref.Ref, now time.Time) []string
+  - file: abc/joballoc/joballoc.go
+    kind: method
+    name: Allocator.Pending
+    signature: func (a *Allocator) Pending(r ref.Ref, observed []string, now time.Time)
+      []string
+  - file: abc/joballoc/joballoc.go
+    kind: function
+    name: MergeNames
+    signature: func MergeNames(groups ...[]string) []string
+  - file: abc/joballoc/joballoc.go
+    kind: function
+    name: New
+    signature: func New(ttl time.Duration) *Allocator
   name: abc-joballoc
+  requirements:
+  - codeRefs:
+    - method:1d809a0f9cc0db66dd09568aab52e10e
+    - struct:c6c45587967912c642f434fc5c395fac
+    id: r.allocate-appends-and-skips-empty
+    level: MUST
+    text: 'Allocator.Allocate returns immediately when names is empty, and otherwise
+      reads the existing allocations for the ref and appends one Allocation{Name,
+      At: now} per name before setting the result back.'
+  - codeRefs:
+    - method:10aee9a9b59c82c429e59eda7063cff2
+    id: r.forget-deletes-the-job
+    level: MUST
+    text: Allocator.Forget deletes the ref's entry from the underlying map.
+  - codeRefs:
+    - method:99144fd4f43e31bdffe2206a3a99a050
+    id: r.len-reports-held-jobs
+    level: MUST
+    text: Allocator.Len returns the number of entries the underlying map currently
+      holds.
+  - codeRefs:
+    - function:3f2d8c8fe1fe9a1ffe2aec6ae9cb21b1
+    id: r.merge-names-order-preserving-dedupe
+    level: MUST
+    text: MergeNames concatenates the given groups in order, dropping empty names
+      and names already emitted, so the result keeps first-seen order with no duplicates.
+  - codeRefs:
+    - method:2fe2fe5409de2aff6260db2ad57424e1
+    id: r.names-nil-when-absent-or-empty
+    level: MUST
+    text: Allocator.Names returns nil when the ref has no live entry or the entry
+      holds no allocations, and otherwise returns the allocation names in stored order.
+  - codeRefs:
+    - file:abc/joballoc/joballoc.go
+    - function:e5835aa23953e8fe5e8ba0521c6f6305
+    - struct:81a3d6c6679a07f9c85fcbb079cd24ef
+    id: r.new-wires-expiring-map-with-ttl
+    level: MUST
+    text: New returns an Allocator whose byJob map is an expiringmap.Map keyed by
+      ref.Ref holding []Allocation, created with the given ttl.
+  - codeRefs:
+    - method:9c2e809f72d7951e74cf7925860610ec
+    id: r.pending-excludes-observed-and-dedupes
+    level: MUST
+    text: Allocator.Pending returns nil when the ref has no live entry, and otherwise
+      returns the allocated names not present in observed, skipping any name already
+      emitted so the result carries no duplicates.
+  - codeRefs:
+    - method:1d809a0f9cc0db66dd09568aab52e10e
+    - method:2fe2fe5409de2aff6260db2ad57424e1
+    - method:9c2e809f72d7951e74cf7925860610ec
+    id: r.reads-honour-explicit-now
+    level: MUST
+    text: Every read and write takes an explicit now time.Time and passes it to the
+      expiringmap, so expiry is decided by the caller's clock and not by the allocator.
   upstream: self
 - code:
   - abc/pki/pki.go
@@ -24,7 +125,70 @@ system_contexts:
 - code:
   - abc/policy/policy.go
   id: sc.abc-policy
+  intent: This context exists so that consumers of a policy engine depend on a stable,
+    transport-free contract instead of a concrete HTTP client. It defines the vocabulary
+    and signatures that an implementation such as impl/policyclient must satisfy,
+    and the shape of the task status that callers poll after submission. Keeping the
+    contract in abc/policy lets the engine endpoint stay a per-call argument, so one
+    Client talks to many policy engines.
+  interfaces:
+  - file: abc/policy/policy.go
+    kind: interface
+    name: Client
+    signature: type Client interface { Submit(ctx context.Context, endpoint string,
+      workflow []byte, inputs map[string]string) (string, error); Status(ctx context.Context,
+      endpoint, taskID string) (Task, error) }
+  - file: abc/policy/policy.go
+    kind: method
+    name: Client.Status
+    signature: Status(ctx context.Context, endpoint, taskID string) (Task, error)
+  - file: abc/policy/policy.go
+    kind: method
+    name: Client.Submit
+    signature: Submit(ctx context.Context, endpoint string, workflow []byte, inputs
+      map[string]string) (string, error)
+  - file: abc/policy/policy.go
+    kind: struct
+    name: Task
+    signature: type Task struct { State string; ExitStatus string; Outputs map[string]string;
+      Message string }
   name: abc-policy
+  requirements:
+  - codeRefs:
+    - interface:3ec82f13ff355ba5c823fadd91cbc034
+    - method:60e85e0780bae7128346127fea69a2e3
+    - method:e1e87944f71f145e385b7bc3db9a5588
+    id: r.client-contract
+    level: MUST
+    text: The package MUST export a Client interface whose Submit call returns a task
+      identifier string and an error, and whose Status call returns a Task and an
+      error.
+  - codeRefs:
+    - file:abc/policy/policy.go
+    id: r.state-vocabulary
+    level: MUST
+    text: 'The package MUST define exactly three run states as string constants: StateRunning
+      with value "running", StateSucceeded with value "succeeded", and StateFailed
+      with value "failed".'
+  - codeRefs:
+    - method:e1e87944f71f145e385b7bc3db9a5588
+    id: r.status-lookup
+    level: MUST
+    text: Status MUST identify a run by the engine endpoint plus the task identifier
+      returned from Submit, and MUST accept a context for cancellation.
+  - codeRefs:
+    - method:60e85e0780bae7128346127fea69a2e3
+    id: r.submit-inputs
+    level: MUST
+    text: Submit MUST take the engine endpoint as a string, the workflow as raw JSON
+      bytes, and the run inputs as a map[string]string, and MUST accept a context
+      for cancellation.
+  - codeRefs:
+    - struct:c1003284dadd5dbd150449f4f9af4ddc
+    id: r.task-shape
+    level: MUST
+    text: Task MUST carry State, ExitStatus, Outputs as a map[string]string, and Message,
+      all as plain string or map fields.
   upstream: self
 - code:
   - abc/probe/probe.go
