@@ -1,9 +1,8 @@
 conditions:
-- message: 'undeclared: New, Registry, Registry.Counter, Registry.Gauge, Registry.GaugeFunc,
-    Registry.Handler, Registry.Listen, Registry.Name, Registry.Registry, Registry.Render,
-    Registry.Summary, Server, Server.Address, Server.Close'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -102,6 +101,6 @@ observed:
     name: Server.Close
     signature: () error
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: 08977ae3da91070a25596c4a8d986528100c16e0b1da3656bd2803be137cc3ef
+realizedSpecHash: e1d963de8db84e29744312e48f4d728ebb4aee74144a9321fe75daab9813dabd
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: 24d04ad5674a078ef487488f75f3606f7539a9c056ef1b72f63d77320f2df886

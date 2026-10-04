@@ -10,5 +10,17 @@ spec:
   systemContext: impl-metrics
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing impl-metrics
-  phase: Running
+  agentLog: 'impl/metrics is the Prometheus metrics layer for kcp-libs. New(prefix)
+    builds a Registry wrapping a private prometheus.Registry with a name prefix; Registry.Name
+    joins prefix and metric name with an underscore. Counter, Gauge, GaugeFunc and
+    Summary build collectors under that prefixed name. Counter, Gauge and Summary
+    share one collector per name through the generic existing helper: a second request
+    for a name returns the AlreadyRegisteredError''s existing collector when its type
+    matches, and panics otherwise. GaugeFunc cannot be shared, because the function
+    is bound to one caller, so it registers directly and panics on any registration
+    error. Render gathers the registry and encodes each family as text/plain to an
+    io.Writer, Handler returns the promhttp handler, and Listen binds a TCP address,
+    serves that handler from a goroutine, and returns a Server exposing Address and
+    Close.'
+  message: wrote 8 requirement(s) and 14 interface(s) for impl-metrics
+  phase: Succeeded
