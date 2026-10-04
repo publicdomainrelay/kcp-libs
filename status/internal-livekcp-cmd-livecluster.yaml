@@ -1,1 +1,22 @@
-observed: {}
+conditions:
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
+  type: CodeSynced
+- message: observed facts match the synced fingerprint
+  reason: FingerprintEqual
+  status: "False"
+  type: Drifted
+- message: the spec passes the validator
+  reason: ValidatorPassed
+  status: "True"
+  type: SpecValid
+observed:
+  files:
+  - internal/livekcp/cmd/livecluster/main.go
+  fingerprint: 3daa6f27145ba8386abd78decff62a52ec08144ccd7f0960d8c81872799d78f8
+observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+realizedSpecHash: 9e778f3fbc9d147246ddbb197de392ff83fce31ec1a79664d9b09d5e12be771e
+syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+syncedFingerprint: 3daa6f27145ba8386abd78decff62a52ec08144ccd7f0960d8c81872799d78f8

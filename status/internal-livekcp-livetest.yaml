@@ -1,0 +1,28 @@
+conditions:
+- message: 'undeclared: Require'
+  reason: InterfacesMissing
+  status: "False"
+  type: CodeSynced
+- message: observed facts match the synced fingerprint
+  reason: FingerprintEqual
+  status: "False"
+  type: Drifted
+- message: the spec passes the validator
+  reason: ValidatorPassed
+  status: "True"
+  type: SpecValid
+observed:
+  files:
+  - internal/livekcp/livetest/livetest.go
+  fingerprint: e84b9c04d9912f35831dcb7a566770ea637d3847ddbdb3dc190446c15fb610ea
+  interfaces:
+  - codegraphId: function:42a6190b9b8e226427c4db2ace96f2cf
+    file: internal/livekcp/livetest/livetest.go
+    kind: function
+    line: 11
+    name: Require
+    signature: (t *testing.T)
+observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+realizedSpecHash: 5cc0c36b850503b97d4c8a21b1e68571ce3beaa2a5dbdb8bab95a138944cbc08
+syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
+syncedFingerprint: e84b9c04d9912f35831dcb7a566770ea637d3847ddbdb3dc190446c15fb610ea

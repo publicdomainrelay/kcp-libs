@@ -1,11 +1,12 @@
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
-  reason: InterfacesObserved
-  status: "True"
+- message: 'undeclared: Cluster, Cluster.Get, Cluster.Kubectl, Cluster.Logs, Cluster.Phases,
+    Cluster.Stop, Cluster.Trace, Metadata, Missing, NewObject, Object, Phase, Resolve,
+    Seed, Start, WaitFor'
+  reason: InterfacesMissing
+  status: "False"
   type: CodeSynced
-- message: no synced fingerprint has been recorded yet
-  reason: NotSyncedYet
+- message: observed facts match the synced fingerprint
+  reason: FingerprintEqual
   status: "False"
   type: Drifted
 - message: the spec passes the validator

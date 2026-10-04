@@ -270,6 +270,13 @@ system_contexts:
   id: sc.internal-livekcp
   name: internal-livekcp
   upstream: self
-- id: sc.internal-livekcp-cmd-livecluster
+- code:
+  - internal/livekcp/cmd/livecluster/main.go
+  id: sc.internal-livekcp-cmd-livecluster
   name: internal-livekcp-cmd-livecluster
+  upstream: self
+- code:
+  - internal/livekcp/livetest/livetest.go
+  id: sc.internal-livekcp-livetest
+  name: internal-livekcp-livetest
   upstream: self
