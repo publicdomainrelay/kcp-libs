@@ -3,6 +3,16 @@ codeRefIndex:
 - file:common/denospec/denospec.go denospec.go@common/denospec/denospec.go
 - file:common/denospec/denospec_contract_test.go denospec_contract_test.go@common/denospec/denospec_contract_test.go
 - file:common/denospec/denospec_test.go denospec_test.go@common/denospec/denospec_test.go
+- function:10ed3675a84f3ace014b3a75a3e36f7c ProbeCommand@common/denospec/denospec.go:155
+- function:8c740b4bfa20b8c5c3abcbedabd84404 EffectiveRestartPolicy@common/denospec/denospec.go:91
+- function:8d4402900d3462a266b3860020572db3 Args@common/denospec/denospec.go:166
+- function:961db49fe00a81882f3e64de7ff7262d Validate@common/denospec/denospec.go:113
+- struct:37cfecc71eb8d4169a8fdffff71f2eb3 Permissions@common/denospec/denospec.go:27
+- struct:81393b3c6451cfbfd692bcbb851b30a9 ServiceAccountRef@common/denospec/denospec.go:11
+- struct:bbb7094c15f71e3d40b7bd6ef4ffad5e Permission@common/denospec/denospec.go:17
+- struct:e63b3474fb8e8342ee8ddcbf9aeff650 ExecProbe@common/denospec/denospec.go:71
+- struct:ee22e42a28e08358a06298c6048e62e5 PodTemplate@common/denospec/denospec.go:55
+- type_alias:c9ed92b47f68b4cc5b0bb51223210dbb RestartPolicy@common/denospec/denospec.go:81
 kind: SystemContext
 metadata:
   name: common-denospec

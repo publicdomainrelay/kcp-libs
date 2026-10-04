@@ -1,18 +1,11 @@
 conditions:
-- message: 'missing: AlreadyStarted, Current, Index, Index.Forget, Index.Keep, Index.Len,
-    Index.Lookup, Index.Record, New, Record; unresolved: r.already-started-no-record-no-refusal:
-    file:abc/runref/runref.go, r.already-started-no-record-no-refusal: function:b3be3bdb00e0f276639e92a391046532,
-    r.already-started-refuses-stale-pending-copy: file:abc/runref/runref_test.go,
-    r.forget-deletes-by-normalized-ref: method:cae442026fb66407a9804c8987ffee8e, r.keep-terminal-or-empty-runid-forgets:
-    method:f29af6e54699815a89e6dfded48853b8, r.len-reports-entry-count: method:f61f5a9ef40992f65bfc79298b0fc1b8,
-    r.lookup-returns-first-matching-ref: method:a092ed399600f5b0fda4c653bab06826,
-    r.new-builds-index-with-ttl: function:02b977ff8ed4f89bd7fb19f709f855a0, r.record-ignores-empty-runid:
-    method:31e9e3f14991919b8dc8c86a1ae20707, r.record-normalizes-ref-key: struct:f9c19c773fc6457d35bf1a48e8d0750c'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
-- message: no synced fingerprint has been recorded yet
-  reason: NotSyncedYet
+- message: observed facts match the synced fingerprint
+  reason: FingerprintEqual
   status: "False"
   type: Drifted
 - message: the spec passes the validator

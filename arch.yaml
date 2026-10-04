@@ -1704,9 +1704,26 @@ system_contexts:
       and whose Ref equals the new normalized key, so one ref keeps only the newest
       run.
   upstream: self
-- codeRefIndex:
+- code:
+  - abc/store/store.go
+  - abc/store/store_test.go
+  codeRefIndex:
   - file:abc/store/store.go store.go@abc/store/store.go
   - file:abc/store/store_test.go store_test.go@abc/store/store_test.go
+  - function:989c182ec2114a55ce5c64d494875860 Unchanged@abc/store/store.go:12
+  - interface:24a75b1e85b321842f9208ef68c555dd Writer@abc/store/store.go:30
+  - interface:35f2d3c152cb806dafbc20869a2b1645 Reader@abc/store/store.go:24
+  - interface:60623c60df0bde883df69e0a6fd8778d TokenMinter@abc/store/store.go:46
+  - interface:9d5d8b965e6b6d107bc98f738bd212ac Resource@abc/store/store.go:40
+  - method:0c58430aa89b1920a3744d460c85b616 Writer.Create@abc/store/store.go:31
+  - method:1d478157f0c21fec12ff68cca5afa4d8 TokenMinter.MintServiceAccountToken@abc/store/store.go:47
+  - method:b66a329085f8ae0870f5487662772dd4 Writer.Delete@abc/store/store.go:33
+  - method:cf43c7d659eb7321032b9dd58fe618c7 Writer.RemoveFinalizer@abc/store/store.go:37
+  - method:dd7423535cde997b6ddc93c5ec334c4b Reader.List@abc/store/store.go:27
+  - method:e52cadf103fd9081db57993476b63580 Reader.Get@abc/store/store.go:25
+  - method:fbb58fe6aca56610baea0a33ce6e3d5f Writer.PatchStatus@abc/store/store.go:35
+  depends_on:
+  - sc.common-ref
   id: sc.abc-store
   intent: This context exists to fix the storage contract that the rest of kcp-libs
     codes against. Controllers, caches and reconcilers need to read and write cluster
@@ -1835,9 +1852,13 @@ system_contexts:
       a raw patch byte slice; and RemoveFinalizer taking a context, ref.Ref and the
       finalizer name. Each returns an error.
   upstream: self
-- codeRefIndex:
+- code:
+  - common/clientlimit/clientlimit.go
+  - common/clientlimit/clientlimit_test.go
+  codeRefIndex:
   - file:common/clientlimit/clientlimit.go clientlimit.go@common/clientlimit/clientlimit.go
   - file:common/clientlimit/clientlimit_test.go clientlimit_test.go@common/clientlimit/clientlimit_test.go
+  - function:67bc041de773d39e4803a9795f096d96 Apply@common/clientlimit/clientlimit.go:9
   id: sc.common-clientlimit
   intent: 'This context exists because client-go defaults every client to 5 qps with
     a burst of 10, which starves a controller that watches and reconciles many objects.
@@ -1896,9 +1917,19 @@ system_contexts:
     text: Apply must copy the given config with rest.CopyConfig and return the copy;
       the config passed by the caller must not be mutated.
   upstream: self
-- codeRefIndex:
+- code:
+  - common/condition/condition.go
+  - common/condition/condition_test.go
+  codeRefIndex:
   - file:common/condition/condition.go condition.go@common/condition/condition.go
   - file:common/condition/condition_test.go condition_test.go@common/condition/condition_test.go
+  - function:2f22991378805fd945c1a0d94b1e9b0e Of@common/condition/condition.go:36
+  - function:741af730ad7d212947f2d9d42bf55557 Copy@common/condition/condition.go:10
+  - function:a5845019d1d1a5d547885188f6cf2d6a SetTrue@common/condition/condition.go:24
+  - function:d9d1ab909c15980c4699a3cb56bea924 Set@common/condition/condition.go:14
+  - function:e1d40351c0eded29676ce645d7c908ab Is@common/condition/condition.go:40
+  - function:ead30502c3fe49e900a144e9e71219a5 Remove@common/condition/condition.go:32
+  - function:eee1a190d5df1941cf6cb5d346a99684 SetFalse@common/condition/condition.go:28
   id: sc.common-condition
   intent: 'This context exists to specify the shared condition helpers that kcp-libs
     controllers use when reporting status. Rather than each controller reimplementing
@@ -2025,9 +2056,19 @@ system_contexts:
     text: Setting a condition whose type, status, reason and message are unchanged
       must preserve the existing transition time rather than resetting it.
   upstream: self
-- codeRefIndex:
+- code:
+  - common/denocomputer/denocomputer.go
+  - common/denocomputer/denocomputer_test.go
+  codeRefIndex:
   - file:common/denocomputer/denocomputer.go denocomputer.go@common/denocomputer/denocomputer.go
   - file:common/denocomputer/denocomputer_test.go denocomputer_test.go@common/denocomputer/denocomputer_test.go
+  - function:0ac0b313ea9228a561bfd9f56465b4be TerminalPolicyWorkflow@common/denocomputer/denocomputer.go:87
+  - function:0d13333d7202e69c40af4472e0f2436b TerminalDenoPod@common/denocomputer/denocomputer.go:79
+  - function:36ff8f97f3450e32e33a6b3b0e493610 TerminalDenoJob@common/denocomputer/denocomputer.go:83
+  - function:67ee37b108a01a226ce8f48241d735b8 RunningPhase@common/denocomputer/denocomputer.go:95
+  - function:6e7c1837ac42c5ecd27e997607373d2d TerminalDenoRun@common/denocomputer/denocomputer.go:75
+  - function:8947f352a45e5a31be8d9bdad53c8a93 TerminalPolicyEngine@common/denocomputer/denocomputer.go:91
+  - type_alias:a265ac7a2b0813430059371d42a76985 Phase@common/denocomputer/denocomputer.go:55
   id: sc.common-denocomputer
   intent: This context exists to keep one copy of the deno.computer names and phases
     that both this generic library and the deno-kcp consumer agree on. Rather than
@@ -2149,10 +2190,24 @@ system_contexts:
       so a cancelled policy run counts as terminal, unlike a cancelled plain run or
       pod.
   upstream: self
-- codeRefIndex:
+- code:
+  - common/denospec/denospec.go
+  - common/denospec/denospec_contract_test.go
+  - common/denospec/denospec_test.go
+  codeRefIndex:
   - file:common/denospec/denospec.go denospec.go@common/denospec/denospec.go
   - file:common/denospec/denospec_contract_test.go denospec_contract_test.go@common/denospec/denospec_contract_test.go
   - file:common/denospec/denospec_test.go denospec_test.go@common/denospec/denospec_test.go
+  - function:10ed3675a84f3ace014b3a75a3e36f7c ProbeCommand@common/denospec/denospec.go:155
+  - function:8c740b4bfa20b8c5c3abcbedabd84404 EffectiveRestartPolicy@common/denospec/denospec.go:91
+  - function:8d4402900d3462a266b3860020572db3 Args@common/denospec/denospec.go:166
+  - function:961db49fe00a81882f3e64de7ff7262d Validate@common/denospec/denospec.go:113
+  - struct:37cfecc71eb8d4169a8fdffff71f2eb3 Permissions@common/denospec/denospec.go:27
+  - struct:81393b3c6451cfbfd692bcbb851b30a9 ServiceAccountRef@common/denospec/denospec.go:11
+  - struct:bbb7094c15f71e3d40b7bd6ef4ffad5e Permission@common/denospec/denospec.go:17
+  - struct:e63b3474fb8e8342ee8ddcbf9aeff650 ExecProbe@common/denospec/denospec.go:71
+  - struct:ee22e42a28e08358a06298c6048e62e5 PodTemplate@common/denospec/denospec.go:55
+  - type_alias:c9ed92b47f68b4cc5b0bb51223210dbb RestartPolicy@common/denospec/denospec.go:81
   id: sc.common-denospec
   intent: This context exists so that the deno workload vocabulary lives in one Go
     package that both the KCP libraries and the Deno-side consumer agree on. The structs

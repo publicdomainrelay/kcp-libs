@@ -9,5 +9,7 @@ _The resolved code references are regenerated on every run. Cite the ids above r
 <!-- SPECD_MANAGED_BEGIN -->
 ## Resolved code references
 
-_None yet._
+- `file:common/clientlimit/clientlimit.go` file clientlimit.go (common/clientlimit/clientlimit.go)
+- `file:common/clientlimit/clientlimit_test.go` file clientlimit_test.go (common/clientlimit/clientlimit_test.go)
+- `function:67bc041de773d39e4803a9795f096d96` function Apply (common/clientlimit/clientlimit.go)
 <!-- SPECD_MANAGED_END -->

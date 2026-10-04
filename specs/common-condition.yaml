@@ -2,6 +2,13 @@ apiVersion: specs.publicdomainrelay.dev/v1alpha1
 codeRefIndex:
 - file:common/condition/condition.go condition.go@common/condition/condition.go
 - file:common/condition/condition_test.go condition_test.go@common/condition/condition_test.go
+- function:2f22991378805fd945c1a0d94b1e9b0e Of@common/condition/condition.go:36
+- function:741af730ad7d212947f2d9d42bf55557 Copy@common/condition/condition.go:10
+- function:a5845019d1d1a5d547885188f6cf2d6a SetTrue@common/condition/condition.go:24
+- function:d9d1ab909c15980c4699a3cb56bea924 Set@common/condition/condition.go:14
+- function:e1d40351c0eded29676ce645d7c908ab Is@common/condition/condition.go:40
+- function:ead30502c3fe49e900a144e9e71219a5 Remove@common/condition/condition.go:32
+- function:eee1a190d5df1941cf6cb5d346a99684 SetFalse@common/condition/condition.go:28
 kind: SystemContext
 metadata:
   name: common-condition

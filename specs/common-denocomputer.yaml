@@ -2,6 +2,13 @@ apiVersion: specs.publicdomainrelay.dev/v1alpha1
 codeRefIndex:
 - file:common/denocomputer/denocomputer.go denocomputer.go@common/denocomputer/denocomputer.go
 - file:common/denocomputer/denocomputer_test.go denocomputer_test.go@common/denocomputer/denocomputer_test.go
+- function:0ac0b313ea9228a561bfd9f56465b4be TerminalPolicyWorkflow@common/denocomputer/denocomputer.go:87
+- function:0d13333d7202e69c40af4472e0f2436b TerminalDenoPod@common/denocomputer/denocomputer.go:79
+- function:36ff8f97f3450e32e33a6b3b0e493610 TerminalDenoJob@common/denocomputer/denocomputer.go:83
+- function:67ee37b108a01a226ce8f48241d735b8 RunningPhase@common/denocomputer/denocomputer.go:95
+- function:6e7c1837ac42c5ecd27e997607373d2d TerminalDenoRun@common/denocomputer/denocomputer.go:75
+- function:8947f352a45e5a31be8d9bdad53c8a93 TerminalPolicyEngine@common/denocomputer/denocomputer.go:91
+- type_alias:a265ac7a2b0813430059371d42a76985 Phase@common/denocomputer/denocomputer.go:55
 kind: SystemContext
 metadata:
   name: common-denocomputer
