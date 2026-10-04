@@ -5816,8 +5816,24 @@ system_contexts:
       including a mount type mismatch reported through ResponseError, with certificate
       fixtures supplied by the test certificate helper.
   upstream: self
-- codeRefIndex:
+- code:
+  - impl/pkiprovisioner/pkiprovisioner.go
+  - impl/pkiprovisioner/pkiprovisioner_test.go
+  codeRefIndex:
   - file:impl/pkiprovisioner/pkiprovisioner.go pkiprovisioner.go@impl/pkiprovisioner/pkiprovisioner.go
+  - file:impl/pkiprovisioner/pkiprovisioner_test.go pkiprovisioner_test.go@impl/pkiprovisioner/pkiprovisioner_test.go
+  - function:30364e141ea2faa4b4234973c4a19b7f New@impl/pkiprovisioner/pkiprovisioner.go:55
+  - function:d3c3c16dc7874b597b0ada7624dae197 LeafChain@impl/pkiprovisioner/pkiprovisioner.go:252
+  - method:4195ab23df62ee1db3840769986974c8 Provisioner.EnsureRoot@impl/pkiprovisioner/pkiprovisioner.go:86
+  - method:4e00b7939435016777ed505a3c634185 Provisioner.Issue@impl/pkiprovisioner/pkiprovisioner.go:211
+  - method:7aaa1b393f6662ecc89ab29299cbea68 Provisioner.CachedRootPEM@impl/pkiprovisioner/pkiprovisioner.go:243
+  - method:d5967140fe7eb80411ee9ed7cc877c96 Provisioner.Delete@impl/pkiprovisioner/pkiprovisioner.go:230
+  - method:dbce55e518a5f94002a8102e3348772c Provisioner.EnsureAuthority@impl/pkiprovisioner/pkiprovisioner.go:126
+  - struct:85d52f39514274817830fa863a880ebb Provisioner@impl/pkiprovisioner/pkiprovisioner.go:43
+  - struct:d27d806e5c22258e2ce7cad7037a9dda Options@impl/pkiprovisioner/pkiprovisioner.go:19
+  depends_on:
+  - sc.abc-pki
+  - sc.common-expiringmap
   id: sc.impl-pkiprovisioner
   intent: This context exists so that callers can ask for a root CA, a per-namespace
     intermediate authority, and leaf certificates without knowing the underlying PKI
@@ -6009,8 +6025,21 @@ system_contexts:
       configured leaf TTL; it must set AllowedDomains to the configured Domain only
       when the Domain is not empty.
   upstream: self
-- codeRefIndex:
+- code:
+  - impl/policyclient/policyclient.go
+  - impl/policyclient/policyclient_test.go
+  codeRefIndex:
   - file:impl/policyclient/policyclient.go policyclient.go@impl/policyclient/policyclient.go
+  - file:impl/policyclient/policyclient_test.go policyclient_test.go@impl/policyclient/policyclient_test.go
+  - function:54f3e1e2bd8e260021c98693f9a2c90a Outputs@impl/policyclient/policyclient.go:155
+  - function:b98ae160f1fe55260dca95e09986a5bb PolicyName@impl/policyclient/policyclient.go:194
+  - function:ceea74205a5754163b309ccbb838c89a New@impl/policyclient/policyclient.go:25
+  - method:19f667c165b3c1a5fd0e639d57f02e89 Client.Submit@impl/policyclient/policyclient.go:67
+  - method:4e934ce27e912f8b62f60030591215cc Client.Status@impl/policyclient/policyclient.go:109
+  - struct:cadc1b79f4d841a6641b1b7ed9b4d3ec Client@impl/policyclient/policyclient.go:19
+  depends_on:
+  - sc.abc-policy
+  - sc.common-outputs
   id: sc.impl-policyclient
   intent: This context exists to give the rest of the repository one place that speaks
     the policy engine's HTTP protocol, so callers depend on the abc/policy.Client
@@ -6144,7 +6173,9 @@ system_contexts:
     text: Submit returns an error carrying the status code and the trimmed response
       body when the engine answers with status 400 or above.
   upstream: self
-- codeRefIndex:
+- code:
+  - internal/boundaries/boundaries_test.go
+  codeRefIndex:
   - file:internal/boundaries/boundaries_test.go boundaries_test.go@internal/boundaries/boundaries_test.go
   id: sc.internal-boundaries
   intent: This context exists to keep the kcp-libs module's ABC-style layering honest
@@ -6214,7 +6245,38 @@ system_contexts:
       subtrees MUST NOT import any package under the module's internal/ subtree; a
       violation fails with the message `%s imports %s; test support belongs in tests`.
   upstream: self
-- id: sc.internal-livekcp
+- code:
+  - internal/livekcp/livekcp.go
+  - internal/livekcp/manifests.go
+  - internal/livekcp/trace_test.go
+  - internal/livekcp/widget.go
+  codeRefIndex:
+  - file:internal/livekcp/livekcp.go livekcp.go@internal/livekcp/livekcp.go
+  - file:internal/livekcp/manifests.go manifests.go@internal/livekcp/manifests.go
+  - file:internal/livekcp/trace_test.go trace_test.go@internal/livekcp/trace_test.go
+  - file:internal/livekcp/widget.go widget.go@internal/livekcp/widget.go
+  - function:030637b2b22d16001b0b0236353e6613 WaitFor@internal/livekcp/widget.go:56
+  - function:0a50cfde74a0f07654f738fa118ac451 Resolve@internal/livekcp/livekcp.go:62
+  - function:4b3f41640fb2b3e911c648141290c1d5 Start@internal/livekcp/livekcp.go:179
+  - function:5a4f9ce4422f0cec246c940b5283429f NewObject@internal/livekcp/widget.go:44
+  - function:d479362575f3e9bdc720a864f461337f Missing@internal/livekcp/livekcp.go:76
+  - function:f491bc097912aca38e88dfb1fe89d625 Seed@internal/livekcp/widget.go:51
+  - method:28d07dbfe29a3f8d8331039e1bbadc50 Cluster.Trace@internal/livekcp/livekcp.go:96
+  - method:3f02a0afbba672fa1173355e116c56ef Cluster.Logs@internal/livekcp/livekcp.go:161
+  - method:b5f2080a887dcbb09ef6f7bd666b9f35 Cluster.Kubectl@internal/livekcp/livekcp.go:359
+  - method:d103a880ccff094fe7f5b8caa6d5b1f3 Cluster.Phases@internal/livekcp/livekcp.go:92
+  - method:e338fe1dc18ef9248055aff1a28946c4 Cluster.Stop@internal/livekcp/livekcp.go:139
+  - method:f0b8256f57bdba9e9dcac75d9241526b Cluster.Get@internal/livekcp/livekcp.go:368
+  - struct:778309bad5d8b038278da322efb149ab Cluster@internal/livekcp/livekcp.go:113
+  - struct:999b971297c62644133dc6b3bc49d899 Object@internal/livekcp/widget.go:32
+  - struct:a59ecf5482f57ec3af04d55abb5dd006 Metadata@internal/livekcp/widget.go:18
+  - struct:fe2a77c3271783da115f1571ba203765 Phase@internal/livekcp/livekcp.go:86
+  depends_on:
+  - sc.abc-store
+  - sc.common-kcp
+  - sc.common-ref
+  - sc.internal-livekcp-livetest
+  id: sc.internal-livekcp
   intent: This context exists so tests can run against a real kcp control plane instead
     of mocks, with a stable Go API for lifecycle, inspection, and object seeding.
     It separates tool discovery (Resolve, Missing) from cluster lifecycle (Start,
@@ -6387,8 +6449,12 @@ system_contexts:
       until the reached predicate accepts the object, returning that object or an
       error when the context ends.
   upstream: self
-- codeRefIndex:
+- code:
+  - internal/livekcp/cmd/livecluster/main.go
+  codeRefIndex:
   - file:internal/livekcp/cmd/livecluster/main.go main.go@internal/livekcp/cmd/livecluster/main.go
+  depends_on:
+  - sc.internal-livekcp
   id: sc.internal-livekcp-cmd-livecluster
   intent: 'The command exists so a developer or test harness can start a real kcp
     cluster as a child process and learn its coordinates from a file, instead of embedding

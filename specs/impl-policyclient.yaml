@@ -1,11 +1,21 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
 codeRefIndex:
 - file:impl/policyclient/policyclient.go policyclient.go@impl/policyclient/policyclient.go
+- file:impl/policyclient/policyclient_test.go policyclient_test.go@impl/policyclient/policyclient_test.go
+- function:54f3e1e2bd8e260021c98693f9a2c90a Outputs@impl/policyclient/policyclient.go:155
+- function:b98ae160f1fe55260dca95e09986a5bb PolicyName@impl/policyclient/policyclient.go:194
+- function:ceea74205a5754163b309ccbb838c89a New@impl/policyclient/policyclient.go:25
+- method:19f667c165b3c1a5fd0e639d57f02e89 Client.Submit@impl/policyclient/policyclient.go:67
+- method:4e934ce27e912f8b62f60030591215cc Client.Status@impl/policyclient/policyclient.go:109
+- struct:cadc1b79f4d841a6641b1b7ed9b4d3ec Client@impl/policyclient/policyclient.go:19
 kind: SystemContext
 metadata:
   name: impl-policyclient
   namespace: default
 spec:
+  dependsOn:
+  - sc.abc-policy
+  - sc.common-outputs
   intent: This context exists to give the rest of the repository one place that speaks
     the policy engine's HTTP protocol, so callers depend on the abc/policy.Client
     interface and never build requests themselves. It exists because policy runs are

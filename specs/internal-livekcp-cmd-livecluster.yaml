@@ -6,6 +6,8 @@ metadata:
   name: internal-livekcp-cmd-livecluster
   namespace: default
 spec:
+  dependsOn:
+  - sc.internal-livekcp
   intent: 'The command exists so a developer or test harness can start a real kcp
     cluster as a child process and learn its coordinates from a file, instead of embedding
     cluster startup in Go test code. It is deliberately thin: all cluster logic lives

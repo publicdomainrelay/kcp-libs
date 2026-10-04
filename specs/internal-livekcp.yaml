@@ -1,9 +1,35 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:internal/livekcp/livekcp.go livekcp.go@internal/livekcp/livekcp.go
+- file:internal/livekcp/manifests.go manifests.go@internal/livekcp/manifests.go
+- file:internal/livekcp/trace_test.go trace_test.go@internal/livekcp/trace_test.go
+- file:internal/livekcp/widget.go widget.go@internal/livekcp/widget.go
+- function:030637b2b22d16001b0b0236353e6613 WaitFor@internal/livekcp/widget.go:56
+- function:0a50cfde74a0f07654f738fa118ac451 Resolve@internal/livekcp/livekcp.go:62
+- function:4b3f41640fb2b3e911c648141290c1d5 Start@internal/livekcp/livekcp.go:179
+- function:5a4f9ce4422f0cec246c940b5283429f NewObject@internal/livekcp/widget.go:44
+- function:d479362575f3e9bdc720a864f461337f Missing@internal/livekcp/livekcp.go:76
+- function:f491bc097912aca38e88dfb1fe89d625 Seed@internal/livekcp/widget.go:51
+- method:28d07dbfe29a3f8d8331039e1bbadc50 Cluster.Trace@internal/livekcp/livekcp.go:96
+- method:3f02a0afbba672fa1173355e116c56ef Cluster.Logs@internal/livekcp/livekcp.go:161
+- method:b5f2080a887dcbb09ef6f7bd666b9f35 Cluster.Kubectl@internal/livekcp/livekcp.go:359
+- method:d103a880ccff094fe7f5b8caa6d5b1f3 Cluster.Phases@internal/livekcp/livekcp.go:92
+- method:e338fe1dc18ef9248055aff1a28946c4 Cluster.Stop@internal/livekcp/livekcp.go:139
+- method:f0b8256f57bdba9e9dcac75d9241526b Cluster.Get@internal/livekcp/livekcp.go:368
+- struct:778309bad5d8b038278da322efb149ab Cluster@internal/livekcp/livekcp.go:113
+- struct:999b971297c62644133dc6b3bc49d899 Object@internal/livekcp/widget.go:32
+- struct:a59ecf5482f57ec3af04d55abb5dd006 Metadata@internal/livekcp/widget.go:18
+- struct:fe2a77c3271783da115f1571ba203765 Phase@internal/livekcp/livekcp.go:86
 kind: SystemContext
 metadata:
   name: internal-livekcp
   namespace: default
 spec:
+  dependsOn:
+  - sc.abc-store
+  - sc.common-kcp
+  - sc.common-ref
+  - sc.internal-livekcp-livetest
   intent: This context exists so tests can run against a real kcp control plane instead
     of mocks, with a stable Go API for lifecycle, inspection, and object seeding.
     It separates tool discovery (Resolve, Missing) from cluster lifecycle (Start,

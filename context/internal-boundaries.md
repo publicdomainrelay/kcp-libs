@@ -9,5 +9,5 @@ _The resolved code references are regenerated on every run. Cite the ids above r
 <!-- SPECD_MANAGED_BEGIN -->
 ## Resolved code references
 
-_None yet._
+- `file:internal/boundaries/boundaries_test.go` file boundaries_test.go (internal/boundaries/boundaries_test.go)
 <!-- SPECD_MANAGED_END -->
