@@ -1,8 +1,8 @@
 conditions:
-- message: 'undeclared: Counter, EffectiveThreshold, NewTracker, Tracker, Tracker.Forget,
-    Tracker.Len, Tracker.Record'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -59,6 +59,6 @@ observed:
     name: EffectiveThreshold
     signature: (threshold int32) int32
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: 9a20eedb07c2a70d86b2e6f009ffc842dc2f02c232e5e07e17fcc622ccbc19dd
+realizedSpecHash: 2cbb3810fbb58b838868e88e65adc2c1ea454972065daaba8631da8ea622ffb3
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: 31ebd9edc1ccb9876f8b30ad6111099724736ced33cd2fc05028946c857d48f2

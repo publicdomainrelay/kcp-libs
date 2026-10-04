@@ -10,5 +10,15 @@ spec:
   systemContext: abc-probe
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing abc-probe
-  phase: Running
+  agentLog: 'abc/probe holds a small, dependency-free failure tracker used by the
+    workload probe layer. Counter records the run ID of the workload instance being
+    watched together with the number of consecutive failures seen for it. Tracker
+    guards a map of counters keyed by an arbitrary string (the probe key) behind a
+    mutex, and Record is the single entry point that updates that state: a success
+    clears the counter, a failure increments it, and a run ID change restarts the
+    count from zero. Forget drops a key, Len reports how many keys are held, and EffectiveThreshold
+    normalizes a caller-supplied threshold so a non-positive value becomes the default
+    of one. The package has no imports beyond sync and no knowledge of any workload
+    runtime, so it can be embedded anywhere a consecutive-failure decision is needed.'
+  message: wrote 10 requirement(s) and 7 interface(s) for abc-probe
+  phase: Succeeded
