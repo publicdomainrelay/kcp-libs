@@ -16,6 +16,7 @@ spec:
 status:
   headCommit: 14dcfd78fe3271e82320f9c28b712d6304e6ef72
   indexedCommit: 14dcfd78fe3271e82320f9c28b712d6304e6ef72
+  observedCommit: 14dcfd78fe3271e82320f9c28b712d6304e6ef72
   phase: Populated
   contexts:
     total: 44
