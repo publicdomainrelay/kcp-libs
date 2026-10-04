@@ -46,4 +46,5 @@ spec:
   systemContext: impl-assets
   toSpecHash: f45702016a1d1789a4c04b989bb4f2b2a633e2fb99916a479bdfeed52e1508da
 status:
-  phase: Pending
+  message: the agent is realizing impl-assets
+  phase: Running
