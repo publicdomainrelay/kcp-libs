@@ -46,7 +46,8 @@ spec:
   systemContext: impl-assets
   toSpecHash: f45702016a1d1789a4c04b989bb4f2b2a633e2fb99916a479bdfeed52e1508da
 status:
-  phase: Pending
+  message: the agent is realizing impl-assets
+  phase: Running
 superseded:
 - message: ".../common/kcp\t(cached)\n?   \tgithub.com/publicdomainrelay/kcp-libs/common/logging\t[no
     test files]\nok  \tgithub.com/publicdomainrelay/kcp-libs/common/outputs\t(cached)\nok
