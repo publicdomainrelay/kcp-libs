@@ -1,4 +1,7 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:common/clientlimit/clientlimit.go clientlimit.go@common/clientlimit/clientlimit.go
+- file:common/clientlimit/clientlimit_test.go clientlimit_test.go@common/clientlimit/clientlimit_test.go
 kind: SystemContext
 metadata:
   name: common-clientlimit

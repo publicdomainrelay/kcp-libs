@@ -1,4 +1,6 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:internal/livekcp/livetest/livetest.go livetest.go@internal/livekcp/livetest/livetest.go
 kind: SystemContext
 metadata:
   name: internal-livekcp-livetest

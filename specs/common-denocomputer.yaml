@@ -1,4 +1,7 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:common/denocomputer/denocomputer.go denocomputer.go@common/denocomputer/denocomputer.go
+- file:common/denocomputer/denocomputer_test.go denocomputer_test.go@common/denocomputer/denocomputer_test.go
 kind: SystemContext
 metadata:
   name: common-denocomputer

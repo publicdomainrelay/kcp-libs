@@ -1,36 +1,17 @@
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
-  reason: InterfacesObserved
-  status: "True"
+- message: 'missing: Stringify, StringifyValue; unresolved: r.behavior-is-tested:
+    file:common/outputs/outputs_test.go, r.behavior-is-tested: function:d16f38628fc00d680c6f54309865e821,
+    r.empty-input-gives-nil: file:common/outputs/outputs.go, r.every-entry-stringified:
+    function:1f7915d8cd9aa1f3759d833f5af90128'
+  reason: InterfacesMissing
+  status: "False"
   type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+- message: no synced fingerprint has been recorded yet
+  reason: NotSyncedYet
   status: "False"
   type: Drifted
 - message: the spec passes the validator
   reason: ValidatorPassed
   status: "True"
   type: SpecValid
-observed:
-  files:
-  - common/outputs/outputs.go
-  - common/outputs/outputs_test.go
-  fingerprint: 809bb4812e9604f8788b4fb1b33547079186dd90a7b3de8f52275b2ff7746b23
-  interfaces:
-  - codegraphId: function:d16f38628fc00d680c6f54309865e821
-    file: common/outputs/outputs.go
-    kind: function
-    line: 8
-    name: Stringify
-    signature: (in map[string]any) map[string]string
-  - codegraphId: function:1f7915d8cd9aa1f3759d833f5af90128
-    file: common/outputs/outputs.go
-    kind: function
-    line: 19
-    name: StringifyValue
-    signature: (value any) string
-observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-realizedSpecHash: 685f62702bbe9771dfb7e842576cf9e23e3e81e34468fe713eac80beb8dccabe
-syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-syncedFingerprint: 809bb4812e9604f8788b4fb1b33547079186dd90a7b3de8f52275b2ff7746b23
+observed: {}

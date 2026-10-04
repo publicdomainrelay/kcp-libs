@@ -1,4 +1,7 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:abc/store/store.go store.go@abc/store/store.go
+- file:abc/store/store_test.go store_test.go@abc/store/store_test.go
 kind: SystemContext
 metadata:
   name: abc-store

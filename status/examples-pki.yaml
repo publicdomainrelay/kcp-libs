@@ -1,56 +1,19 @@
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
-  reason: InterfacesObserved
-  status: "True"
+- message: 'missing: Run, vault.CallCount, vault.Close, vault.ServeHTTP, vault.URL;
+    unresolved: r.cert-helpers: file:examples/pki/certs.go, r.pki-tested: file:examples/pki/main_test.go,
+    r.run-entry-point: file:examples/pki/main.go, r.run-entry-point: function:ee6adf675850825fe2a3b3696b991879,
+    r.vault-call-count: file:examples/pki/vault.go, r.vault-call-count: method:864fe0fd004ec6e68a16c123dd516ef4,
+    r.vault-close: method:aae965e31b6d34cc2cc7c5d18d44f176, r.vault-serves-vault-api:
+    method:147b7070b45be7c13a88225e5f5c7e37, r.vault-url: method:1a848c7f40482ad066fc74dd3ef4c787'
+  reason: InterfacesMissing
+  status: "False"
   type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+- message: no synced fingerprint has been recorded yet
+  reason: NotSyncedYet
   status: "False"
   type: Drifted
 - message: the spec passes the validator
   reason: ValidatorPassed
   status: "True"
   type: SpecValid
-observed:
-  files:
-  - examples/pki/certs.go
-  - examples/pki/main.go
-  - examples/pki/main_test.go
-  - examples/pki/vault.go
-  fingerprint: 2c9a1a4809273ff4f2a3b77ce1469b2dd208c8ef304c5f0aa4177ee28de97729
-  interfaces:
-  - codegraphId: function:ee6adf675850825fe2a3b3696b991879
-    file: examples/pki/main.go
-    kind: function
-    line: 26
-    name: Run
-    signature: (ctx context.Context, out io.Writer) error
-  - codegraphId: method:1a848c7f40482ad066fc74dd3ef4c787
-    file: examples/pki/vault.go
-    kind: method
-    line: 55
-    name: vault.URL
-    signature: () string
-  - codegraphId: method:aae965e31b6d34cc2cc7c5d18d44f176
-    file: examples/pki/vault.go
-    kind: method
-    line: 59
-    name: vault.Close
-    signature: () error
-  - codegraphId: method:864fe0fd004ec6e68a16c123dd516ef4
-    file: examples/pki/vault.go
-    kind: method
-    line: 63
-    name: vault.CallCount
-    signature: () int
-  - codegraphId: method:147b7070b45be7c13a88225e5f5c7e37
-    file: examples/pki/vault.go
-    kind: method
-    line: 69
-    name: vault.ServeHTTP
-    signature: (w http.ResponseWriter, r *http.Request)
-observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-realizedSpecHash: ac2f5b921359e1539b0c3e059e981f08c42f68cbf665db5706f0483ebc8e701a
-syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-syncedFingerprint: 2c9a1a4809273ff4f2a3b77ce1469b2dd208c8ef304c5f0aa4177ee28de97729
+observed: {}

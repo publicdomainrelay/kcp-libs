@@ -1,65 +1,21 @@
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
-  reason: InterfacesObserved
-  status: "True"
+- message: 'missing: Phase, RunningPhase, TerminalDenoJob, TerminalDenoPod, TerminalDenoRun,
+    TerminalPolicyEngine, TerminalPolicyWorkflow; unresolved: r.consumer-checkout-optional:
+    file:common/denocomputer/denocomputer.go, r.consumer-checkout-optional: file:common/denocomputer/denocomputer_test.go,
+    r.phase-is-string-alias: type_alias:a265ac7a2b0813430059371d42a76985, r.running-phase:
+    function:67ee37b108a01a226ce8f48241d735b8, r.terminal-deno-job: function:36ff8f97f3450e32e33a6b3b0e493610,
+    r.terminal-deno-pod: function:0d13333d7202e69c40af4472e0f2436b, r.terminal-deno-run:
+    function:6e7c1837ac42c5ecd27e997607373d2d, r.terminal-policy-engine: function:8947f352a45e5a31be8d9bdad53c8a93,
+    r.terminal-policy-workflow: function:0ac0b313ea9228a561bfd9f56465b4be'
+  reason: InterfacesMissing
+  status: "False"
   type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+- message: no synced fingerprint has been recorded yet
+  reason: NotSyncedYet
   status: "False"
   type: Drifted
 - message: the spec passes the validator
   reason: ValidatorPassed
   status: "True"
   type: SpecValid
-observed:
-  files:
-  - common/denocomputer/denocomputer.go
-  - common/denocomputer/denocomputer_test.go
-  fingerprint: a15d0a79c1172da8d0928bd09a0e45a0077ce62dfd4939ed1ed946441b482fb7
-  interfaces:
-  - codegraphId: type_alias:a265ac7a2b0813430059371d42a76985
-    file: common/denocomputer/denocomputer.go
-    kind: type_alias
-    line: 55
-    name: Phase
-  - codegraphId: function:6e7c1837ac42c5ecd27e997607373d2d
-    file: common/denocomputer/denocomputer.go
-    kind: function
-    line: 75
-    name: TerminalDenoRun
-    signature: (phase string) bool
-  - codegraphId: function:0d13333d7202e69c40af4472e0f2436b
-    file: common/denocomputer/denocomputer.go
-    kind: function
-    line: 79
-    name: TerminalDenoPod
-    signature: (phase string) bool
-  - codegraphId: function:36ff8f97f3450e32e33a6b3b0e493610
-    file: common/denocomputer/denocomputer.go
-    kind: function
-    line: 83
-    name: TerminalDenoJob
-    signature: (phase string) bool
-  - codegraphId: function:0ac0b313ea9228a561bfd9f56465b4be
-    file: common/denocomputer/denocomputer.go
-    kind: function
-    line: 87
-    name: TerminalPolicyWorkflow
-    signature: (phase string) bool
-  - codegraphId: function:8947f352a45e5a31be8d9bdad53c8a93
-    file: common/denocomputer/denocomputer.go
-    kind: function
-    line: 91
-    name: TerminalPolicyEngine
-    signature: (phase string) bool
-  - codegraphId: function:67ee37b108a01a226ce8f48241d735b8
-    file: common/denocomputer/denocomputer.go
-    kind: function
-    line: 95
-    name: RunningPhase
-    signature: (phase string) bool
-observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-realizedSpecHash: c31f18ea329c20f10c043656dbebbbe0566fd2836557d6417b448d4d40006e7e
-syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-syncedFingerprint: a15d0a79c1172da8d0928bd09a0e45a0077ce62dfd4939ed1ed946441b482fb7
+observed: {}

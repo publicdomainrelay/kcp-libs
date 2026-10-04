@@ -1,4 +1,8 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:common/denospec/denospec.go denospec.go@common/denospec/denospec.go
+- file:common/denospec/denospec_contract_test.go denospec_contract_test.go@common/denospec/denospec_contract_test.go
+- file:common/denospec/denospec_test.go denospec_test.go@common/denospec/denospec_test.go
 kind: SystemContext
 metadata:
   name: common-denospec

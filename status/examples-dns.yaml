@@ -1,30 +1,15 @@
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
-  reason: InterfacesObserved
-  status: "True"
+- message: 'missing: Run; unresolved: r.advertised-address: file:examples/dns/main.go,
+    r.output-pinned-by-test: file:examples/dns/main_test.go, r.run-entry-point: function:91d47a59cae63290c441f196217cef7e'
+  reason: InterfacesMissing
+  status: "False"
   type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+- message: no synced fingerprint has been recorded yet
+  reason: NotSyncedYet
   status: "False"
   type: Drifted
 - message: the spec passes the validator
   reason: ValidatorPassed
   status: "True"
   type: SpecValid
-observed:
-  files:
-  - examples/dns/main.go
-  - examples/dns/main_test.go
-  fingerprint: bb0638c9a55e0410545ad3db015bbb6a75611c32d6b4743e1f6fc90309e0a1f8
-  interfaces:
-  - codegraphId: function:91d47a59cae63290c441f196217cef7e
-    file: examples/dns/main.go
-    kind: function
-    line: 48
-    name: Run
-    signature: (ctx context.Context, out io.Writer) error
-observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-realizedSpecHash: 103302a0d9ffbf9face6fc1cf761a7f5363cc3277127f95ab666f57ad3e19967
-syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-syncedFingerprint: bb0638c9a55e0410545ad3db015bbb6a75611c32d6b4743e1f6fc90309e0a1f8
+observed: {}

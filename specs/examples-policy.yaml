@@ -1,4 +1,8 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:examples/policy/engine.go engine.go@examples/policy/engine.go
+- file:examples/policy/main.go main.go@examples/policy/main.go
+- file:examples/policy/main_test.go main_test.go@examples/policy/main_test.go
 kind: SystemContext
 metadata:
   name: examples-policy

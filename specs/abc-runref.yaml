@@ -1,4 +1,7 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:abc/runref/runref.go runref.go@abc/runref/runref.go
+- file:abc/runref/runref_test.go runref_test.go@abc/runref/runref_test.go
 kind: SystemContext
 metadata:
   name: abc-runref

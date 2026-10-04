@@ -1,4 +1,7 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:factory/admission/admission.go admission.go@factory/admission/admission.go
+- file:factory/admission/admission_test.go admission_test.go@factory/admission/admission_test.go
 kind: SystemContext
 metadata:
   name: factory-admission

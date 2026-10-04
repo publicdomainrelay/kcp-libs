@@ -1,4 +1,6 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:impl/pkiprovisioner/pkiprovisioner.go pkiprovisioner.go@impl/pkiprovisioner/pkiprovisioner.go
 kind: SystemContext
 metadata:
   name: impl-pkiprovisioner

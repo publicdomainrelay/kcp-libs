@@ -1,4 +1,7 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:abc/probe/probe.go probe.go@abc/probe/probe.go
+- file:abc/probe/probe_test.go probe_test.go@abc/probe/probe_test.go
 kind: SystemContext
 metadata:
   name: abc-probe

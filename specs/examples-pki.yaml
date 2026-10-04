@@ -1,4 +1,9 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:examples/pki/certs.go certs.go@examples/pki/certs.go
+- file:examples/pki/main.go main.go@examples/pki/main.go
+- file:examples/pki/main_test.go main_test.go@examples/pki/main_test.go
+- file:examples/pki/vault.go vault.go@examples/pki/vault.go
 kind: SystemContext
 metadata:
   name: examples-pki

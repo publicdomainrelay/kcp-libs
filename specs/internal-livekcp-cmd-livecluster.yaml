@@ -1,4 +1,6 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:internal/livekcp/cmd/livecluster/main.go main.go@internal/livekcp/cmd/livecluster/main.go
 kind: SystemContext
 metadata:
   name: internal-livekcp-cmd-livecluster

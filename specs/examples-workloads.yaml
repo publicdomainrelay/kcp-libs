@@ -1,4 +1,7 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:examples/workloads/main.go main.go@examples/workloads/main.go
+- file:examples/workloads/main_test.go main_test.go@examples/workloads/main_test.go
 kind: SystemContext
 metadata:
   name: examples-workloads

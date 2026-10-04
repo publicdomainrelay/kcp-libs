@@ -1,4 +1,7 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:examples/admission/main.go main.go@examples/admission/main.go
+- file:examples/admission/main_test.go main_test.go@examples/admission/main_test.go
 kind: SystemContext
 metadata:
   name: examples-admission

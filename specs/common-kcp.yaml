@@ -1,4 +1,7 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:common/kcp/kcp.go kcp.go@common/kcp/kcp.go
+- file:common/kcp/kcp_test.go kcp_test.go@common/kcp/kcp_test.go
 kind: SystemContext
 metadata:
   name: common-kcp

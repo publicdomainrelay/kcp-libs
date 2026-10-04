@@ -1,4 +1,9 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:abc/queue/leases.go leases.go@abc/queue/leases.go
+- file:abc/queue/leases_test.go leases_test.go@abc/queue/leases_test.go
+- file:abc/queue/queue.go queue.go@abc/queue/queue.go
+- file:abc/queue/queue_test.go queue_test.go@abc/queue/queue_test.go
 kind: SystemContext
 metadata:
   name: abc-queue

@@ -1,4 +1,7 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:common/statuspatch/statuspatch.go statuspatch.go@common/statuspatch/statuspatch.go
+- file:common/statuspatch/statuspatch_test.go statuspatch_test.go@common/statuspatch/statuspatch_test.go
 kind: SystemContext
 metadata:
   name: common-statuspatch

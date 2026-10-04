@@ -1,60 +1,21 @@
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
-  reason: InterfacesObserved
-  status: "True"
+- message: 'missing: Client, Client.Status, Client.Submit, New, Outputs, PolicyName;
+    unresolved: r.new-builds-a-client-with-a-bounded-timeout: file:impl/policyclient/policyclient.go,
+    r.new-builds-a-client-with-a-bounded-timeout: function:ceea74205a5754163b309ccbb838c89a,
+    r.new-builds-a-client-with-a-bounded-timeout: struct:cadc1b79f4d841a6641b1b7ed9b4d3ec,
+    r.outputs-prefixes-verdicts-when-more-than-one-policy: function:54f3e1e2bd8e260021c98693f9a2c90a,
+    r.outputs-prefixes-verdicts-when-more-than-one-policy: function:b98ae160f1fe55260dca95e09986a5bb,
+    r.status-reads-a-task-from-an-endpoint: method:4e934ce27e912f8b62f60030591215cc,
+    r.submit-posts-to-request-create: method:19f667c165b3c1a5fd0e639d57f02e89'
+  reason: InterfacesMissing
+  status: "False"
   type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+- message: no synced fingerprint has been recorded yet
+  reason: NotSyncedYet
   status: "False"
   type: Drifted
 - message: the spec passes the validator
   reason: ValidatorPassed
   status: "True"
   type: SpecValid
-observed:
-  files:
-  - impl/policyclient/policyclient.go
-  - impl/policyclient/policyclient_test.go
-  fingerprint: 532b47e139d3937fa0b4377de642041321057c761ddcf92e8796e1ea4bf93d92
-  interfaces:
-  - codegraphId: struct:cadc1b79f4d841a6641b1b7ed9b4d3ec
-    file: impl/policyclient/policyclient.go
-    kind: struct
-    line: 19
-    name: Client
-  - codegraphId: function:ceea74205a5754163b309ccbb838c89a
-    file: impl/policyclient/policyclient.go
-    kind: function
-    line: 25
-    name: New
-    signature: () *Client
-  - codegraphId: method:19f667c165b3c1a5fd0e639d57f02e89
-    file: impl/policyclient/policyclient.go
-    kind: method
-    line: 67
-    name: Client.Submit
-    signature: (ctx context.Context, endpoint string, workflow []byte, inputs map[string]string)
-      (string, error)
-  - codegraphId: method:4e934ce27e912f8b62f60030591215cc
-    file: impl/policyclient/policyclient.go
-    kind: method
-    line: 109
-    name: Client.Status
-    signature: (ctx context.Context, endpoint, taskID string) (policy.Task, error)
-  - codegraphId: function:54f3e1e2bd8e260021c98693f9a2c90a
-    file: impl/policyclient/policyclient.go
-    kind: function
-    line: 155
-    name: Outputs
-    signature: (response statusResponse) map[string]string
-  - codegraphId: function:b98ae160f1fe55260dca95e09986a5bb
-    file: impl/policyclient/policyclient.go
-    kind: function
-    line: 194
-    name: PolicyName
-    signature: (cacheKey string) string
-observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-realizedSpecHash: b6b67546eebb2cddbe08175f89fb003fa5355805d84e2f1dc3e7b22e96ea64aa
-syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-syncedFingerprint: 532b47e139d3937fa0b4377de642041321057c761ddcf92e8796e1ea4bf93d92
+observed: {}

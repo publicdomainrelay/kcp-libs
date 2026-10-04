@@ -1,9 +1,24 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:abc/joballoc/joballoc.go joballoc.go@abc/joballoc/joballoc.go
+- file:abc/joballoc/joballoc_test.go joballoc_test.go@abc/joballoc/joballoc_test.go
+- function:3f2d8c8fe1fe9a1ffe2aec6ae9cb21b1 MergeNames@abc/joballoc/joballoc.go:75
+- function:e5835aa23953e8fe5e8ba0521c6f6305 New@abc/joballoc/joballoc.go:20
+- method:10aee9a9b59c82c429e59eda7063cff2 Allocator.Forget@abc/joballoc/joballoc.go:67
+- method:1d809a0f9cc0db66dd09568aab52e10e Allocator.Allocate@abc/joballoc/joballoc.go:24
+- method:2fe2fe5409de2aff6260db2ad57424e1 Allocator.Names@abc/joballoc/joballoc.go:35
+- method:99144fd4f43e31bdffe2206a3a99a050 Allocator.Len@abc/joballoc/joballoc.go:71
+- method:9c2e809f72d7951e74cf7925860610ec Allocator.Pending@abc/joballoc/joballoc.go:47
+- struct:81a3d6c6679a07f9c85fcbb079cd24ef Allocator@abc/joballoc/joballoc.go:16
+- struct:c6c45587967912c642f434fc5c395fac Allocation@abc/joballoc/joballoc.go:10
 kind: SystemContext
 metadata:
   name: abc-joballoc
   namespace: default
 spec:
+  dependsOn:
+  - sc.common-expiringmap
+  - sc.common-ref
   intent: 'This context exists so the abc layer has one place that answers which names
     a job already holds and which of those a controller has not yet seen, without
     each consumer keeping its own bookkeeping. It is deliberately runtime-agnostic:

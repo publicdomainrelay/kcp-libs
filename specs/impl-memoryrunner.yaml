@@ -1,4 +1,7 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:impl/memoryrunner/memoryrunner.go memoryrunner.go@impl/memoryrunner/memoryrunner.go
+- file:impl/memoryrunner/memoryrunner_test.go memoryrunner_test.go@impl/memoryrunner/memoryrunner_test.go
 kind: SystemContext
 metadata:
   name: impl-memoryrunner

@@ -1,77 +1,23 @@
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
-  reason: InterfacesObserved
-  status: "True"
+- message: 'missing: LeafChain, New, Options, Provisioner, Provisioner.CachedRootPEM,
+    Provisioner.Delete, Provisioner.EnsureAuthority, Provisioner.EnsureRoot, Provisioner.Issue;
+    unresolved: r.authority-carries-trimmed-chain: file:impl/pkiprovisioner/pkiprovisioner.go,
+    r.authority-carries-trimmed-chain: method:dbce55e518a5f94002a8102e3348772c, r.cached-root-pem-nil-until-ensured:
+    method:7aaa1b393f6662ecc89ab29299cbea68, r.delete-drops-cache-then-namespace:
+    method:d5967140fe7eb80411ee9ed7cc877c96, r.delete-drops-cache-then-namespace:
+    struct:85d52f39514274817830fa863a880ebb, r.ensure-root-memoized-under-mutex: method:4195ab23df62ee1db3840769986974c8,
+    r.issue-defaults-loopback-ips: method:4e00b7939435016777ed505a3c634185, r.issue-uses-configured-role-and-ttl:
+    struct:d27d806e5c22258e2ce7cad7037a9dda, r.leaf-chain-joins-cert-and-ca-chain:
+    function:d3c3c16dc7874b597b0ada7624dae197, r.new-fills-defaults: function:30364e141ea2faa4b4234973c4a19b7f'
+  reason: InterfacesMissing
+  status: "False"
   type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+- message: no synced fingerprint has been recorded yet
+  reason: NotSyncedYet
   status: "False"
   type: Drifted
 - message: the spec passes the validator
   reason: ValidatorPassed
   status: "True"
   type: SpecValid
-observed:
-  files:
-  - impl/pkiprovisioner/pkiprovisioner.go
-  - impl/pkiprovisioner/pkiprovisioner_test.go
-  fingerprint: bfd8b4c73c3f78a083ad4cac2aed4ab85da7bbe52bc6c4a12d8ef7f520e9d4d5
-  interfaces:
-  - codegraphId: struct:d27d806e5c22258e2ce7cad7037a9dda
-    file: impl/pkiprovisioner/pkiprovisioner.go
-    kind: struct
-    line: 19
-    name: Options
-  - codegraphId: struct:85d52f39514274817830fa863a880ebb
-    file: impl/pkiprovisioner/pkiprovisioner.go
-    kind: struct
-    line: 43
-    name: Provisioner
-  - codegraphId: function:30364e141ea2faa4b4234973c4a19b7f
-    file: impl/pkiprovisioner/pkiprovisioner.go
-    kind: function
-    line: 55
-    name: New
-    signature: (opts Options) (*Provisioner, error)
-  - codegraphId: method:4195ab23df62ee1db3840769986974c8
-    file: impl/pkiprovisioner/pkiprovisioner.go
-    kind: method
-    line: 86
-    name: Provisioner.EnsureRoot
-    signature: (ctx context.Context) (pki.RootCA, error)
-  - codegraphId: method:dbce55e518a5f94002a8102e3348772c
-    file: impl/pkiprovisioner/pkiprovisioner.go
-    kind: method
-    line: 126
-    name: Provisioner.EnsureAuthority
-    signature: (ctx context.Context, path string) (pki.Authority, error)
-  - codegraphId: method:4e00b7939435016777ed505a3c634185
-    file: impl/pkiprovisioner/pkiprovisioner.go
-    kind: method
-    line: 211
-    name: Provisioner.Issue
-    signature: (ctx context.Context, path, commonName string, altNames, ips []string)
-      (pki.Cert, error)
-  - codegraphId: method:d5967140fe7eb80411ee9ed7cc877c96
-    file: impl/pkiprovisioner/pkiprovisioner.go
-    kind: method
-    line: 230
-    name: Provisioner.Delete
-    signature: (ctx context.Context, path string) error
-  - codegraphId: method:7aaa1b393f6662ecc89ab29299cbea68
-    file: impl/pkiprovisioner/pkiprovisioner.go
-    kind: method
-    line: 243
-    name: Provisioner.CachedRootPEM
-    signature: () []byte
-  - codegraphId: function:d3c3c16dc7874b597b0ada7624dae197
-    file: impl/pkiprovisioner/pkiprovisioner.go
-    kind: function
-    line: 252
-    name: LeafChain
-    signature: (cert pki.Cert) string
-observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-realizedSpecHash: 9cf38b059fb74f2eaa37d6a04604247f44fdaa3e6cafda24568ee506883453f6
-syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-syncedFingerprint: bfd8b4c73c3f78a083ad4cac2aed4ab85da7bbe52bc6c4a12d8ef7f520e9d4d5
+observed: {}

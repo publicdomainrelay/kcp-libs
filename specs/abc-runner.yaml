@@ -1,4 +1,6 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:abc/runner/runner.go runner.go@abc/runner/runner.go
 kind: SystemContext
 metadata:
   name: abc-runner

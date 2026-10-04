@@ -1,4 +1,7 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:common/expiringmap/expiringmap.go expiringmap.go@common/expiringmap/expiringmap.go
+- file:common/expiringmap/expiringmap_test.go expiringmap_test.go@common/expiringmap/expiringmap_test.go
 kind: SystemContext
 metadata:
   name: common-expiringmap

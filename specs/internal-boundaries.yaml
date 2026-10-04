@@ -1,4 +1,6 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:internal/boundaries/boundaries_test.go boundaries_test.go@internal/boundaries/boundaries_test.go
 kind: SystemContext
 metadata:
   name: internal-boundaries

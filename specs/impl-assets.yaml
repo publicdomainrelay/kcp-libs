@@ -1,4 +1,9 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:impl/assets/assets.go assets.go@impl/assets/assets.go
+- file:impl/assets/dns.go dns.go@impl/assets/dns.go
+- file:impl/assets/dnsprobe.ts dnsprobe.ts@impl/assets/dnsprobe.ts
+- file:impl/assets/dnsshim.ts dnsshim.ts@impl/assets/dnsshim.ts
 kind: SystemContext
 metadata:
   name: impl-assets

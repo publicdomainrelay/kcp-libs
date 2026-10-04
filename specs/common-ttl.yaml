@@ -1,4 +1,7 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:common/ttl/ttl.go ttl.go@common/ttl/ttl.go
+- file:common/ttl/ttl_test.go ttl_test.go@common/ttl/ttl_test.go
 kind: SystemContext
 metadata:
   name: common-ttl

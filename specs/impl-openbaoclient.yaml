@@ -1,4 +1,7 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:impl/openbaoclient/openbaoclient_test.go openbaoclient_test.go@impl/openbaoclient/openbaoclient_test.go
+- file:impl/openbaoclient/testcert_test.go testcert_test.go@impl/openbaoclient/testcert_test.go
 kind: SystemContext
 metadata:
   name: impl-openbaoclient

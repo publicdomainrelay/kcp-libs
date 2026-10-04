@@ -1,4 +1,7 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:common/ref/ref.go ref.go@common/ref/ref.go
+- file:common/ref/ref_test.go ref_test.go@common/ref/ref_test.go
 kind: SystemContext
 metadata:
   name: common-ref

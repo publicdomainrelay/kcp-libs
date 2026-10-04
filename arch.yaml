@@ -1,12 +1,39 @@
 apiVersion: open-architecture.dffml.github.io/v0alpha1
-kind: OpenArchitecture
+kind: GeneratedArchitecture
 metadata:
-  branch: open-architecture/kcp-libs
+  branch: open-architecture/kcp-libs--fix-openbao-no-default-issuer
   name: kcp-libs
 system_contexts:
 - code:
   - abc/cache/cache.go
   - abc/cache/cache_test.go
+  codeRefIndex:
+  - file:abc/cache/cache.go cache.go@abc/cache/cache.go
+  - file:abc/cache/cache_test.go cache_test.go@abc/cache/cache_test.go
+  - function:323ee6d71bcc903db5a96ba67a3e1292 RefOf@abc/cache/cache.go:124
+  - function:368cfc3b7333cde3fc16c28b5f4a251e NewSet@abc/cache/cache.go:44
+  - function:3b4476e3e6d3931e3e5f66d88938a0d2 PhaseOf@abc/cache/cache.go:144
+  - function:53a9fed74460c17bc06521cc3e273e8c NameOf@abc/cache/cache.go:136
+  - function:5ce1c083464f112da22046a1de3a5518 IndexersFor@abc/cache/cache.go:162
+  - function:7b1ca2f92d1acfeb4fc9be87c387a001 ClusterOf@abc/cache/cache.go:116
+  - function:ac84053b66aaf34b0c83c98bd076de38 Decode@abc/cache/cache.go:101
+  - function:cf99478a03753478fb8bd3cc621df402 NestedString@abc/cache/cache.go:153
+  - interface:83657a0a0b8c546e00b0f6ddd68c8e0a Indexer@abc/cache/cache.go:26
+  - method:23f07591814f8acee78325cb538a547d Set.Names@abc/cache/cache.go:91
+  - method:2f035c41d933e105b559d662a9a88767 Indexer.ByIndex@abc/cache/cache.go:29
+  - method:3cf5981edb352b4ae0f722e3ed6bb96c Indexer.GetByKey@abc/cache/cache.go:27
+  - method:436e0dc34ebdec584138d188650d491e Set.ByIndex@abc/cache/cache.go:79
+  - method:79db186239dd9ebf94db73d3c1834051 Set.List@abc/cache/cache.go:71
+  - method:7dedfffcc434baa8546c274ac5fa4131 Set.Get@abc/cache/cache.go:60
+  - method:995ab025f452ec7f8d6ac24f85f6bbba Set.Add@abc/cache/cache.go:48
+  - method:e8d2e2d111f92694f5202ff04b380d0c Indexer.List@abc/cache/cache.go:31
+  - struct:b3ef85326db0e635df938cf47a312813 Set@abc/cache/cache.go:38
+  - type_alias:a2a398908517249bfded29f79dbe609e Indexers@abc/cache/cache.go:36
+  - type_alias:c324eb8aebee5659b8c3144e047c30a2 IndexFunc@abc/cache/cache.go:34
+  depends_on:
+  - sc.common-denocomputer
+  - sc.common-kcp
+  - sc.common-ref
   id: sc.abc-cache
   intent: 'This context exists so a reader can see what the cache promises without
     reading the implementation: which index contract an object store must satisfy,
@@ -186,6 +213,21 @@ system_contexts:
 - code:
   - abc/joballoc/joballoc.go
   - abc/joballoc/joballoc_test.go
+  codeRefIndex:
+  - file:abc/joballoc/joballoc.go joballoc.go@abc/joballoc/joballoc.go
+  - file:abc/joballoc/joballoc_test.go joballoc_test.go@abc/joballoc/joballoc_test.go
+  - function:3f2d8c8fe1fe9a1ffe2aec6ae9cb21b1 MergeNames@abc/joballoc/joballoc.go:75
+  - function:e5835aa23953e8fe5e8ba0521c6f6305 New@abc/joballoc/joballoc.go:20
+  - method:10aee9a9b59c82c429e59eda7063cff2 Allocator.Forget@abc/joballoc/joballoc.go:67
+  - method:1d809a0f9cc0db66dd09568aab52e10e Allocator.Allocate@abc/joballoc/joballoc.go:24
+  - method:2fe2fe5409de2aff6260db2ad57424e1 Allocator.Names@abc/joballoc/joballoc.go:35
+  - method:99144fd4f43e31bdffe2206a3a99a050 Allocator.Len@abc/joballoc/joballoc.go:71
+  - method:9c2e809f72d7951e74cf7925860610ec Allocator.Pending@abc/joballoc/joballoc.go:47
+  - struct:81a3d6c6679a07f9c85fcbb079cd24ef Allocator@abc/joballoc/joballoc.go:16
+  - struct:c6c45587967912c642f434fc5c395fac Allocation@abc/joballoc/joballoc.go:10
+  depends_on:
+  - sc.common-expiringmap
+  - sc.common-ref
   id: sc.abc-joballoc
   intent: 'This context exists so the abc layer has one place that answers which names
     a job already holds and which of those a controller has not yet seen, without
@@ -292,6 +334,32 @@ system_contexts:
   upstream: self
 - code:
   - abc/pki/pki.go
+  codeRefIndex:
+  - file:abc/pki/pki.go pki.go@abc/pki/pki.go
+  - interface:44a17e9c183e31e9b666d01dca913cc8 Provisioner@abc/pki/pki.go:118
+  - method:07fd1814798e353c56f080d20975fb4b Client.DeleteNamespace@abc/pki/pki.go:115
+  - method:17a2eb40b863f13c4652261820c10201 Provisioner.CachedRootPEM@abc/pki/pki.go:127
+  - method:1a3b315f017de0b6363a1ddf04e98077 Client.SignIntermediate@abc/pki/pki.go:107
+  - method:1e2aa7ebdb54224f489e406f6f3fbef3 Client.CASerial@abc/pki/pki.go:101
+  - method:1ef93b250b4f7c625d04067f81349bf9 Client.CAChain@abc/pki/pki.go:103
+  - method:1f9f2bb7abd96f807c5e53ee523f2708 Provisioner.Issue@abc/pki/pki.go:123
+  - method:4d425dba0f4b78f1a408107711c732c9 Client.GenerateRoot@abc/pki/pki.go:99
+  - method:808f1bb5f4e1aa53fcaf0a2c6358d976 Provisioner.Delete@abc/pki/pki.go:125
+  - method:98d06874b98400ca735ca49933dad7ef Client.GenerateIntermediate@abc/pki/pki.go:105
+  - method:a0ac8a2dec0c7669af33019b4b3f3f11 Client.EnsureNamespace@abc/pki/pki.go:95
+  - method:b8d03e6b65634b9f495bc2f2a1019a7a Client.EnsureMount@abc/pki/pki.go:97
+  - method:d58fe4f006f8d8e6d8b06298f11c8b3b Client.Issue@abc/pki/pki.go:113
+  - method:e4543be178161016ecceb88b21d2e99b Provisioner.EnsureRoot@abc/pki/pki.go:119
+  - method:eb7720c010c0ac34cb5e99ee48495951 Client.WriteRole@abc/pki/pki.go:111
+  - method:ee3e7f50bd6547ee6827b49a28baa253 Client.SetSignedIntermediate@abc/pki/pki.go:109
+  - method:fd34639484fd56a10516d8affbd6fdcf Provisioner.EnsureAuthority@abc/pki/pki.go:121
+  - struct:1331436d9816e3e86d68a77c31bda5af Role@abc/pki/pki.go:48
+  - struct:5cbcf189d4f2f7d225d0f3a6d193daba Health@abc/pki/pki.go:84
+  - struct:6183e1fd5203660f7cc37a020f980a05 CertRequest@abc/pki/pki.go:64
+  - struct:8a0cbed52cfc7319d1c688ca4591bcde RootCA@abc/pki/pki.go:36
+  - struct:af3fa7e349cc30c48784cf7c88c90f63 Authority@abc/pki/pki.go:74
+  - struct:dde1ada7f0bec070360f060f452e6f67 IntermediateCSR@abc/pki/pki.go:42
+  - struct:faad17686720ec66a377bf0b42fa729b Cert@abc/pki/pki.go:24
   id: sc.abc-pki
   intent: This context exists to fix the boundary between the reconciler/provisioner
     code and the certificate authority backend. It names the operations a PKI backend
@@ -561,8 +629,8 @@ system_contexts:
       and mount; Role carries AllowedDomains, AllowSubdomains, AllowBareDomains, EnforceHostnames,
       KeyType, KeyBits and MaxTTL.
   upstream: self
-- code:
-  - abc/policy/policy.go
+- codeRefIndex:
+  - file:abc/policy/policy.go policy.go@abc/policy/policy.go
   id: sc.abc-policy
   intent: This context exists so that consumers of a policy engine depend on a stable,
     transport-free contract instead of a concrete HTTP client. It defines the vocabulary
@@ -629,9 +697,9 @@ system_contexts:
     text: Task MUST carry State, ExitStatus, Outputs as a map[string]string, and Message,
       all as plain string or map fields.
   upstream: self
-- code:
-  - abc/probe/probe.go
-  - abc/probe/probe_test.go
+- codeRefIndex:
+  - file:abc/probe/probe.go probe.go@abc/probe/probe.go
+  - file:abc/probe/probe_test.go probe_test.go@abc/probe/probe_test.go
   id: sc.abc-probe
   intent: 'This context exists to specify the consecutive-failure probe abstraction:
     a shared, concurrency-safe place where repeated observations about a named probe
@@ -745,11 +813,11 @@ system_contexts:
       guard every access with a mutex, so Record, Forget and Len are safe to call
       concurrently.
   upstream: self
-- code:
-  - abc/queue/leases.go
-  - abc/queue/leases_test.go
-  - abc/queue/queue.go
-  - abc/queue/queue_test.go
+- codeRefIndex:
+  - file:abc/queue/leases.go leases.go@abc/queue/leases.go
+  - file:abc/queue/leases_test.go leases_test.go@abc/queue/leases_test.go
+  - file:abc/queue/queue.go queue.go@abc/queue/queue.go
+  - file:abc/queue/queue_test.go queue_test.go@abc/queue/queue_test.go
   id: sc.abc-queue
   intent: 'This context exists to specify the admission/lease contract of the abc
     queue: what a Run must look like to be planned, how Policy defaults resolve, how
@@ -952,10 +1020,9 @@ system_contexts:
     text: WakeList must return the refs of the runs that should be woken given the
       runs, the lifecycle, and either a limit or the unlimited flag.
   upstream: self
-- code:
-  - abc/reconcile/handler.go
-  - abc/reconcile/reconcile.go
-  - abc/reconcile/reconcile_test.go
+- codeRefIndex:
+  - file:abc/reconcile/handler.go handler.go@abc/reconcile/handler.go
+  - file:abc/reconcile/reconcile.go reconcile.go@abc/reconcile/reconcile.go
   id: sc.abc-reconcile
   intent: 'This context exists to separate the decision half of a controller from
     the transport and runtime half. A Reconciler is pure: given the observed object
@@ -1183,8 +1250,8 @@ system_contexts:
       the object is being deleted, ReleasesFinalizer reports whether the finalizer
       can be removed, and IsCleared reports whether a named status field was cleared.'
   upstream: self
-- code:
-  - abc/runner/runner.go
+- codeRefIndex:
+  - file:abc/runner/runner.go runner.go@abc/runner/runner.go
   id: sc.abc-runner
   intent: 'This context exists to fix the boundary between the generic workload lifecycle
     and its concrete implementations. The package names no runtime beyond the field
@@ -1380,9 +1447,9 @@ system_contexts:
     text: State must be a string alias, so that status types can report a lifecycle
       phase as a plain string value.
   upstream: self
-- code:
-  - abc/runref/runref.go
-  - abc/runref/runref_test.go
+- codeRefIndex:
+  - file:abc/runref/runref.go runref.go@abc/runref/runref.go
+  - file:abc/runref/runref_test.go runref_test.go@abc/runref/runref_test.go
   id: sc.abc-runref
   intent: 'This context exists so a reconciler can tell a fresh start from a duplicate
     of a run that is already in flight. Records live only for the configured TTL,
@@ -1525,9 +1592,9 @@ system_contexts:
       and whose Ref equals the new normalized key, so one ref keeps only the newest
       run.
   upstream: self
-- code:
-  - abc/store/store.go
-  - abc/store/store_test.go
+- codeRefIndex:
+  - file:abc/store/store.go store.go@abc/store/store.go
+  - file:abc/store/store_test.go store_test.go@abc/store/store_test.go
   id: sc.abc-store
   intent: This context exists to fix the storage contract that the rest of kcp-libs
     codes against. Controllers, caches and reconcilers need to read and write cluster
@@ -1656,9 +1723,9 @@ system_contexts:
       a raw patch byte slice; and RemoveFinalizer taking a context, ref.Ref and the
       finalizer name. Each returns an error.
   upstream: self
-- code:
-  - common/clientlimit/clientlimit.go
-  - common/clientlimit/clientlimit_test.go
+- codeRefIndex:
+  - file:common/clientlimit/clientlimit.go clientlimit.go@common/clientlimit/clientlimit.go
+  - file:common/clientlimit/clientlimit_test.go clientlimit_test.go@common/clientlimit/clientlimit_test.go
   id: sc.common-clientlimit
   intent: 'This context exists because client-go defaults every client to 5 qps with
     a burst of 10, which starves a controller that watches and reconciles many objects.
@@ -1717,9 +1784,9 @@ system_contexts:
     text: Apply must copy the given config with rest.CopyConfig and return the copy;
       the config passed by the caller must not be mutated.
   upstream: self
-- code:
-  - common/condition/condition.go
-  - common/condition/condition_test.go
+- codeRefIndex:
+  - file:common/condition/condition.go condition.go@common/condition/condition.go
+  - file:common/condition/condition_test.go condition_test.go@common/condition/condition_test.go
   id: sc.common-condition
   intent: 'This context exists to specify the shared condition helpers that kcp-libs
     controllers use when reporting status. Rather than each controller reimplementing
@@ -1846,9 +1913,9 @@ system_contexts:
     text: Setting a condition whose type, status, reason and message are unchanged
       must preserve the existing transition time rather than resetting it.
   upstream: self
-- code:
-  - common/denocomputer/denocomputer.go
-  - common/denocomputer/denocomputer_test.go
+- codeRefIndex:
+  - file:common/denocomputer/denocomputer.go denocomputer.go@common/denocomputer/denocomputer.go
+  - file:common/denocomputer/denocomputer_test.go denocomputer_test.go@common/denocomputer/denocomputer_test.go
   id: sc.common-denocomputer
   intent: This context exists to keep one copy of the deno.computer names and phases
     that both this generic library and the deno-kcp consumer agree on. Rather than
@@ -1970,10 +2037,10 @@ system_contexts:
       so a cancelled policy run counts as terminal, unlike a cancelled plain run or
       pod.
   upstream: self
-- code:
-  - common/denospec/denospec.go
-  - common/denospec/denospec_contract_test.go
-  - common/denospec/denospec_test.go
+- codeRefIndex:
+  - file:common/denospec/denospec.go denospec.go@common/denospec/denospec.go
+  - file:common/denospec/denospec_contract_test.go denospec_contract_test.go@common/denospec/denospec_contract_test.go
+  - file:common/denospec/denospec_test.go denospec_test.go@common/denospec/denospec_test.go
   id: sc.common-denospec
   intent: This context exists so that the deno workload vocabulary lives in one Go
     package that both the KCP libraries and the Deno-side consumer agree on. The structs
@@ -2120,9 +2187,9 @@ system_contexts:
       be rendered as Deno flags, rejecting commas and empty values, and return nil
       for a permission set that can be rendered.
   upstream: self
-- code:
-  - common/expiringmap/expiringmap.go
-  - common/expiringmap/expiringmap_test.go
+- codeRefIndex:
+  - file:common/expiringmap/expiringmap.go expiringmap.go@common/expiringmap/expiringmap.go
+  - file:common/expiringmap/expiringmap_test.go expiringmap_test.go@common/expiringmap/expiringmap_test.go
   id: sc.common-expiringmap
   intent: 'This context exists as the shared expiry primitive for the wider kcp-libs
     project: callers that need a bounded-lifetime cache (for example the job allocator''s
@@ -2282,9 +2349,9 @@ system_contexts:
       time or accepted by the non-nil prune predicate, then stores the new key and
       value under the same lock, so the pruning and the insert are atomic.
   upstream: self
-- code:
-  - common/kcp/kcp.go
-  - common/kcp/kcp_test.go
+- codeRefIndex:
+  - file:common/kcp/kcp.go kcp.go@common/kcp/kcp.go
+  - file:common/kcp/kcp_test.go kcp_test.go@common/kcp/kcp_test.go
   id: sc.common-kcp
   intent: This context exists so the naming rules that map a KCP logical cluster path
     onto DNS labels and fully qualified service names stay specified in one place.
@@ -2361,8 +2428,8 @@ system_contexts:
     text: Table-driven tests SHOULD keep covering ServiceLabels and ServiceFQDN, including
       the root-only and empty-namespace cases.
   upstream: self
-- code:
-  - common/logging/logging.go
+- codeRefIndex:
+  - file:common/logging/logging.go logging.go@common/logging/logging.go
   id: sc.common-logging
   intent: 'This context exists so that structured logging has one definition instead
     of every package building its own slog handler. It fixes the decisions that would
@@ -2425,9 +2492,9 @@ system_contexts:
     text: Loggers should be produced only through Options via New or Discard, so format,
       default level, and the service attribute stay in one place.
   upstream: self
-- code:
-  - common/outputs/outputs.go
-  - common/outputs/outputs_test.go
+- codeRefIndex:
+  - file:common/outputs/outputs.go outputs.go@common/outputs/outputs.go
+  - file:common/outputs/outputs_test.go outputs_test.go@common/outputs/outputs_test.go
   id: sc.common-outputs
   intent: 'This context exists to fix the contract for converting arbitrary JSON-ish
     values into the string map that kcp surfaces as outputs. The two functions are
@@ -2490,9 +2557,9 @@ system_contexts:
     text: StringifyValue returns a value whose dynamic type is string unchanged, without
       quoting or escaping it.
   upstream: self
-- code:
-  - common/ref/ref.go
-  - common/ref/ref_test.go
+- codeRefIndex:
+  - file:common/ref/ref.go ref.go@common/ref/ref.go
+  - file:common/ref/ref_test.go ref_test.go@common/ref/ref_test.go
   id: sc.common-ref
   intent: This context exists so that every layer of kcp-libs agrees on the identity
     and the transport address of a KCP object. A Ref is the identity used as a map
@@ -2602,9 +2669,9 @@ system_contexts:
     text: WithResourceVersion must return a Ref that carries the given version and
       otherwise keeps the receiver's identity unchanged, and must not mutate the receiver.
   upstream: self
-- code:
-  - common/statuspatch/statuspatch.go
-  - common/statuspatch/statuspatch_test.go
+- codeRefIndex:
+  - file:common/statuspatch/statuspatch.go statuspatch.go@common/statuspatch/statuspatch.go
+  - file:common/statuspatch/statuspatch_test.go statuspatch_test.go@common/statuspatch/statuspatch_test.go
   id: sc.common-statuspatch
   intent: This context exists to specify the reusable patch-construction vocabulary
     shared by every reconcile and store layer in kcp-libs. It keeps the generic JSON-patch
@@ -2721,9 +2788,9 @@ system_contexts:
       the test-and-replace finalizer patch, the absent-finalizer nil patch, the single
       add op, and reading finalizers from an object body.
   upstream: self
-- code:
-  - common/ttl/ttl.go
-  - common/ttl/ttl_test.go
+- codeRefIndex:
+  - file:common/ttl/ttl.go ttl.go@common/ttl/ttl.go
+  - file:common/ttl/ttl_test.go ttl_test.go@common/ttl/ttl_test.go
   id: sc.common-ttl
   intent: This context exists so callers do not each re-derive TTL semantics from
     raw pointers. Kubernetes-style APIs express TTLs as optional seconds on a timestamp,
@@ -2802,9 +2869,9 @@ system_contexts:
       a future expiry, a past expiry and a missing completion time in Expired, and
       a future deadline, a reached deadline and a missing start time in Deadline.
   upstream: self
-- code:
-  - examples/admission/main.go
-  - examples/admission/main_test.go
+- codeRefIndex:
+  - file:examples/admission/main.go main.go@examples/admission/main.go
+  - file:examples/admission/main_test.go main_test.go@examples/admission/main_test.go
   id: sc.examples-admission
   intent: 'This context exists so that the admission example can be described and
     regenerated as a compile-checked demonstration of the admission Source interface.
@@ -2900,9 +2967,9 @@ system_contexts:
     text: source.Runs must parse the object creation timestamp with time.RFC3339Nano
       and leave the zero time when parsing fails rather than returning an error.
   upstream: self
-- code:
-  - examples/controller/main.go
-  - examples/controller/main_test.go
+- codeRefIndex:
+  - file:examples/controller/main.go main.go@examples/controller/main.go
+  - file:examples/controller/main_test.go main_test.go@examples/controller/main_test.go
   id: sc.examples-controller
   intent: 'This context exists to demonstrate, end to end and against a real kcp instance,
     that the generic controller layer works: a store backed by kcp, an export watch
@@ -2963,9 +3030,9 @@ system_contexts:
     text: Run must start a live kcp cluster and stop it on return, and must return
       the error if the cluster fails to start.
   upstream: self
-- code:
-  - examples/dns/main.go
-  - examples/dns/main_test.go
+- codeRefIndex:
+  - file:examples/dns/main.go main.go@examples/dns/main.go
+  - file:examples/dns/main_test.go main_test.go@examples/dns/main_test.go
   id: sc.examples-dns
   intent: 'This context exists to demonstrate and verify the DNS and service-name
     resolution behaviour of kcp-libs end to end. It is an executable example rather
@@ -3057,11 +3124,11 @@ system_contexts:
     text: The resolver must mint tokens through the kcp store with a one hour TTL,
       and its environment output must carry a token for each covered workspace.
   upstream: self
-- code:
-  - examples/pki/certs.go
-  - examples/pki/main.go
-  - examples/pki/main_test.go
-  - examples/pki/vault.go
+- codeRefIndex:
+  - file:examples/pki/certs.go certs.go@examples/pki/certs.go
+  - file:examples/pki/main.go main.go@examples/pki/main.go
+  - file:examples/pki/main_test.go main_test.go@examples/pki/main_test.go
+  - file:examples/pki/vault.go vault.go@examples/pki/vault.go
   id: sc.examples-pki
   intent: 'This context exists to document the examples/pki example: an executable
     end-to-end demonstration that provisions a PKI setup through KCP and issues certificates,
@@ -3139,10 +3206,10 @@ system_contexts:
     text: The fake vault MUST expose URL, returning the base URL the example uses
       to reach it.
   upstream: self
-- code:
-  - examples/policy/engine.go
-  - examples/policy/main.go
-  - examples/policy/main_test.go
+- codeRefIndex:
+  - file:examples/policy/engine.go engine.go@examples/policy/engine.go
+  - file:examples/policy/main.go main.go@examples/policy/main.go
+  - file:examples/policy/main_test.go main_test.go@examples/policy/main_test.go
   id: sc.examples-policy
   intent: 'This context documents the examples/policy package: the runnable demonstration
     of the policy engine surface. It exists so the exported behaviour of that example
@@ -3215,9 +3282,9 @@ system_contexts:
       and returning an error; it must use the engine's URL, Close and Submits methods
       to drive and verify the run.
   upstream: self
-- code:
-  - examples/workloads/main.go
-  - examples/workloads/main_test.go
+- codeRefIndex:
+  - file:examples/workloads/main.go main.go@examples/workloads/main.go
+  - file:examples/workloads/main_test.go main_test.go@examples/workloads/main_test.go
   id: sc.examples-workloads
   intent: 'This context exists to prove the workload packages compose in one place
     and to serve as living documentation for callers. It is an example, not a library:
@@ -3288,9 +3355,9 @@ system_contexts:
     text: Run evaluates ttl.Expired for a past completion time and uses joballoc to
       allocate a job's names and report the still-pending subset.
   upstream: self
-- code:
-  - factory/admission/admission.go
-  - factory/admission/admission_test.go
+- codeRefIndex:
+  - file:factory/admission/admission.go admission.go@factory/admission/admission.go
+  - file:factory/admission/admission_test.go admission_test.go@factory/admission/admission_test.go
   id: sc.factory-admission
   intent: This context exists to describe the admission gate that sits between a queue
     and the workloads it schedules. It defines the Source port through which the gate
@@ -3454,11 +3521,11 @@ system_contexts:
       for each run returned by queue.WakeList for the free slot count, where free
       is the limit minus the running count and is clamped at zero.
   upstream: self
-- code:
-  - factory/controller/controller.go
-  - factory/controller/controller_test.go
-  - factory/controller/events.go
-  - factory/controller/live_test.go
+- codeRefIndex:
+  - file:factory/controller/controller.go controller.go@factory/controller/controller.go
+  - file:factory/controller/controller_test.go controller_test.go@factory/controller/controller_test.go
+  - file:factory/controller/events.go events.go@factory/controller/events.go
+  - file:factory/controller/live_test.go live_test.go@factory/controller/live_test.go
   id: sc.factory-controller
   intent: 'This context is the controller runtime of kcp-libs: the generic work-queue
     driver that turns watched kcp resources into reconcile invocations. It exists
@@ -3620,9 +3687,9 @@ system_contexts:
       after, terminal) for a delay and requeue decision, and re-queues the key after
       that delay only when requeue is true.
   upstream: self
-- code:
-  - factory/servicenames/servicenames.go
-  - factory/servicenames/servicenames_test.go
+- codeRefIndex:
+  - file:factory/servicenames/servicenames.go servicenames.go@factory/servicenames/servicenames.go
+  - file:factory/servicenames/servicenames_test.go servicenames_test.go@factory/servicenames/servicenames_test.go
   id: sc.factory-servicenames
   intent: This context exists so that workloads running under kcp can discover each
     other by name without a hand-written DNS configuration. It converts the pods a
@@ -3787,13 +3854,11 @@ system_contexts:
       result as a JSON object string, or "{}" when marshalling fails. It mints nothing
       when the account is nil or no Minter is set.
   upstream: self
-- code:
-  - impl/assets/assets.go
-  - impl/assets/assets_test.go
-  - impl/assets/dns.go
-  - impl/assets/dns_test.go
-  - impl/assets/dnsprobe.ts
-  - impl/assets/dnsshim.ts
+- codeRefIndex:
+  - file:impl/assets/assets.go assets.go@impl/assets/assets.go
+  - file:impl/assets/dns.go dns.go@impl/assets/dns.go
+  - file:impl/assets/dnsprobe.ts dnsprobe.ts@impl/assets/dnsprobe.ts
+  - file:impl/assets/dnsshim.ts dnsshim.ts@impl/assets/dnsshim.ts
   id: sc.impl-assets
   intent: This context exists so callers can hand a declarative set of asset files
     to one object and get back a stable name-to-path map, without caring when or how
@@ -3883,11 +3948,8 @@ system_contexts:
     text: Set guards its written flag, path cache, and error with a mutex so concurrent
       Materialise, Rewrite, and Path calls stay consistent.
   upstream: self
-- code:
-  - impl/execrunner/engine.go
-  - impl/execrunner/pod.go
-  - impl/execrunner/pod_test.go
-  - impl/execrunner/supervisor.go
+- codeRefIndex:
+  - file:impl/execrunner/supervisor.go supervisor.go@impl/execrunner/supervisor.go
   id: sc.impl-execrunner
   intent: 'This context exists so the execrunner package has a written specification
     of the process-execution engine and pod: what the two option structs and their
@@ -4065,8 +4127,8 @@ system_contexts:
     text: When a timeout is configured, the engine must enforce it against the running
       process.
   upstream: self
-- code:
-  - impl/exportwatch/exportwatch.go
+- codeRefIndex:
+  - file:impl/exportwatch/exportwatch.go exportwatch.go@impl/exportwatch/exportwatch.go
   id: sc.impl-exportwatch
   intent: 'This context exists so callers can wait until a provider''s exports are
     actually reachable before proceeding: it isolates the endpoint-slice discovery,
@@ -4195,10 +4257,7 @@ system_contexts:
       endpoints and returns ErrReady as soon as the options exports are ready; a failed
       rediscovery is ignored rather than fatal.
   upstream: self
-- code:
-  - impl/informerwatch/informerwatch.go
-  - impl/informerwatch/informerwatch_test.go
-  id: sc.impl-informerwatch
+- id: sc.impl-informerwatch
   intent: 'This context exists so the kcp-libs dynamic watching layer is described
     as it is written: a runtime-neutral informer bootstrap that turns kcp object events
     into enqueue calls and optional reactor callbacks, with the indexer, cache set
@@ -4352,11 +4411,11 @@ system_contexts:
       fails to sync it must return nil if the context is already done, and otherwise
       the error "informerwatch: the cache for %s did not sync" naming the resource.'
   upstream: self
-- code:
-  - impl/kcpstore/kcpstore.go
-  - impl/kcpstore/kcpstore_test.go
-  - impl/kcpstore/live_test.go
-  - impl/kcpstore/paths.go
+- codeRefIndex:
+  - file:impl/kcpstore/kcpstore.go kcpstore.go@impl/kcpstore/kcpstore.go
+  - file:impl/kcpstore/kcpstore_test.go kcpstore_test.go@impl/kcpstore/kcpstore_test.go
+  - file:impl/kcpstore/live_test.go live_test.go@impl/kcpstore/live_test.go
+  - file:impl/kcpstore/paths.go paths.go@impl/kcpstore/paths.go
   id: sc.impl-kcpstore
   intent: 'This context exists so that consumers (controllers, admission, DNS, servicenames)
     have one place that knows how to reach kcp: URL shape, per-cluster client reuse,
@@ -4678,9 +4737,9 @@ system_contexts:
       current list and skip the request entirely when statuspatch.FinalizerRemove
       returns a nil patch.
   upstream: self
-- code:
-  - impl/memoryrunner/memoryrunner.go
-  - impl/memoryrunner/memoryrunner_test.go
+- codeRefIndex:
+  - file:impl/memoryrunner/memoryrunner.go memoryrunner.go@impl/memoryrunner/memoryrunner.go
+  - file:impl/memoryrunner/memoryrunner_test.go memoryrunner_test.go@impl/memoryrunner/memoryrunner_test.go
   id: sc.impl-memoryrunner
   intent: 'This context exists to give the rest of kcp-libs a controllable, in-memory
     fake for the runner contracts (abc/runner), so controllers, reconcile loops and
@@ -4878,10 +4937,7 @@ system_contexts:
     text: Both Pod and Engine must guard their run maps with their own sync.Mutex,
       locking in Start, Observe and Stop so the fakes are safe for concurrent use.
   upstream: self
-- code:
-  - impl/metrics/metrics.go
-  - impl/metrics/metrics_test.go
-  id: sc.impl-metrics
+- id: sc.impl-metrics
   intent: 'This context exists so that every component in the repository can expose
     Prometheus metrics through one small, uniform surface instead of touching the
     prometheus client directly. It gives each component an isolated registry plus
@@ -5015,10 +5071,9 @@ system_contexts:
       panic when registration fails for any other reason, including a name registered
       with a different help string or a different collector type.
   upstream: self
-- code:
-  - impl/openbaoclient/openbaoclient.go
-  - impl/openbaoclient/openbaoclient_test.go
-  - impl/openbaoclient/testcert_test.go
+- codeRefIndex:
+  - file:impl/openbaoclient/openbaoclient_test.go openbaoclient_test.go@impl/openbaoclient/openbaoclient_test.go
+  - file:impl/openbaoclient/testcert_test.go testcert_test.go@impl/openbaoclient/testcert_test.go
   id: sc.impl-openbaoclient
   intent: This context exists so that the rest of the library can treat OpenBao as
     one interchangeable PKI backend behind a narrow Go surface. It separates OpenBao's
@@ -5218,9 +5273,8 @@ system_contexts:
       including a mount type mismatch reported through ResponseError, with certificate
       fixtures supplied by the test certificate helper.
   upstream: self
-- code:
-  - impl/pkiprovisioner/pkiprovisioner.go
-  - impl/pkiprovisioner/pkiprovisioner_test.go
+- codeRefIndex:
+  - file:impl/pkiprovisioner/pkiprovisioner.go pkiprovisioner.go@impl/pkiprovisioner/pkiprovisioner.go
   id: sc.impl-pkiprovisioner
   intent: This context exists so that callers can ask for a root CA, a per-namespace
     intermediate authority, and leaf certificates without knowing the underlying PKI
@@ -5412,9 +5466,8 @@ system_contexts:
       configured leaf TTL; it must set AllowedDomains to the configured Domain only
       when the Domain is not empty.
   upstream: self
-- code:
-  - impl/policyclient/policyclient.go
-  - impl/policyclient/policyclient_test.go
+- codeRefIndex:
+  - file:impl/policyclient/policyclient.go policyclient.go@impl/policyclient/policyclient.go
   id: sc.impl-policyclient
   intent: This context exists to give the rest of the repository one place that speaks
     the policy engine's HTTP protocol, so callers depend on the abc/policy.Client
@@ -5548,8 +5601,8 @@ system_contexts:
     text: Submit returns an error carrying the status code and the trimmed response
       body when the engine answers with status 400 or above.
   upstream: self
-- code:
-  - internal/boundaries/boundaries_test.go
+- codeRefIndex:
+  - file:internal/boundaries/boundaries_test.go boundaries_test.go@internal/boundaries/boundaries_test.go
   id: sc.internal-boundaries
   intent: This context exists to keep the kcp-libs module's ABC-style layering honest
     by test rather than by convention. The tests read the real import graph from the
@@ -5618,12 +5671,7 @@ system_contexts:
       subtrees MUST NOT import any package under the module's internal/ subtree; a
       violation fails with the message `%s imports %s; test support belongs in tests`.
   upstream: self
-- code:
-  - internal/livekcp/livekcp.go
-  - internal/livekcp/manifests.go
-  - internal/livekcp/trace_test.go
-  - internal/livekcp/widget.go
-  id: sc.internal-livekcp
+- id: sc.internal-livekcp
   intent: This context exists so tests can run against a real kcp control plane instead
     of mocks, with a stable Go API for lifecycle, inspection, and object seeding.
     It separates tool discovery (Resolve, Missing) from cluster lifecycle (Start,
@@ -5796,8 +5844,8 @@ system_contexts:
       until the reached predicate accepts the object, returning that object or an
       error when the context ends.
   upstream: self
-- code:
-  - internal/livekcp/cmd/livecluster/main.go
+- codeRefIndex:
+  - file:internal/livekcp/cmd/livecluster/main.go main.go@internal/livekcp/cmd/livecluster/main.go
   id: sc.internal-livekcp-cmd-livecluster
   intent: 'The command exists so a developer or test harness can start a real kcp
     cluster as a child process and learn its coordinates from a file, instead of embedding
@@ -5841,8 +5889,8 @@ system_contexts:
     text: The command defers Stop on the started cluster so the cluster is torn down
       when the process leaves main.
   upstream: self
-- code:
-  - internal/livekcp/livetest/livetest.go
+- codeRefIndex:
+  - file:internal/livekcp/livetest/livetest.go livetest.go@internal/livekcp/livetest/livetest.go
   id: sc.internal-livekcp-livetest
   intent: 'This context exists so that live tests, which need real kcp and kubectl
     binaries, can degrade gracefully on machines and CI runners that do not have those

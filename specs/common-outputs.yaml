@@ -1,4 +1,7 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:common/outputs/outputs.go outputs.go@common/outputs/outputs.go
+- file:common/outputs/outputs_test.go outputs_test.go@common/outputs/outputs_test.go
 kind: SystemContext
 metadata:
   name: common-outputs

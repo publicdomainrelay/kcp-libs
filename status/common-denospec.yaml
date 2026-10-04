@@ -1,79 +1,27 @@
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
-  reason: InterfacesObserved
-  status: "True"
+- message: 'missing: Args, EffectiveRestartPolicy, ExecProbe, Permission, Permissions,
+    PodTemplate, ProbeCommand, RestartPolicy, ServiceAccountRef, Validate; unresolved:
+    r.args-render-permission-flags: file:common/denospec/denospec_test.go, r.args-render-permission-flags:
+    function:8d4402900d3462a266b3860020572db3, r.effective-restart-policy-resolves-default:
+    file:common/denospec/denospec.go, r.effective-restart-policy-resolves-default:
+    function:8c740b4bfa20b8c5c3abcbedabd84404, r.effective-restart-policy-resolves-default:
+    type_alias:c9ed92b47f68b4cc5b0bb51223210dbb, r.exec-probe-shape-matches-consumer:
+    file:common/denospec/denospec_contract_test.go, r.exec-probe-shape-matches-consumer:
+    struct:e63b3474fb8e8342ee8ddcbf9aeff650, r.permission-allow-and-deny-forms: struct:bbb7094c15f71e3d40b7bd6ef4ffad5e,
+    r.permissions-cover-deno-capabilities: struct:37cfecc71eb8d4169a8fdffff71f2eb3,
+    r.pod-template-describes-workload: struct:ee22e42a28e08358a06298c6048e62e5, r.probe-command-is-issued-through-the-shim:
+    function:10ed3675a84f3ace014b3a75a3e36f7c, r.service-account-ref-names-identity:
+    struct:81393b3c6451cfbfd692bcbb851b30a9, r.validate-rejects-unrepresentable-permissions:
+    function:961db49fe00a81882f3e64de7ff7262d'
+  reason: InterfacesMissing
+  status: "False"
   type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+- message: no synced fingerprint has been recorded yet
+  reason: NotSyncedYet
   status: "False"
   type: Drifted
 - message: the spec passes the validator
   reason: ValidatorPassed
   status: "True"
   type: SpecValid
-observed:
-  files:
-  - common/denospec/denospec.go
-  - common/denospec/denospec_contract_test.go
-  - common/denospec/denospec_test.go
-  fingerprint: 4f798ca4c98967ec7a6d2281a9580b8a04cbb3c3a0c5784b9c2c5325db499521
-  interfaces:
-  - codegraphId: struct:81393b3c6451cfbfd692bcbb851b30a9
-    file: common/denospec/denospec.go
-    kind: struct
-    line: 11
-    name: ServiceAccountRef
-  - codegraphId: struct:bbb7094c15f71e3d40b7bd6ef4ffad5e
-    file: common/denospec/denospec.go
-    kind: struct
-    line: 17
-    name: Permission
-  - codegraphId: struct:37cfecc71eb8d4169a8fdffff71f2eb3
-    file: common/denospec/denospec.go
-    kind: struct
-    line: 27
-    name: Permissions
-  - codegraphId: struct:ee22e42a28e08358a06298c6048e62e5
-    file: common/denospec/denospec.go
-    kind: struct
-    line: 55
-    name: PodTemplate
-  - codegraphId: struct:e63b3474fb8e8342ee8ddcbf9aeff650
-    file: common/denospec/denospec.go
-    kind: struct
-    line: 71
-    name: ExecProbe
-  - codegraphId: type_alias:c9ed92b47f68b4cc5b0bb51223210dbb
-    file: common/denospec/denospec.go
-    kind: type_alias
-    line: 81
-    name: RestartPolicy
-  - codegraphId: function:8c740b4bfa20b8c5c3abcbedabd84404
-    file: common/denospec/denospec.go
-    kind: function
-    line: 91
-    name: EffectiveRestartPolicy
-    signature: (policy RestartPolicy) RestartPolicy
-  - codegraphId: function:961db49fe00a81882f3e64de7ff7262d
-    file: common/denospec/denospec.go
-    kind: function
-    line: 113
-    name: Validate
-    signature: (p *Permissions) error
-  - codegraphId: function:10ed3675a84f3ace014b3a75a3e36f7c
-    file: common/denospec/denospec.go
-    kind: function
-    line: 155
-    name: ProbeCommand
-    signature: (runtime, shim, probe, name, path string, allowEnv []string) []string
-  - codegraphId: function:8d4402900d3462a266b3860020572db3
-    file: common/denospec/denospec.go
-    kind: function
-    line: 166
-    name: Args
-    signature: (p *Permissions) ([]string, error)
-observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-realizedSpecHash: be51cda5782286f6d8ce82635599584af4fb4233ae6812fddd8cf5648e0f67c2
-syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-syncedFingerprint: 4f798ca4c98967ec7a6d2281a9580b8a04cbb3c3a0c5784b9c2c5325db499521
+observed: {}

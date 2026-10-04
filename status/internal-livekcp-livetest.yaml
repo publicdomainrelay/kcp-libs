@@ -1,29 +1,16 @@
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
-  reason: InterfacesObserved
-  status: "True"
+- message: 'missing: Require; unresolved: r.fail-when-required-and-tools-missing:
+    file:internal/livekcp/livetest/livetest.go, r.fail-when-required-and-tools-missing:
+    function:42a6190b9b8e226427c4db2ace96f2cf'
+  reason: InterfacesMissing
+  status: "False"
   type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+- message: no synced fingerprint has been recorded yet
+  reason: NotSyncedYet
   status: "False"
   type: Drifted
 - message: the spec passes the validator
   reason: ValidatorPassed
   status: "True"
   type: SpecValid
-observed:
-  files:
-  - internal/livekcp/livetest/livetest.go
-  fingerprint: e84b9c04d9912f35831dcb7a566770ea637d3847ddbdb3dc190446c15fb610ea
-  interfaces:
-  - codegraphId: function:42a6190b9b8e226427c4db2ace96f2cf
-    file: internal/livekcp/livetest/livetest.go
-    kind: function
-    line: 11
-    name: Require
-    signature: (t *testing.T)
-observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-realizedSpecHash: 7dbb51b46c7736d767d170cff693f5726e19c27fbb7ca6b7b4b216c4ccd14aba
-syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-syncedFingerprint: e84b9c04d9912f35831dcb7a566770ea637d3847ddbdb3dc190446c15fb610ea
+observed: {}

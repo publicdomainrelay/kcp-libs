@@ -1,70 +1,20 @@
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
-  reason: InterfacesObserved
-  status: "True"
+- message: 'missing: Copy, Is, Of, Remove, Set, SetFalse, SetTrue; unresolved: r.copy-independent-clone:
+    file:common/condition/condition.go, r.copy-independent-clone: function:741af730ad7d212947f2d9d42bf55557,
+    r.is-status-test: function:e1d40351c0eded29676ce645d7c908ab, r.mutations-through-pointer:
+    function:d9d1ab909c15980c4699a3cb56bea924, r.mutations-through-pointer: function:ead30502c3fe49e900a144e9e71219a5,
+    r.observed-generation-recorded: file:common/condition/condition_test.go, r.of-lookup-or-nil:
+    function:2f22991378805fd945c1a0d94b1e9b0e, r.set-false-shorthand: function:eee1a190d5df1941cf6cb5d346a99684,
+    r.set-true-shorthand: function:a5845019d1d1a5d547885188f6cf2d6a'
+  reason: InterfacesMissing
+  status: "False"
   type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+- message: no synced fingerprint has been recorded yet
+  reason: NotSyncedYet
   status: "False"
   type: Drifted
 - message: the spec passes the validator
   reason: ValidatorPassed
   status: "True"
   type: SpecValid
-observed:
-  files:
-  - common/condition/condition.go
-  - common/condition/condition_test.go
-  fingerprint: 03969d86347d250731d2493bfa63d3fd951eb36fc3df2845519d5d30c6dc9c6b
-  interfaces:
-  - codegraphId: function:741af730ad7d212947f2d9d42bf55557
-    file: common/condition/condition.go
-    kind: function
-    line: 10
-    name: Copy
-    signature: (in []metav1.Condition) []metav1.Condition
-  - codegraphId: function:d9d1ab909c15980c4699a3cb56bea924
-    file: common/condition/condition.go
-    kind: function
-    line: 14
-    name: Set
-    signature: (list *[]metav1.Condition, generation int64, status metav1.ConditionStatus,
-      kind, reason, message string)
-  - codegraphId: function:a5845019d1d1a5d547885188f6cf2d6a
-    file: common/condition/condition.go
-    kind: function
-    line: 24
-    name: SetTrue
-    signature: (list *[]metav1.Condition, generation int64, kind, reason, message
-      string)
-  - codegraphId: function:eee1a190d5df1941cf6cb5d346a99684
-    file: common/condition/condition.go
-    kind: function
-    line: 28
-    name: SetFalse
-    signature: (list *[]metav1.Condition, generation int64, kind, reason, message
-      string)
-  - codegraphId: function:ead30502c3fe49e900a144e9e71219a5
-    file: common/condition/condition.go
-    kind: function
-    line: 32
-    name: Remove
-    signature: (list *[]metav1.Condition, kind string)
-  - codegraphId: function:2f22991378805fd945c1a0d94b1e9b0e
-    file: common/condition/condition.go
-    kind: function
-    line: 36
-    name: Of
-    signature: (list []metav1.Condition, kind string) *metav1.Condition
-  - codegraphId: function:e1d40351c0eded29676ce645d7c908ab
-    file: common/condition/condition.go
-    kind: function
-    line: 40
-    name: Is
-    signature: (list []metav1.Condition, kind string, status metav1.ConditionStatus)
-      bool
-observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-realizedSpecHash: 9e19ee58995b1622cb584cb9ec1fa62f4126964c2e3afe989fb8b55ec03a7339
-syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-syncedFingerprint: 03969d86347d250731d2493bfa63d3fd951eb36fc3df2845519d5d30c6dc9c6b
+observed: {}

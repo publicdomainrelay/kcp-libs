@@ -1,148 +1,32 @@
 conditions:
-- message: every declared interface is observed, nothing undeclared is exported and
-    every requirement code ref resolves
-  reason: InterfacesObserved
-  status: "True"
+- message: 'missing: Admission, Admission.Waiting, Blocker, Capacity, Decision, EffectivePolicy,
+    Lease, Leases, Leases.Count, Leases.Forget, Leases.Grant, Leases.Len, Lifecycle,
+    Limit, NewLeases, Order, Plan, PlanIndex, Policy, Run, WakeList; unresolved: r.admission-waiting:
+    method:8573365ee09dc1eb4cd105750db7d96a, r.admission-waiting: struct:792cc17bc63ccca0dcb38c0a64474daf,
+    r.decision-verdict: file:abc/queue/queue.go, r.decision-verdict: function:1c23c59b39afb3955d8fb1ef8262bec4,
+    r.leases-grant-forget-len: file:abc/queue/leases.go, r.leases-grant-forget-len:
+    method:7fcca607f05203909cae0e30fb95654f, r.leases-grant-forget-len: method:aaa78ff0e7191ff1df4b246d1a69c083,
+    r.leases-grant-forget-len: method:ebdc3f4b76becb1059271eec51c5af14, r.leases-parent-scoped-count:
+    file:abc/queue/leases_test.go, r.leases-parent-scoped-count: method:a57993a5f26e81ef1e6ae695a11d798d,
+    r.leases-parent-scoped-count: struct:ad8589e78e7c996950704e3f42b98e35, r.leases-release-on-observed:
+    struct:34632297f34c7dcc187beda5485fdc49, r.leases-ttl-expiry: function:2ae018e0f488c4c38974fe6ac10ac6b7,
+    r.leases-ttl-expiry: struct:2f6663c79d6e6a401d99f363c4816759, r.limit-resolution:
+    function:57b793729eefa74795369ef3ec3c5001, r.limit-resolution: struct:47c532cd8b7218bfdb153ed7bf19aa12,
+    r.plan-admissions: function:a64e06cf0280d641c63e9d6a29889ba2, r.plan-admissions:
+    function:cb491319026f10dd31ad43cb1a74a3e6, r.plan-admissions: struct:4921ee224c96b7635c2b202098cbeff3,
+    r.policy-defaulting: function:7ca241acd8161cba27ae96514598782f, r.policy-defaulting:
+    type_alias:be31cbc6c94318d5c5589f1e679d3f21, r.queue-purity: file:abc/queue/queue_test.go,
+    r.run-ordering: function:4a7ac07571d725f388963144fc298480, r.run-ordering: struct:6dd8d61ae12efdab874719004a369656,
+    r.wake-list: function:7c6d74ae07384500ff8262c7a120089c'
+  reason: InterfacesMissing
+  status: "False"
   type: CodeSynced
-- message: observed facts match the synced fingerprint
-  reason: FingerprintEqual
+- message: no synced fingerprint has been recorded yet
+  reason: NotSyncedYet
   status: "False"
   type: Drifted
 - message: the spec passes the validator
   reason: ValidatorPassed
   status: "True"
   type: SpecValid
-observed:
-  files:
-  - abc/queue/leases.go
-  - abc/queue/leases_test.go
-  - abc/queue/queue.go
-  - abc/queue/queue_test.go
-  fingerprint: f2d774bdc38d3397173f5829a1b29b0f40eec73062fe6ed3c6621a7c06c92c49
-  interfaces:
-  - codegraphId: struct:ad8589e78e7c996950704e3f42b98e35
-    file: abc/queue/leases.go
-    kind: struct
-    line: 10
-    name: Lease
-  - codegraphId: struct:2f6663c79d6e6a401d99f363c4816759
-    file: abc/queue/leases.go
-    kind: struct
-    line: 14
-    name: Leases
-  - codegraphId: function:2ae018e0f488c4c38974fe6ac10ac6b7
-    file: abc/queue/leases.go
-    kind: function
-    line: 18
-    name: NewLeases
-    signature: (ttl time.Duration) *Leases
-  - codegraphId: method:7fcca607f05203909cae0e30fb95654f
-    file: abc/queue/leases.go
-    kind: method
-    line: 22
-    name: Leases.Grant
-    signature: (run, parent ref.Ref, now time.Time)
-  - codegraphId: method:ebdc3f4b76becb1059271eec51c5af14
-    file: abc/queue/leases.go
-    kind: method
-    line: 26
-    name: Leases.Forget
-    signature: (run ref.Ref)
-  - codegraphId: method:a57993a5f26e81ef1e6ae695a11d798d
-    file: abc/queue/leases.go
-    kind: method
-    line: 30
-    name: Leases.Count
-    signature: (parent ref.Ref, observed map[ref.Ref]string, now time.Time, lifecycle
-      Lifecycle) int32
-  - codegraphId: method:aaa78ff0e7191ff1df4b246d1a69c083
-    file: abc/queue/leases.go
-    kind: method
-    line: 49
-    name: Leases.Len
-    signature: () int
-  - codegraphId: struct:34632297f34c7dcc187beda5485fdc49
-    file: abc/queue/queue.go
-    kind: struct
-    line: 17
-    name: Lifecycle
-  - codegraphId: type_alias:be31cbc6c94318d5c5589f1e679d3f21
-    file: abc/queue/queue.go
-    kind: type_alias
-    line: 23
-    name: Policy
-  - codegraphId: function:7ca241acd8161cba27ae96514598782f
-    file: abc/queue/queue.go
-    kind: function
-    line: 25
-    name: EffectivePolicy
-    signature: (policy Policy) Policy
-  - codegraphId: struct:6dd8d61ae12efdab874719004a369656
-    file: abc/queue/queue.go
-    kind: struct
-    line: 40
-    name: Run
-  - codegraphId: struct:47c532cd8b7218bfdb153ed7bf19aa12
-    file: abc/queue/queue.go
-    kind: struct
-    line: 48
-    name: Capacity
-  - codegraphId: struct:4921ee224c96b7635c2b202098cbeff3
-    file: abc/queue/queue.go
-    kind: struct
-    line: 54
-    name: Blocker
-  - codegraphId: struct:792cc17bc63ccca0dcb38c0a64474daf
-    file: abc/queue/queue.go
-    kind: struct
-    line: 60
-    name: Admission
-  - codegraphId: method:8573365ee09dc1eb4cd105750db7d96a
-    file: abc/queue/queue.go
-    kind: method
-    line: 80
-    name: Admission.Waiting
-    signature: () bool
-  - codegraphId: function:57b793729eefa74795369ef3ec3c5001
-    file: abc/queue/queue.go
-    kind: function
-    line: 84
-    name: Limit
-    signature: (policy Policy, maxConcurrent *int32) (int32, bool)
-  - codegraphId: function:1c23c59b39afb3955d8fb1ef8262bec4
-    file: abc/queue/queue.go
-    kind: function
-    line: 94
-    name: Decision
-    signature: (policy Policy, maxConcurrent *int32, active, ahead int32) (bool, string,
-      string)
-  - codegraphId: function:4a7ac07571d725f388963144fc298480
-    file: abc/queue/queue.go
-    kind: function
-    line: 107
-    name: Order
-    signature: (runs []Run)
-  - codegraphId: function:a64e06cf0280d641c63e9d6a29889ba2
-    file: abc/queue/queue.go
-    kind: function
-    line: 116
-    name: Plan
-    signature: (runs []Run, capacity Capacity, blocker *Blocker, reserved int32, lifecycle
-      Lifecycle) []Admission
-  - codegraphId: function:cb491319026f10dd31ad43cb1a74a3e6
-    file: abc/queue/queue.go
-    kind: function
-    line: 177
-    name: PlanIndex
-    signature: (runs []Run, capacity Capacity, blocker *Blocker, reserved int32, lifecycle
-      Lifecycle) map[ref.Ref]Admission
-  - codegraphId: function:7c6d74ae07384500ff8262c7a120089c
-    file: abc/queue/queue.go
-    kind: function
-    line: 188
-    name: WakeList
-    signature: (runs []Run, lifecycle Lifecycle, limit int32, unlimited bool) []ref.Ref
-observedCommit: 17c6ff5003e77e21dab4989a2c7fac201827c0e7
-realizedSpecHash: cafda2642eaae247fdfd007eaffbc760c6d7617b4dbb06dd51f5ebb45cb00fa2
-syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-syncedFingerprint: f2d774bdc38d3397173f5829a1b29b0f40eec73062fe6ed3c6621a7c06c92c49
+observed: {}

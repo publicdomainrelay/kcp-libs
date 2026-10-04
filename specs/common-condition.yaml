@@ -1,4 +1,7 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:common/condition/condition.go condition.go@common/condition/condition.go
+- file:common/condition/condition_test.go condition_test.go@common/condition/condition_test.go
 kind: SystemContext
 metadata:
   name: common-condition

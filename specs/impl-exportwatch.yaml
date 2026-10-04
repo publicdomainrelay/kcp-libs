@@ -1,4 +1,6 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:impl/exportwatch/exportwatch.go exportwatch.go@impl/exportwatch/exportwatch.go
 kind: SystemContext
 metadata:
   name: impl-exportwatch

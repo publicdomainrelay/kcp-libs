@@ -1,4 +1,6 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:impl/policyclient/policyclient.go policyclient.go@impl/policyclient/policyclient.go
 kind: SystemContext
 metadata:
   name: impl-policyclient

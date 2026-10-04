@@ -1,4 +1,7 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:abc/reconcile/handler.go handler.go@abc/reconcile/handler.go
+- file:abc/reconcile/reconcile.go reconcile.go@abc/reconcile/reconcile.go
 kind: SystemContext
 metadata:
   name: abc-reconcile

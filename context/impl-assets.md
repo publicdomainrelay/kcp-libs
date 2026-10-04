@@ -4,107 +4,10 @@ Repository: `kcp-libs`
 
 This context exists so callers can hand a declarative set of asset files to one object and get back a stable name-to-path map, without caring when or how often the bytes hit disk. It separates one-shot materialisation, which is idempotent and retried after failure, from explicit rewriting, which always writes, and it gives the DNS workload a ready-made set for its shim and probe scripts.
 
-_Write the prose above and the fields in the spec block. `codeRefs` and the resolved references below are maintained by the tool; an edit there is lost._
-
-## spec
-
-```yaml spec
-interfaces:
-- file: impl/assets/dns.go
-  kind: function
-  name: DNSSet
-  signature: func DNSSet(runsDir string) *Set
-- file: impl/assets/assets.go
-  kind: struct
-  name: Set
-  signature: type Set struct { Dir string; Files map[string][]byte; Perm os.FileMode;
-    mu sync.Mutex; written bool; paths map[string]string; err error }
-- file: impl/assets/assets.go
-  kind: method
-  name: Set.Materialise
-  signature: func (s *Set) Materialise() (map[string]string, error)
-- file: impl/assets/assets.go
-  kind: method
-  name: Set.Path
-  signature: func (s *Set) Path(name string) (string, error)
-- file: impl/assets/assets.go
-  kind: method
-  name: Set.Rewrite
-  signature: func (s *Set) Rewrite() (map[string]string, error)
-requirements:
-- codeRefs:
-  - file:impl/assets/dnsprobe.ts
-  - file:impl/assets/dnsshim.ts
-  id: r.dns-assets-embedded
-  level: MUST
-  text: The shim and probe scripts shipped for the DNS workload live in the package
-    as dnsshim.ts and dnsprobe.ts and are the bytes written by DNSSet.
-- codeRefs:
-  - file:impl/assets/dns.go
-  - function:d3ebda2faf6210986c5ca5687c578339
-  id: r.dnsset-builds-run-dir-set
-  level: MUST
-  text: DNSSet builds a Set whose Dir is the DNS directory under the given runs directory
-    and whose Files carry the shim source under ShimName and the probe source under
-    ProbeName.
-- codeRefs:
-  - file:impl/assets/assets.go
-  - method:459575a1ced2aec2dc09df6c846496d1
-  id: r.materialise-failure-retried
-  level: MUST
-  text: A failed Materialise leaves the set unwritten and stores the error, so a later
-    Materialise attempt writes again instead of returning the cached failure.
-- codeRefs:
-  - file:impl/assets/assets.go
-  - method:459575a1ced2aec2dc09df6c846496d1
-  id: r.materialise-writes-once
-  level: MUST
-  text: Set.Materialise writes the files only when the set has not already been written,
-    records success in written, and returns the published name-to-path map with the
-    recorded error.
-- codeRefs:
-  - file:impl/assets/assets.go
-  - method:dfdb88e0a88513d22977521f62fadc3c
-  id: r.path-resolves-one-file
-  level: MUST
-  text: Set.Path returns the on-disk path of the named asset, materialising the set
-    first, and reports an error for a name the set does not carry.
-- codeRefs:
-  - file:impl/assets/assets.go
-  - method:621b8207809a46a163d2af9949761ea0
-  id: r.rewrite-always-writes
-  level: MUST
-  text: Set.Rewrite writes the files on every call, ignoring the written flag, and
-    marks the set written on success or unwritten on failure.
-- codeRefs:
-  - file:impl/assets/assets.go
-  - struct:6a6e6a1cca0d3f0928da5e266ee9e2da
-  id: r.set-carries-dir-files-perm
-  level: MUST
-  text: Set exposes Dir, Files (name to bytes), and Perm so a caller can declare where
-    assets go, what they contain, and what mode they get.
-- codeRefs:
-  - file:impl/assets/assets.go
-  - struct:6a6e6a1cca0d3f0928da5e266ee9e2da
-  id: r.set-is-concurrency-safe
-  level: MUST
-  text: Set guards its written flag, path cache, and error with a mutex so concurrent
-    Materialise, Rewrite, and Path calls stay consistent.
-upstream: self
-```
+_The resolved code references are regenerated on every run. Cite the ids above rather than writing them here._
 
 <!-- SPECD_MANAGED_BEGIN -->
 ## Resolved code references
 
-- `file:impl/assets/assets.go` file assets.go (impl/assets/assets.go)
-- `file:impl/assets/assets_test.go` file assets_test.go (impl/assets/assets_test.go)
-- `file:impl/assets/dns.go` file dns.go (impl/assets/dns.go)
-- `file:impl/assets/dns_test.go` file dns_test.go (impl/assets/dns_test.go)
-- `file:impl/assets/dnsprobe.ts` file dnsprobe.ts (impl/assets/dnsprobe.ts)
-- `file:impl/assets/dnsshim.ts` file dnsshim.ts (impl/assets/dnsshim.ts)
-- `function:d3ebda2faf6210986c5ca5687c578339` function DNSSet (impl/assets/dns.go)
-- `method:459575a1ced2aec2dc09df6c846496d1` method Set.Materialise (impl/assets/assets.go)
-- `method:621b8207809a46a163d2af9949761ea0` method Set.Rewrite (impl/assets/assets.go)
-- `method:dfdb88e0a88513d22977521f62fadc3c` method Set.Path (impl/assets/assets.go)
-- `struct:6a6e6a1cca0d3f0928da5e266ee9e2da` struct Set (impl/assets/assets.go)
+_None yet._
 <!-- SPECD_MANAGED_END -->

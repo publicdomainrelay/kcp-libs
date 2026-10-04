@@ -1,4 +1,9 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:impl/kcpstore/kcpstore.go kcpstore.go@impl/kcpstore/kcpstore.go
+- file:impl/kcpstore/kcpstore_test.go kcpstore_test.go@impl/kcpstore/kcpstore_test.go
+- file:impl/kcpstore/live_test.go live_test.go@impl/kcpstore/live_test.go
+- file:impl/kcpstore/paths.go paths.go@impl/kcpstore/paths.go
 kind: SystemContext
 metadata:
   name: impl-kcpstore

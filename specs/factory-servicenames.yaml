@@ -1,4 +1,7 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:factory/servicenames/servicenames.go servicenames.go@factory/servicenames/servicenames.go
+- file:factory/servicenames/servicenames_test.go servicenames_test.go@factory/servicenames/servicenames_test.go
 kind: SystemContext
 metadata:
   name: factory-servicenames

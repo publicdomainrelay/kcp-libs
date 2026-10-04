@@ -1,4 +1,6 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:impl/execrunner/supervisor.go supervisor.go@impl/execrunner/supervisor.go
 kind: SystemContext
 metadata:
   name: impl-execrunner

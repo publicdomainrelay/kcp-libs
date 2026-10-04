@@ -1,4 +1,6 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:common/logging/logging.go logging.go@common/logging/logging.go
 kind: SystemContext
 metadata:
   name: common-logging

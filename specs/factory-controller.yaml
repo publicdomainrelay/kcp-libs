@@ -1,4 +1,9 @@
 apiVersion: specs.publicdomainrelay.dev/v1alpha1
+codeRefIndex:
+- file:factory/controller/controller.go controller.go@factory/controller/controller.go
+- file:factory/controller/controller_test.go controller_test.go@factory/controller/controller_test.go
+- file:factory/controller/events.go events.go@factory/controller/events.go
+- file:factory/controller/live_test.go live_test.go@factory/controller/live_test.go
 kind: SystemContext
 metadata:
   name: factory-controller
