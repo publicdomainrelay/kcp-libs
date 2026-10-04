@@ -9,4 +9,6 @@ spec:
   fromCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
   systemContext: factory-servicenames
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-status: {}
+status:
+  message: the agent is summarizing factory-servicenames
+  phase: Running
