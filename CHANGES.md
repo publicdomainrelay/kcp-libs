@@ -652,7 +652,7 @@ The requirement-level delta against `open-architecture/kcp-libs`, and what this 
 
 | change | direction | phase | commit | verify | acceptance |
 | --- | --- | --- | --- | --- | --- |
-| factory-servicenames-s2c-c614db344601 | SpecToCode | Running |  | 0 | - |
+| factory-servicenames-s2c-c614db344601 | SpecToCode | Succeeded | 51a1c3e1 | 0 | - |
 | factory-servicenames-s2c-d6893cea853e | SpecToCode | Succeeded | 14dcfd78 | 0 | - |
 | impl-assets-s2c-f45702016a1d | SpecToCode | Failed |  | 1 | - |
 | impl-assets-s2c-f45702016a1d-a2 | SpecToCode | Succeeded | f9e2ef3c | 0 | - |
