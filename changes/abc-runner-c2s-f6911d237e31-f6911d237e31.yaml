@@ -10,5 +10,16 @@ spec:
   systemContext: abc-runner
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing abc-runner
-  phase: Running
+  agentLog: 'abc/runner/runner.go is the abstract contract for running workloads in
+    this library. It defines State as a string alias, two request/status struct pairs
+    (PodRequest/PodStatus and EngineRequest/EngineStatus), and two interfaces, PodRunner
+    and EngineRunner. Both interfaces expose the same four-verb lifecycle: Start takes
+    a context and a request and returns a run identifier, Observe takes a context
+    and run identifier and returns the corresponding status, Stop takes a context
+    and run identifier and returns an error, and Probe takes a context, run identifier,
+    a command and a timeout and returns a boolean plus an error. PodRequest carries
+    the Deno-specific inputs (DenoJSON, DenoLock, Script, PermissionArgs) together
+    with identity and placement fields (Name, LogicalCluster, Env, Token, Server,
+    Workspace), while PodStatus reports State, ExitCode, Message and Outputs.'
+  message: wrote 14 requirement(s) and 15 interface(s) for abc-runner
+  phase: Succeeded

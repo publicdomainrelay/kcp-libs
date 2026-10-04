@@ -1186,7 +1186,199 @@ system_contexts:
 - code:
   - abc/runner/runner.go
   id: sc.abc-runner
+  intent: 'This context exists to fix the boundary between the generic workload lifecycle
+    and its concrete implementations. The package names no runtime beyond the field
+    vocabulary of PodRequest, so execrunner, memoryrunner and the examples can implement
+    or consume the same four verbs without the reconciliation, queue and watch layers
+    depending on any one runner. The spec records that contract: the two interfaces,
+    the status and request shapes they exchange, and the State alias both statuses
+    share.'
+  interfaces:
+  - file: abc/runner/runner.go
+    kind: struct
+    name: EngineRequest
+    signature: type EngineRequest struct
+  - file: abc/runner/runner.go
+    kind: interface
+    name: EngineRunner
+    signature: type EngineRunner interface { Start(ctx context.Context, req EngineRequest)
+      (string, error); Observe(ctx context.Context, runID string) (EngineStatus, error);
+      Stop(ctx context.Context, runID string) error; Probe(ctx context.Context, runID
+      string, command []string, timeout time.Duration) (bool, error) }
+  - file: abc/runner/runner.go
+    kind: method
+    name: EngineRunner.Observe
+    signature: func (EngineRunner) Observe(ctx context.Context, runID string) (EngineStatus,
+      error)
+  - file: abc/runner/runner.go
+    kind: method
+    name: EngineRunner.Probe
+    signature: func (EngineRunner) Probe(ctx context.Context, runID string, command
+      []string, timeout time.Duration) (bool, error)
+  - file: abc/runner/runner.go
+    kind: method
+    name: EngineRunner.Start
+    signature: func (EngineRunner) Start(ctx context.Context, req EngineRequest) (string,
+      error)
+  - file: abc/runner/runner.go
+    kind: method
+    name: EngineRunner.Stop
+    signature: func (EngineRunner) Stop(ctx context.Context, runID string) error
+  - file: abc/runner/runner.go
+    kind: struct
+    name: EngineStatus
+    signature: type EngineStatus struct
+  - file: abc/runner/runner.go
+    kind: struct
+    name: PodRequest
+    signature: type PodRequest struct { Name string; LogicalCluster string; DenoJSON
+      string; DenoLock string; Script string; PermissionArgs []string; Env map[string]string;
+      Token string; Server string; Workspace string }
+  - file: abc/runner/runner.go
+    kind: interface
+    name: PodRunner
+    signature: type PodRunner interface { Start(ctx context.Context, req PodRequest)
+      (string, error); Observe(ctx context.Context, runID string) (PodStatus, error);
+      Stop(ctx context.Context, runID string) error; Probe(ctx context.Context, runID
+      string, command []string, timeout time.Duration) (bool, error) }
+  - file: abc/runner/runner.go
+    kind: method
+    name: PodRunner.Observe
+    signature: func (PodRunner) Observe(ctx context.Context, runID string) (PodStatus,
+      error)
+  - file: abc/runner/runner.go
+    kind: method
+    name: PodRunner.Probe
+    signature: func (PodRunner) Probe(ctx context.Context, runID string, command []string,
+      timeout time.Duration) (bool, error)
+  - file: abc/runner/runner.go
+    kind: method
+    name: PodRunner.Start
+    signature: func (PodRunner) Start(ctx context.Context, req PodRequest) (string,
+      error)
+  - file: abc/runner/runner.go
+    kind: method
+    name: PodRunner.Stop
+    signature: func (PodRunner) Stop(ctx context.Context, runID string) error
+  - file: abc/runner/runner.go
+    kind: struct
+    name: PodStatus
+    signature: type PodStatus struct { State State; ExitCode int32; Message string;
+      Outputs map[string]string }
+  - file: abc/runner/runner.go
+    kind: type_alias
+    name: State
+    signature: type State string
   name: abc-runner
+  requirements:
+  - codeRefs:
+    - file:abc/runner/runner.go
+    - struct:b8dec15e30496deaf9bd895e8e7218d8
+    - struct:bd7270a885b505237f5cd4d9038da86d
+    id: r.engine-request-status
+    level: MUST
+    text: EngineRequest and EngineStatus must exist as distinct types from the pod
+      pair, so an engine run is described and reported without reusing the pod request
+      and status shapes.
+  - codeRefs:
+    - file:abc/runner/runner.go
+    - interface:cee292400f7e239797b1b10cd6e5e2f3
+    id: r.engine-runner-lifecycle
+    level: MUST
+    text: EngineRunner must define the four lifecycle verbs Start, Observe, Stop and
+      Probe, in that order, mirroring PodRunner for engine-shaped workloads.
+  - codeRefs:
+    - file:abc/runner/runner.go
+    - method:193f9210bd1837651faf136898a881d1
+    - struct:b8dec15e30496deaf9bd895e8e7218d8
+    id: r.engine-runner-observe
+    level: MUST
+    text: EngineRunner.Observe must accept a context and the run identifier and return
+      EngineStatus together with an error.
+  - codeRefs:
+    - file:abc/runner/runner.go
+    - method:387e9c4ad715a0e08a6e5e5208da6a72
+    id: r.engine-runner-probe
+    level: MUST
+    text: EngineRunner.Probe must accept a context, the run identifier, a command
+      argv slice and a timeout, and return a boolean plus an error, matching the PodRunner
+      probe shape exactly.
+  - codeRefs:
+    - file:abc/runner/runner.go
+    - method:9b3f09bbc26d631a7a08a5c4713097bc
+    - struct:bd7270a885b505237f5cd4d9038da86d
+    id: r.engine-runner-start
+    level: MUST
+    text: EngineRunner.Start must accept a context and EngineRequest and return the
+      run identifier as a string together with an error.
+  - codeRefs:
+    - file:abc/runner/runner.go
+    - method:febb512db7e00e28129ca183c51968b0
+    id: r.engine-runner-stop
+    level: MUST
+    text: EngineRunner.Stop must accept a context and the run identifier and return
+      only an error.
+  - codeRefs:
+    - file:abc/runner/runner.go
+    - struct:46cec8074c83b78c8fabcd0fc4957e32
+    id: r.pod-request-fields
+    level: MUST
+    text: PodRequest must carry Name, LogicalCluster, DenoJSON, DenoLock, Script,
+      PermissionArgs, Env, Token, Server and Workspace, so a pod run receives both
+      its Deno module inputs and its identity and placement context.
+  - codeRefs:
+    - file:abc/runner/runner.go
+    - interface:710591a1c2c64a81c34bf809d899679a
+    id: r.pod-runner-lifecycle
+    level: MUST
+    text: PodRunner must define the four lifecycle verbs Start, Observe, Stop and
+      Probe, in that order, so a pod implementation can be started, inspected, stopped
+      and probed through one interface.
+  - codeRefs:
+    - file:abc/runner/runner.go
+    - method:0dd0d42d1a37091f0638d086e94ed5c6
+    - struct:5dc6f04f8f1d6725396ad778f57753ed
+    id: r.pod-runner-observe
+    level: MUST
+    text: PodRunner.Observe must accept a context and the run identifier and return
+      PodStatus together with an error.
+  - codeRefs:
+    - file:abc/runner/runner.go
+    - method:405b17e18e48a4f4ac2253ec9ce449dd
+    id: r.pod-runner-probe
+    level: MUST
+    text: PodRunner.Probe must accept a context, the run identifier, a command argv
+      slice and a timeout, and return a boolean plus an error.
+  - codeRefs:
+    - file:abc/runner/runner.go
+    - method:fdb656c1b22baaa050976fef1ccc2950
+    - struct:46cec8074c83b78c8fabcd0fc4957e32
+    id: r.pod-runner-start
+    level: MUST
+    text: PodRunner.Start must accept a context and PodRequest and return the run
+      identifier as a string together with an error.
+  - codeRefs:
+    - file:abc/runner/runner.go
+    - method:15f9ba905e255f2171396063a3091a74
+    id: r.pod-runner-stop
+    level: MUST
+    text: PodRunner.Stop must accept a context and the run identifier and return only
+      an error.
+  - codeRefs:
+    - file:abc/runner/runner.go
+    - struct:5dc6f04f8f1d6725396ad778f57753ed
+    - type_alias:5468a2c306be0c500554229bdda5aadd
+    id: r.pod-status-fields
+    level: MUST
+    text: PodStatus must carry State, ExitCode as an int32, Message and an Outputs
+      map of string to string.
+  - codeRefs:
+    - file:abc/runner/runner.go
+    - type_alias:5468a2c306be0c500554229bdda5aadd
+    id: r.state-alias
+    level: MUST
+    text: State must be a string alias, so that status types can report a lifecycle
+      phase as a plain string value.
   upstream: self
 - code:
   - abc/runref/runref.go

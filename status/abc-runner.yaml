@@ -1,9 +1,8 @@
 conditions:
-- message: 'undeclared: EngineRequest, EngineRunner, EngineRunner.Observe, EngineRunner.Probe,
-    EngineRunner.Start, EngineRunner.Stop, EngineStatus, PodRequest, PodRunner, PodRunner.Observe,
-    PodRunner.Probe, PodRunner.Start, PodRunner.Stop, PodStatus, State'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -104,6 +103,6 @@ observed:
     signature: (ctx context.Context, runID string, command []string, timeout time.Duration)
       (bool, error)
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: 7e3c6667e97be86e3709b5b9a4e6699a4ad7482c2a87e5adbeaaa0f85be64643
+realizedSpecHash: 12dd6b810c49f0f8b79924fcb182aef15cf866b2bb9add0a95778c8dff8468c8
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: 015e905df3adaf5c0e59ed3512ffdd239cfda4c9a8539d17e943a50e261e6afb
