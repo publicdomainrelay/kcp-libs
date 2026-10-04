@@ -10,5 +10,17 @@ spec:
   systemContext: abc-store
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing abc-store
-  phase: Running
+  agentLog: 'abc-store is the storage abstraction package of the kcp-libs Go module.
+    It defines generic interfaces that name the storage operations a controller needs
+    without naming a runtime: Reader[T] for Get and List, Writer[T] for Create, Delete,
+    PatchStatus and RemoveFinalizer, Resource as a marker for stored objects, and
+    TokenMinter for MintServiceAccountToken. It also exports the Unchanged helper,
+    which marshals two values to JSON and compares the bytes with bytes.Equal so callers
+    can detect a wire-shape change; it returns false when either value fails to encode.
+    Tests in abc/store/store_test.go pin Unchanged to wire-shape comparison: identical
+    statuses compare equal, a changed field is a change, map key order does not matter,
+    a nil slice differs from a cleared list, and different types are different. This
+    context is the interface layer; implementations live elsewhere, for example impl/kcpstore
+    and abc/cache.'
+  message: wrote 7 requirement(s) and 12 interface(s) for abc-store
+  phase: Succeeded

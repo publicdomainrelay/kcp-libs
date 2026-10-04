@@ -1,8 +1,8 @@
 conditions:
-- message: 'undeclared: Reader, Reader.Get, Reader.List, Resource, TokenMinter, TokenMinter.MintServiceAccountToken,
-    Unchanged, Writer, Writer.Create, Writer.Delete, Writer.PatchStatus, Writer.RemoveFinalizer'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -88,6 +88,6 @@ observed:
     signature: (ctx context.Context, logicalCluster, namespace, name string, ttl time.Duration)
       (string, error)
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: 494f9278c759d3c8c2a988c26b738f109abf05e08f6f86f0bdd274fb58ea7b8e
+realizedSpecHash: 5ffed25d040eb9a77d92d300ab49e6b3bb1d7956a5766432cec340724af9f3ad
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: 146218f9646f5c53c6b4d4b5a4a86fa96d0b78c102117b09ece4b0337aaf1f6d
