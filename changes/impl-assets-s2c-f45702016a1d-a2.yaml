@@ -46,8 +46,74 @@ spec:
   systemContext: impl-assets
   toSpecHash: f45702016a1d1789a4c04b989bb4f2b2a633e2fb99916a479bdfeed52e1508da
 status:
-  message: the agent is realizing impl-assets
-  phase: Running
+  agentLog: "...-libs/common/kcp\t(cached)\n?   \tgithub.com/publicdomainrelay/kcp-libs/common/logging\t[no
+    test files]\nok  \tgithub.com/publicdomainrelay/kcp-libs/common/outputs\t(cached)\nok
+    \ \tgithub.com/publicdomainrelay/kcp-libs/common/ref\t(cached)\nok  \tgithub.com/publicdomainrelay/kcp-libs/common/statuspatch\t(cached)\nok
+    \ \tgithub.com/publicdomainrelay/kcp-libs/common/ttl\t(cached)\nok  \tgithub.com/publicdomainrelay/kcp-libs/examples/admission\t(cached)\nok
+    \ \tgithub.com/publicdomainrelay/kcp-libs/examples/controller\t(cached)\nok  \tgithub.com/publicdomainrelay/kcp-libs/examples/dns\t(cached)\nok
+    \ \tgithub.com/publicdomainrelay/kcp-libs/examples/pki\t(cached)\nok  \tgithub.com/publicdomainrelay/kcp-libs/examples/policy\t(cached)\nok
+    \ \tgithub.com/publicdomainrelay/kcp-libs/examples/workloads\t(cached)\nok  \tgithub.com/publicdomainrelay/kcp-libs/factory/admission\t(cached)\nok
+    \ \tgithub.com/publicdomainrelay/kcp-libs/factory/controller\t(cached)\nok  \tgithub.com/publicdomainrelay/kcp-libs/factory/servicenames\t(cached)\nok
+    \ \tgithub.com/publicdomainrelay/kcp-libs/impl/assets\t(cached)\nok  \tgithub.com/publicdomainrelay/kcp-libs/impl/execrunner\t(cached)\n?
+    \  \tgithub.com/publicdomainrelay/kcp-libs/impl/exportwatch\t[no test files]\nok
+    \ \tgithub.com/publicdomainrelay/kcp-libs/impl/informerwatch\t(cached)\nok  \tgithub.com/publicdomainrelay/kcp-libs/impl/kcpstore\t(cached)\nok
+    \ \tgithub.com/publicdomainrelay/kcp-libs/impl/memoryrunner\t(cached)\nok  \tgithub.com/publicdomainrelay/kcp-libs/impl/metrics\t(cached)\nok
+    \ \tgithub.com/publicdomainrelay/kcp-libs/impl/openbaoclient\t(cached)\nok  \tgithub.com/publicdomainrelay/kcp-libs/impl/pkiprovisioner\t(cached)\nok
+    \ \tgithub.com/publicdomainrelay/kcp-libs/impl/policyclient\t(cached)\nok  \tgithub.com/publicdomainrelay/kcp-libs/internal/boundaries\t(cached)\nok
+    \ \tgithub.com/publicdomainrelay/kcp-libs/internal/livekcp\t(cached)\n?   \tgithub.com/publicdomainrelay/kcp-libs/internal/livekcp/cmd/livecluster\t[no
+    test files]\n?   \tgithub.com/publicdomainrelay/kcp-libs/internal/livekcp/livetest\t[no
+    test files]"
+  branch: spec/impl-assets/f4570201
+  commit: f9e2ef3cfa3a9ae4d984768e8fce97092fe179bf
+  filesTouched:
+  - common/denocomputer/denocomputer_test.go
+  - impl/assets/dns_test.go
+  - impl/assets/dnsshim.ts
+  message: 'realized impl-assets on spec/impl-assets/f4570201: 3 file(s) touched,
+    verify exit 0'
+  phase: Succeeded
+  progress:
+  - at: "2026-10-04T22:09:19Z"
+    files:
+    - impl/assets/dnsshim.ts
+    tool: Read
+  - at: "2026-10-04T22:09:19Z"
+    files:
+    - impl/assets/dns_test.go
+    tool: Read
+  - at: "2026-10-04T22:09:45Z"
+    files:
+    - impl/assets/dns.go
+    tool: Read
+  - at: "2026-10-04T22:09:54Z"
+    files:
+    - impl/assets/dnsshim.ts
+    tool: Edit
+  - at: "2026-10-04T22:09:56Z"
+    files:
+    - impl/assets/dns_test.go
+    tool: Edit
+  - at: "2026-10-04T22:10:06Z"
+    files:
+    - impl/assets/dnsshim.ts
+    tool: Edit
+  - at: "2026-10-04T22:10:24Z"
+    files:
+    - common/denocomputer/denocomputer_test.go
+    tool: Read
+  - at: "2026-10-04T22:11:29Z"
+    files:
+    - common/denocomputer/denocomputer_test.go
+    tool: Edit
+  - at: "2026-10-04T22:11:46Z"
+    files:
+    - impl/assets/dnsshim.ts
+    tool: Read
+  - at: "2026-10-04T22:11:50Z"
+    note: turn
+  - at: "2026-10-04T22:11:50Z"
+    note: turn
+    turn: 1
 superseded:
 - message: ".../common/kcp\t(cached)\n?   \tgithub.com/publicdomainrelay/kcp-libs/common/logging\t[no
     test files]\nok  \tgithub.com/publicdomainrelay/kcp-libs/common/outputs\t(cached)\nok
