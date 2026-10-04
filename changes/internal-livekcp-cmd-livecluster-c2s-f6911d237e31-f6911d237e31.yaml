@@ -10,5 +10,12 @@ spec:
   systemContext: internal-livekcp-cmd-livecluster
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing internal-livekcp-cmd-livecluster
-  phase: Running
+  agentLog: 'This context is the source of the `livecluster` command, a small standalone
+    binary at internal/livekcp/cmd/livecluster/main.go. It exists to bring up a live
+    kcp cluster for tests and local work: it requires a `--env` flag, signals livekcp.Start
+    with a context cancelled on SIGINT or SIGTERM, writes the resulting kubeconfig
+    path and server URL to the requested file, prints the cluster trace, and then
+    blocks until the context is done before stopping the cluster through a deferred
+    call.'
+  message: wrote 5 requirement(s) and 0 interface(s) for internal-livekcp-cmd-livecluster
+  phase: Succeeded
