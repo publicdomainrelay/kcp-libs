@@ -350,6 +350,43 @@ func TestCASerialWithoutACAReportsBothSentinels(t *testing.T) {
 	}
 }
 
+func TestAMissingDefaultIssuerIsNoAuthority(t *testing.T) {
+	client, _ := newServer(t, func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(`{"errors":["no default issuer is currently configured"]}`))
+	})
+	if _, err := client.CASerial(context.Background(), "root", "pki"); !errors.Is(err, pki.ErrNoAuthority) {
+		t.Fatalf("CASerial err = %v, want pki.ErrNoAuthority", err)
+	}
+	if _, err := client.CAChain(context.Background(), "root", "pki"); !errors.Is(err, pki.ErrNoAuthority) {
+		t.Fatalf("CAChain err = %v, want pki.ErrNoAuthority", err)
+	}
+}
+
+func TestAnUnrelatedBadRequestIsNeitherSentinel(t *testing.T) {
+	client, _ := newServer(t, func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(`{"errors":["missing common_name"]}`))
+	})
+	_, err := client.CASerial(context.Background(), "root", "pki")
+	if err == nil {
+		t.Fatal("an unrelated 400 must stay an error")
+	}
+	if errors.Is(err, pki.ErrNoAuthority) {
+		t.Fatalf("err = %v, want it not to be pki.ErrNoAuthority", err)
+	}
+	if errors.Is(err, ErrNotFound) {
+		t.Fatalf("err = %v, want it not to be ErrNotFound", err)
+	}
+	var response *ResponseError
+	if !errors.As(err, &response) {
+		t.Fatalf("err = %v, want a *ResponseError", err)
+	}
+	if response.Method != http.MethodGet || response.Path != "pki/cert/ca" || response.Status != http.StatusBadRequest || response.Body != "missing common_name" {
+		t.Fatalf("response = %+v", response)
+	}
+}
+
 func TestEnsureMountTreatsANullMountListAsNoMounts(t *testing.T) {
 	client, seen := newServer(t, func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/v1/sys/mounts" {

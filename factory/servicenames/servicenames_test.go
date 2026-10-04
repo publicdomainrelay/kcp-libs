@@ -152,3 +152,73 @@ func TestTokensAreMintedPerWorkspace(t *testing.T) {
 		t.Fatalf("tokens = %v", tokens)
 	}
 }
+
+func TestAWorkspaceWithNoPodIsStillMintedUnderItsServiceNameKey(t *testing.T) {
+	minter := &fakeMinter{}
+	paths := PathResolverFunc(func(_ context.Context, cluster string) string {
+		if cluster == "2j35eh7jjhsc8ny9" {
+			return "root:alice"
+		}
+		return ""
+	})
+	resolver := New(Options{
+		Source:     SourceFunc(func() []*unstructured.Unstructured { return nil }),
+		Workspaces: WorkspacesFunc(func(context.Context) []string { return []string{"2j35eh7jjhsc8ny9"} }),
+		Paths:      paths,
+		Minter:     minter,
+		Domain:     "kcp.local",
+	})
+	target := ref.New("root:bob", "default", "web")
+	env := resolver.Env(context.Background(), target, "", "", &denospec.ServiceAccountRef{Name: "reader"})
+	var tokens map[string]string
+	if err := json.Unmarshal([]byte(env[TokensKey]), &tokens); err != nil {
+		t.Fatal(err)
+	}
+	if tokens["root:alice"] != "token-2j35eh7jjhsc8ny9" {
+		t.Fatalf("tokens = %v, want a token keyed by the path the service name is built from", tokens)
+	}
+	if tokens["root:bob"] != "token-root:bob" {
+		t.Fatalf("tokens = %v, the target's own cluster is always in the set", tokens)
+	}
+	if _, present := env[TableKey]; present {
+		t.Fatalf("a cluster with no pod advertises no address, table = %q", env[TableKey])
+	}
+}
+
+func TestANilWorkspaceSourceAddsNothing(t *testing.T) {
+	minter := &fakeMinter{}
+	resolver := New(Options{
+		Source: SourceFunc(func() []*unstructured.Unstructured { return nil }),
+		Minter: minter,
+		Domain: "kcp.local",
+	})
+	target := ref.New("root:bob", "default", "web")
+	env := resolver.Env(context.Background(), target, "", "", &denospec.ServiceAccountRef{Name: "reader"})
+	var tokens map[string]string
+	if err := json.Unmarshal([]byte(env[TokensKey]), &tokens); err != nil {
+		t.Fatal(err)
+	}
+	if len(tokens) != 1 || tokens["root:bob"] != "token-root:bob" {
+		t.Fatalf("tokens = %v, want only the target's own cluster", tokens)
+	}
+}
+
+func TestAWorkspaceNamedTwiceIsMintedOnce(t *testing.T) {
+	minter := &fakeMinter{}
+	resolver := New(Options{
+		Source: SourceFunc(func() []*unstructured.Unstructured {
+			return []*unstructured.Unstructured{
+				pod("a", "default", "cluster-a", map[string]string{ArgsKey: `["--port","80"]`}),
+				pod("b", "default", "cluster-a", map[string]string{ArgsKey: `["--port","81"]`}),
+			}
+		}),
+		Workspaces: WorkspacesFunc(func(context.Context) []string { return []string{"cluster-a"} }),
+		Minter:     minter,
+		Domain:     "kcp.local",
+	})
+	target := ref.New("root:bob", "default", "web")
+	resolver.Env(context.Background(), target, "", "", &denospec.ServiceAccountRef{Name: "reader"})
+	if len(minter.clusters) != 2 {
+		t.Fatalf("minted for %v, want cluster-a once and the target once", minter.clusters)
+	}
+}

@@ -44,6 +44,9 @@ func (e *ResponseError) Error() string {
 }
 
 func (e *ResponseError) Is(target error) bool {
+	if target == pki.ErrNoAuthority && reportsNoDefaultIssuer(e) {
+		return true
+	}
 	switch e.Status {
 	case http.StatusNotFound:
 		return target == ErrNotFound
@@ -52,6 +55,10 @@ func (e *ResponseError) Is(target error) bool {
 	default:
 		return false
 	}
+}
+
+func reportsNoDefaultIssuer(e *ResponseError) bool {
+	return e.Status == http.StatusBadRequest && strings.Contains(strings.ToLower(e.Body), "no default issuer")
 }
 
 type Options struct {
@@ -211,7 +218,7 @@ func (c *Client) GenerateRoot(ctx context.Context, namespace, mount, commonName,
 func (c *Client) CASerial(ctx context.Context, namespace, mount string) (string, error) {
 	data, err := c.read(ctx, namespace, strings.Trim(mount, "/")+"/cert/ca")
 	if err != nil {
-		if errors.Is(err, ErrNotFound) {
+		if errors.Is(err, ErrNotFound) || errors.Is(err, pki.ErrNoAuthority) {
 			return "", fmt.Errorf("%w: %w: no CA at %s", pki.ErrNoAuthority, ErrNotFound, mount)
 		}
 		return "", err

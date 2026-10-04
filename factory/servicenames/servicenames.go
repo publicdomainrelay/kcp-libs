@@ -40,6 +40,16 @@ func (f SourceFunc) Pods() []*unstructured.Unstructured {
 	return f()
 }
 
+type Workspaces interface {
+	Clusters(ctx context.Context) []string
+}
+
+type WorkspacesFunc func(ctx context.Context) []string
+
+func (f WorkspacesFunc) Clusters(ctx context.Context) []string {
+	return f(ctx)
+}
+
 type PathResolver interface {
 	Lookup(ctx context.Context, logicalCluster string) string
 }
@@ -54,6 +64,8 @@ type Options struct {
 	Source Source
 
 	Minter store.TokenMinter
+
+	Workspaces Workspaces
 
 	Paths PathResolver
 
@@ -80,14 +92,17 @@ func New(opts Options) *Resolver {
 	return &Resolver{opts: opts}
 }
 
-func (d *Resolver) Name(ctx context.Context, name, namespace, logicalCluster string) string {
-	cluster := logicalCluster
+func (d *Resolver) clusterName(ctx context.Context, logicalCluster string) string {
 	if d.opts.Paths != nil {
 		if path := d.opts.Paths.Lookup(ctx, logicalCluster); path != "" {
-			cluster = path
+			return path
 		}
 	}
-	return kcp.ServiceFQDN(name, namespace, cluster, d.opts.Domain)
+	return logicalCluster
+}
+
+func (d *Resolver) Name(ctx context.Context, name, namespace, logicalCluster string) string {
+	return kcp.ServiceFQDN(name, namespace, d.clusterName(ctx, logicalCluster), d.opts.Domain)
 }
 
 func (d *Resolver) Table(ctx context.Context) (map[string]string, []string) {
@@ -122,12 +137,16 @@ func (d *Resolver) Tokens(ctx context.Context, workspaces []string, account *den
 		if namespace == "" {
 			namespace = d.opts.ServiceAccountNamespace
 		}
-		for _, cluster := range workspaces {
-			token, err := d.opts.Minter.MintServiceAccountToken(ctx, cluster, namespace, account.Name, d.opts.TokenTTL)
+		for _, workspace := range workspaces {
+			key := d.clusterName(ctx, workspace)
+			if _, done := out[key]; done {
+				continue
+			}
+			token, err := d.opts.Minter.MintServiceAccountToken(ctx, workspace, namespace, account.Name, d.opts.TokenTTL)
 			if err != nil {
 				continue
 			}
-			out[cluster] = token
+			out[key] = token
 		}
 	}
 	body, err := json.Marshal(out)
@@ -146,10 +165,17 @@ func (d *Resolver) Env(ctx context.Context, target ref.Ref, selfArgs, selfEnv st
 		env[ShimKey] = d.opts.Shim
 	}
 	table, workspaces := d.Table(ctx)
-	if self := AdvertisedAddress(selfArgs, selfEnv); self != "" {
-		if !slices.Contains(workspaces, target.LogicalCluster) {
-			workspaces = append(workspaces, target.LogicalCluster)
+	if d.opts.Workspaces != nil {
+		for _, cluster := range d.opts.Workspaces.Clusters(ctx) {
+			if !slices.Contains(workspaces, cluster) {
+				workspaces = append(workspaces, cluster)
+			}
 		}
+	}
+	if !slices.Contains(workspaces, target.LogicalCluster) {
+		workspaces = append(workspaces, target.LogicalCluster)
+	}
+	if self := AdvertisedAddress(selfArgs, selfEnv); self != "" {
 		table[d.Name(ctx, target.Name, target.Namespace, target.LogicalCluster)] = self
 	}
 	if len(table) > 0 {
