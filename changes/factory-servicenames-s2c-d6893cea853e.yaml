@@ -17,4 +17,5 @@ spec:
     - +r.workspace-source-tests
     - +r.workspace-source-widens-the-token-set
 status:
-  phase: Pending
+  phase: Running
+  message: the agent is realizing factory-servicenames
