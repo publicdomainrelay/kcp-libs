@@ -1,9 +1,8 @@
 conditions:
-- message: 'undeclared: AdvertisedAddress, New, Options, PathResolver, PathResolver.Lookup,
-    PathResolverFunc, PathResolverFunc.Lookup, Resolver, Resolver.Env, Resolver.Name,
-    Resolver.Table, Resolver.Tokens, Source, Source.Pods, SourceFunc, SourceFunc.Pods'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -112,6 +111,6 @@ observed:
     name: AdvertisedAddress
     signature: (argsJSON, envJSON string) string
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: df02745d5f1e375dc1f20a380a41eddcdcf3700e826e1b668d962a84d3ad20bf
+realizedSpecHash: 37415eb0c8ff7589994e8c2ce145d7b07e799e3ad730fd84317cb098bc43c4b8
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: b82792fd142a2e2a51b90788af96c30a625b6639391e9709b5cc1cadfd50e421

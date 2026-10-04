@@ -1,7 +1,8 @@
 conditions:
-- message: 'undeclared: DNSSet, Set, Set.Materialise, Set.Path, Set.Rewrite'
-  reason: InterfacesMissing
-  status: "False"
+- message: every declared interface is observed, nothing undeclared is exported and
+    every requirement code ref resolves
+  reason: InterfacesObserved
+  status: "True"
   type: CodeSynced
 - message: observed facts match the synced fingerprint
   reason: FingerprintEqual
@@ -51,6 +52,6 @@ observed:
     name: DNSSet
     signature: (runsDir string) *Set
 observedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
-realizedSpecHash: d33cb56f9b27a02a683e9d31a6d31e041c4dc02a147cb7ee869b056971696ddc
+realizedSpecHash: 692bb8883c874e4bbced710a0d9561d373f3e1e8f57640414637ebf94f92107e
 syncedCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 syncedFingerprint: be4c6f16907046046680aafaa15e85c525435f769125a5b14520883e0e58657b

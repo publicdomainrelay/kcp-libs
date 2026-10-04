@@ -10,5 +10,22 @@ spec:
   systemContext: factory-servicenames
   toCommit: f6911d237e3140ff2c6ff198b50189c07daa46d8
 status:
-  message: the agent is summarizing factory-servicenames
-  phase: Running
+  agentLog: The factory/servicenames package turns observed workload pods into the
+    DNS/service environment that a Deno workload receives in kcp. It defines a Source
+    (any provider of pods as unstructured objects, with SourceFunc as the function
+    adapter) and a PathResolver (logical cluster to path lookup, with PathResolverFunc
+    as the adapter). Options carries Source, a store.TokenMinter, Paths, Domain, TokenTTL,
+    ServiceAccountNamespace and Shim. New fills the defaults kcp.DefaultServiceDomain
+    and "default" for the service account namespace, and the returned Resolver offers
+    Name (ServiceFQDN of a pod, routed through the path resolver when present), Table
+    (map of advertised FQDN to host:port plus the list of observed workspaces, built
+    from the kcp cluster annotation and each pod's args/env), Tokens (mints a per-workspace
+    service account token and returns it as a JSON object string, defaulting to "{}"),
+    and Env (the full environment map of domain, namespace, optional shim, the JSON
+    table, and the minted tokens, with the calling workload's own advertised address
+    folded into the table). AdvertisedAddress parses the SERVICE_ARGS JSON and SERVICE_ENV
+    JSON, preferring --port/--hostname flags over PORT/HOSTNAME, and substitutes 127.0.0.1
+    when the host is empty, 0.0.0.0 or ::. Environment keys are the exported constants
+    ArgsKey, EnvKey, TableKey, TokensKey, DomainKey, NamespaceKey and ShimKey.
+  message: wrote 9 requirement(s) and 16 interface(s) for factory-servicenames
+  phase: Succeeded
