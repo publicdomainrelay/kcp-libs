@@ -154,6 +154,14 @@ globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
   if (!target) return realFetch(input as RequestInfo, init);
   const next = rewrite(raw, target);
   if (!next) return realFetch(input as RequestInfo, init);
+  // A Request carries its own method, headers and body; rebuilding it on the
+  // rewritten URL keeps all three, where passing only the URL would send a
+  // bodiless GET in its place.
+  if (input instanceof Request) {
+    const request = new Request(next, input);
+    if (!request.headers.has("host")) request.headers.set("host", host);
+    return realFetch(request, init);
+  }
   const headers = new Headers(
     init?.headers ?? (typeof input === "object" && "headers" in input ? input.headers : undefined),
   );

@@ -2,6 +2,7 @@ package assets
 
 import (
 	"context"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -222,5 +223,22 @@ func TestTheShimDiscoversTheAddressAPodReported(t *testing.T) {
 		"KCP_SERVER="+api.URL+"/clusters/root:bob", `KCP_TOKENS={"root:alice":"t"}`)
 	if got != "bound" {
 		t.Fatalf("the shim answered %q, a port 0 pod is found by the address it reported, not by its manifest", got)
+	}
+}
+
+func TestTheShimKeepsTheMethodAndBodyOfARequestObject(t *testing.T) {
+	dir := t.TempDir()
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, _ := io.ReadAll(r.Body)
+		_, _ = w.Write([]byte(r.Method + " " + string(body)))
+	}))
+	t.Cleanup(server.Close)
+	address := strings.TrimPrefix(server.URL, "http://")
+	driver := `const req = new Request("http://pds.default.alice.svc.kcp.local/op", { method: "POST", body: "signed-op", headers: { "content-type": "application/json" } });
+console.log(await (await fetch(req)).text());
+`
+	got := runShimDriver(t, dir, driver, nil, "KCP_SERVICE_DOMAIN=kcp.local", `KCP_DNS_TABLE={"pds.default.alice.svc.kcp.local":"`+address+`"}`)
+	if got != "POST signed-op" {
+		t.Fatalf("the service saw %q; a Request object rewritten to its address must keep its method and body", got)
 	}
 }
