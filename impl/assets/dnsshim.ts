@@ -15,8 +15,34 @@ type Table = Record<string, string>;
 const DOMAIN: string = (Deno.env.get("KCP_SERVICE_DOMAIN") ?? "kcp.local");
 const SUFFIX = ".svc." + DOMAIN;
 const TABLE: Table = JSON.parse(Deno.env.get("KCP_DNS_TABLE") ?? "{}");
+const TABLE_FILE: string = (() => {
+  try {
+    return Deno.env.get("KCP_DNS_TABLE_FILE") ?? "";
+  } catch {
+    return "";
+  }
+})();
 const TOKENS: Record<string, string> = JSON.parse(Deno.env.get("KCP_TOKENS") ?? "{}");
 const SERVER: string = Deno.env.get("KCP_SERVER") ?? "";
+
+// The provider rewrites the table file whenever a workload reports the port it
+// bound, so a workload started before its peers, or a peer that restarted on a
+// new port, is found on the next lookup. The file is read again only when its
+// modification time moves; a file this process may not read leaves the table
+// it started with in place.
+let tableFileStamp = -1;
+function refresh(): void {
+  if (!TABLE_FILE) return;
+  try {
+    const stamp = Deno.statSync(TABLE_FILE).mtime?.getTime() ?? 0;
+    if (stamp === tableFileStamp) return;
+    const next: Table = JSON.parse(Deno.readTextFileSync(TABLE_FILE));
+    tableFileStamp = stamp;
+    Object.assign(TABLE, next);
+  } catch {
+    return;
+  }
+}
 
 // alice -> root:alice, prod.acme -> root:acme:prod. The inverse of the labelling
 // the provider applies when it builds the table.
@@ -51,7 +77,7 @@ function addressOf(env: Record<string, string>): string | null {
   };
   const port = flag("--port") ?? serviceEnv.PORT;
   const bind = flag("--hostname") ?? serviceEnv.HOSTNAME ?? "127.0.0.1";
-  if (!port) return null;
+  if (!port || port === "0") return null;
   return (bind === "0.0.0.0" || bind === "::" ? "127.0.0.1" : bind) + ":" + port;
 }
 
@@ -69,13 +95,15 @@ async function discover(host: string): Promise<string | null> {
   const res = await fetch(url, { headers: { authorization: `Bearer ${token}` } });
   if (!res.ok) return null;
   const pod = await res.json();
-  const addr = addressOf(pod?.spec?.env ?? {});
+  const reported = typeof pod?.status?.address === "string" ? pod.status.address : "";
+  const addr = reported || addressOf(pod?.spec?.env ?? {});
   if (addr) TABLE[host] = addr;
   return addr;
 }
 
 async function addressFor(host: string): Promise<string | null> {
   if (!host.endsWith(SUFFIX)) return null;
+  refresh();
   const known = TABLE[host];
   if (known) return known;
   const found = await discover(host);
@@ -175,6 +203,7 @@ globalThis.WebSocket = class extends realWebSocket {
         return "";
       }
     })();
+    if (host.endsWith(SUFFIX)) refresh();
     const addr = host.endsWith(SUFFIX) ? TABLE[host] : null;
     const next = addr ? rewrite(raw, addr) : null;
     super(next ?? raw, protocols);

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -17,6 +18,8 @@ import (
 const DefaultPodTimeout = 5 * time.Minute
 
 const DefaultResultFile = "result.json"
+
+const PortFileName = "port-bound-to"
 
 type PodOptions struct {
 	DenoBin string
@@ -103,7 +106,7 @@ func (p *Pod) Observe(_ context.Context, runID string) (runner.PodStatus, error)
 			_ = p.sup.stop(runID)
 			return runner.PodStatus{State: runner.StateFailed, Message: "the deno process exceeded the runner timeout"}, nil
 		}
-		return runner.PodStatus{State: runner.StateRunning}, nil
+		return runner.PodStatus{State: runner.StateRunning, BoundPort: boundPort(run.dir)}, nil
 	}
 	if run.stopped.Load() {
 		return runner.PodStatus{State: runner.StateFailed, Message: "the deno process was stopped"}, nil
@@ -204,10 +207,25 @@ func (p *Pod) dirEnv(dir string, caller []string) []string {
 		}
 		env = append(env, "DENO_DIR="+moduleDir)
 	}
+	if !containsKey(caller, "PORT_FILE") {
+		env = append(env, "PORT_FILE="+filepath.Join(dir, PortFileName))
+	}
 	if len(p.trustBundle()) > 0 && !containsKey(caller, "DENO_CERT") {
 		env = append(env, "DENO_CERT="+filepath.Join(dir, "ca.pem"))
 	}
 	return env
+}
+
+func boundPort(dir string) int32 {
+	body, err := os.ReadFile(filepath.Join(dir, PortFileName))
+	if err != nil {
+		return 0
+	}
+	port, err := strconv.ParseUint(strings.TrimSpace(string(body)), 10, 16)
+	if err != nil {
+		return 0
+	}
+	return int32(port)
 }
 
 func containsKey(env []string, key string) bool {

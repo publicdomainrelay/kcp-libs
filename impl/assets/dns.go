@@ -13,7 +13,15 @@ var Probe string
 
 const DNSDirName = ".kcpdns"
 
-var DNSProbeEnv = []string{"KCP_SERVICE_DOMAIN", "KCP_DNS_TABLE", "KCP_TOKENS", "KCP_SERVER"}
+const TableFileEnv = "KCP_DNS_TABLE_FILE"
+
+const TableName = "table.json"
+
+var DNSProbeEnv = []string{"KCP_SERVICE_DOMAIN", "KCP_DNS_TABLE", TableFileEnv, "KCP_TOKENS", "KCP_SERVER"}
+
+func DNSTablePath(runsDir string) string {
+	return filepath.Join(runsDir, DNSDirName, TableName)
+}
 
 func DNSSet(runsDir string) *Set {
 	return &Set{

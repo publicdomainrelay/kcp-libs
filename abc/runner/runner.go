@@ -45,6 +45,8 @@ type PodStatus struct {
 	Message string
 
 	Outputs map[string]string
+
+	BoundPort int32
 }
 
 type PodRunner interface {

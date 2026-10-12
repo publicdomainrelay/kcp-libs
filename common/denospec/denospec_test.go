@@ -171,3 +171,18 @@ func TestProbeCommandDefaultsThePath(t *testing.T) {
 		t.Fatalf("path = %q, want /", command[len(command)-1])
 	}
 }
+
+func TestProbeCommandReadingGrantsOnlyTheNamedFiles(t *testing.T) {
+	command := ProbeCommandReading("deno", "/runs/.kcpdns/shim.ts", "/runs/.kcpdns/probe.ts", "pds.default.alice.svc.kcp.local", "/health",
+		[]string{"KCP_DNS_TABLE_FILE"}, []string{"/runs/.kcpdns/table.json"})
+	joined := strings.Join(command, " ")
+	if !strings.Contains(joined, "--allow-read=/runs/.kcpdns/table.json") {
+		t.Fatalf("the probe re-reads the table file, so it must be allowed to read exactly that file: %v", command)
+	}
+	if strings.Contains(joined, "--allow-read ") || strings.Contains(joined, "--allow-all") {
+		t.Fatalf("the probe must not be granted more than the table file: %v", command)
+	}
+	if without := strings.Join(ProbeCommand("deno", "s", "p", "n", "/", nil), " "); strings.Contains(without, "--allow-read") {
+		t.Fatalf("no table file means no read grant: %s", without)
+	}
+}

@@ -153,10 +153,18 @@ func validateValues(what string, values []string) error {
 }
 
 func ProbeCommand(runtime, shim, probe, name, path string, allowEnv []string) []string {
+	return ProbeCommandReading(runtime, shim, probe, name, path, allowEnv, nil)
+}
+
+func ProbeCommandReading(runtime, shim, probe, name, path string, allowEnv, allowRead []string) []string {
 	if runtime == "" {
 		runtime = "deno"
 	}
-	args := []string{runtime, "run", "--allow-env=" + strings.Join(allowEnv, ","), "--allow-net", "--preload", shim, probe, name}
+	args := []string{runtime, "run", "--allow-env=" + strings.Join(allowEnv, ","), "--allow-net"}
+	if len(allowRead) > 0 {
+		args = append(args, "--allow-read="+strings.Join(allowRead, ","))
+	}
+	args = append(args, "--preload", shim, probe, name)
 	if path == "" {
 		path = "/"
 	}
